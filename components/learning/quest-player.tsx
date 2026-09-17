@@ -23,7 +23,7 @@ export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack
   const game=gameById(session.gameId),chapter=session.chapter!==undefined?campaignChapters[session.chapter]:undefined;
   const title=game?.title??(session.discovery?"Meet Nova":session.teamId?"Garden Rescue Team":chapter?.title??worldName(session.subject));
   return <div className={`play-overlay ${game?`game-player game-${game.id}`:""}`} role="dialog" aria-modal="true" aria-label={title}>
-    <header className="play-header"><button className="text-button" disabled={busy} onClick={onBack}><ArrowLeft size={20}/>Save & take a break</button><span className="play-world">{game?.emoji} {title}</span><span className="star-pill"><Star size={16}/>{profile.stars} stars</span></header>
+    <header className="play-header"><button className="text-button" disabled={busy} onClick={onBack}><ArrowLeft size={20}/>{game?'Back to games':'Save & take a break'}</button><span className="play-world">{game?.emoji} {title}</span><span className="star-pill"><Star size={16}/>{profile.stars} stars</span></header>
     {error&&<div className="error" role="alert">{error}<button disabled={busy} onClick={onBack}>Return to my adventure</button></div>}
     {current?<div className="activity"><div className="activity-progress"><span>Discovery {Math.min(session.index+(feedback?.correct?0:1),session.total)} of {session.total}</span><div>{Array.from({length:session.total},(_,i)=><span key={i} className={i<session.index?"done":""}/>)}</div></div>
       {game&&<div className="game-mission-label">{game.missions[session.gameLevel??0]}</div>}

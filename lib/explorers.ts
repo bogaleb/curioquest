@@ -70,6 +70,7 @@ export type ExplorerProfile = {
   reflections: {sessionId:string;questionId:string;strategy:string;at:string}[];
   team?: { id: string; partnerId: string; completedAt?: string };
   seen: string[];
+  savedSessions: NonNullable<ExplorerProfile["session"]>[];
   session: null | {
     id: string;
     subject: Subject | "daily";
@@ -83,6 +84,7 @@ export type ExplorerProfile = {
     gameLevel?: number;
     first: number;
     started: number;
+    suspendedAt?: number;
     estimatedMinutes?: number;
     chapter?: number;
     teamId?: string;
@@ -128,6 +130,7 @@ export function newExplorer(
     events: [],
     reflections: [],
     seen: [],
+    savedSessions: [],
     session: null,
   };
 }
@@ -173,6 +176,7 @@ export function normalizeExplorer(value: unknown): ExplorerProfile {
       ? profile.recentActivityTypes.slice(-8)
       : [],
     seen: Array.isArray(profile.seen) ? profile.seen : [],
+    savedSessions: Array.isArray(profile.savedSessions) ? profile.savedSessions.filter(s => s && typeof s.id === "string" && Array.isArray(s.questions) && s.index < s.questions.length) : [],
     skills: Object.fromEntries(
       subjects.map((subject) => [
         subject,

@@ -21,6 +21,7 @@ import { startDiscovery, advanceDiscovery } from "@/lib/discovery";
 import { arcadeKey, arcadeQuestionIds, gameById } from "@/lib/arcade";
 import { parentAuthorized, familyAuthorized } from "@/lib/parent-security";
 import { requestJson, RequestBodyError } from "@/lib/request-json";
+import { parkSession, resumeSession } from "@/lib/saved-sessions";
 
 const subjects: Subject[] = ["reading", "math", "logic"];
 const allowedGoals = [8, 10, 15, 20];
@@ -59,6 +60,7 @@ async function row(id: string) {
 function clean(profile: ExplorerProfile) {
   return {
     ...profile,
+    savedSessions: profile.savedSessions.map(({ id, subject, index, questions, gameId, gameLevel, chapter, teamId, discovery }) => ({ id, subject, index, total: questions.length, gameId, gameLevel, chapter, teamId, discovery: !!discovery })),
     session: profile.session
       ? {
           ...profile.session,
@@ -193,7 +195,7 @@ export async function POST(request: Request) {
     }
 
     const profile = normalizeExplorer(JSON.parse(old.data));
-    if (profile.preferences.paused && ["start","game-start","campaign-start","discovery-start","team-start","answer","hint","save-garden"].includes(String(input.action))) {
+    if (profile.preferences.paused && ["start","game-start","session-resume","campaign-start","discovery-start","team-start","answer","hint","save-garden"].includes(String(input.action))) {
       return Response.json({error:"Your adventures are taking a little rest. A grown-up can resume them in Parent Corner."},{status:403});
     }
     if (input.action === "team-start" || input.action === "team-complete") {
@@ -244,6 +246,7 @@ export async function POST(request: Request) {
         profile.recentActivityTypes = [];
         profile.seen = [];
         profile.session = null;
+        profile.savedSessions = [];
       }
       profile.name = input.name.trim();
       profile.grade = input.grade;
@@ -258,15 +261,23 @@ export async function POST(request: Request) {
     } else if (input.action === "preferences") {
       if (typeof input.autoRead !== "boolean" || typeof input.reducedMotion !== "boolean" || (input.paused!==undefined&&typeof input.paused!=="boolean")) return Response.json({error:"Choose your comfort settings."},{status:400});
       profile.preferences = {autoRead:input.autoRead,reducedMotion:input.reducedMotion,paused:typeof input.paused==="boolean"?input.paused:profile.preferences.paused};
+    } else if (input.action === "session-resume") {
+      if (profile.session && profile.session.id === input.session && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile)});
+      if (typeof input.session !== "string" || !resumeSession(profile, input.session)) return Response.json({error:"That saved adventure is no longer available. Choose a game to play."},{status:404});
     } else if (input.action === "game-start") {
       const game = gameById(input.game), level = input.level;
       if (!game || typeof level!=="number" || !Number.isInteger(level) || level<0 || level>2) return Response.json({error:"Choose a game mission."},{status:400});
-      if (profile.session && profile.session.index<profile.session.questions.length) return Response.json({profile:clean(profile)});
       const completed=profile.arcade[arcadeKey(profile.grade,game.id)]?.levels??[];
       if (level>0 && !completed.includes(level-1)) return Response.json({error:"Explore the earlier mission first."},{status:409});
+      if (profile.session?.gameId === game.id && profile.session.gameLevel === level && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile)});
+      const saved = profile.savedSessions.find(session => session.gameId === game.id && session.gameLevel === level);
+      if (saved) resumeSession(profile, saved.id);
+      else {
+      parkSession(profile);
       const ids=arcadeQuestionIds(profile.grade,game.id,level);
       profile.session={id:crypto.randomUUID(),subject:game.subject,questions:ids,index:0,misses:0,hinted:false,first:0,started:Date.now(),estimatedMinutes:8,gameId:game.id,gameLevel:level,
         plan:ids.map(id=>({questionId:id,skillId:questions.find(q=>q.id===id)!.skillId,reason:"game-mission"}))};
+      }
     } else if (input.action === "reflect") {
       const session=profile.session;
       if (!session || session.id!==input.session || session.index<1 ||

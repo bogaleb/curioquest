@@ -15,6 +15,14 @@ Content is authored/template-based and needs educator and child review before br
 
 Source contracts: catalogue in `lib/arcade.ts`, private content in `lib/arcade-content.ts`, controls in `components/learning/arcade-engines.tsx`, shared player in `components/learning/quest-player.tsx`. Existing Daily Quests may select the new activities; game missions save their own passport progress without duplicating mastery records.
 
+## Playing and switching
+
+Each collection has a prominent Play or Continue button. An unfinished quest no longer disables all game missions. Switching games saves the previous session on the explorer profile, including completed discoveries, attempts, and hint use. Returning restores the same session without awarding duplicate stars. The saved-adventures shelf can also restore a Daily Quest, story, welcome discovery, or Team Quest interrupted by a game. Unsubmitted work on the current question is not saved. Later missions still unlock in sequence, with an explicit explanation.
+
+Navigation uses a full vertical menu on desktop and a two-row tile grid on phones; neither requires scrolling inside the menu. The player keeps a labeled Back to games button visible on small screens.
+
+Regression coverage includes switching after an answer and hint, reloading, returning to the same question, stale-answer rejection, per-explorer isolation, parent pause enforcement, and Team Quest restoration. Device-level visual testing remains outstanding when no browser is connected.
+
 ## Illustration
 
 Saved asset: `public/game-zone.png`, generated with the built-in image tool and inspected before integration.

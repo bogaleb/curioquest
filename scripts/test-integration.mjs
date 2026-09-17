@@ -123,8 +123,14 @@ try {
   profiles=(await call()).profiles;
   const started=await call({action:"team-start",profile:profiles[0].id,partner:profiles[1].id});
   assert.equal(started.profiles.length,2);
+  const teamSessionId=started.profiles[0].session.id;
+  const teamDetour=(await call({action:"game-start",profile:profiles[0].id,game:"stories",level:0})).profile;
+  assert.equal(teamDetour.session.gameId,"stories");
+  assert.ok(teamDetour.savedSessions.some(s=>s.id===teamSessionId));
+  const teamResumed=(await call({action:"session-resume",profile:profiles[0].id,session:teamSessionId})).profile;
+  assert.equal(teamResumed.session.teamId,started.profiles[0].session.teamId);
   await call({action:"team-complete",profile:profiles[0].id},409);
-  await finish(started.profiles[0]);
+  await finish(teamResumed);
   await call({action:"team-complete",profile:profiles[0].id},409);
   await finish(started.profiles[1]);
   const completed=await call({action:"team-complete",profile:profiles[0].id});
@@ -156,6 +162,35 @@ try {
   for(const original of (await call()).profiles.slice(0,2)) {
     let p=original;
     await call({action:"game-start",profile:p.id,game:"robot",level:2},409);
+    // Reproduce leaving a partially played game, then choosing another game.
+    const daily=(await call({action:"start",profile:p.id,subject:"daily"})).profile.session;
+    p=(await call({action:"game-start",profile:p.id,game:"robot",level:0})).profile;
+    const robotId=p.session.id;
+    const firstQuestion=questions.find(q=>q.id===p.session.question.id);
+    p=(await call({action:"answer",profile:p.id,session:robotId,question:firstQuestion.id,answer:answerFor(firstQuestion)})).profile;
+    const nextQuestionId=p.session.question.id;
+    p=(await call({action:"hint",profile:p.id,session:robotId,question:nextQuestionId})).profile;
+    const earnedStars=p.stars;
+    p=(await call({action:"game-start",profile:p.id,game:"kitchen",level:0})).profile;
+    const kitchenId=p.session.id;
+    assert.equal(p.session.gameId,"kitchen","Choosing a different game must open that game");
+    assert.equal(p.savedSessions.find(s=>s.id===robotId).index,1);
+    assert.ok(p.savedSessions.every(s=>s.questions===undefined&&s.plan===undefined));
+    await call({action:"answer",profile:p.id,session:robotId,question:nextQuestionId,answer:"0"},409);
+    p=(await call()).profiles.find(item=>item.id===p.id);
+    assert.ok(p.savedSessions.some(s=>s.id===robotId),"Saved game survives reload");
+    p=(await call({action:"game-start",profile:p.id,game:"robot",level:0})).profile;
+    assert.equal(p.session.id,robotId);
+    assert.equal(p.session.index,1);
+    assert.equal(p.session.question.id,nextQuestionId);
+    assert.equal(p.session.hinted,true);
+    assert.equal(p.stars,earnedStars,"Switching must not award duplicate stars");
+    assert.ok(p.savedSessions.some(s=>s.id===kitchenId));
+    await call({action:"session-resume",profile:p.id,session:"missing"},404);
+    await call({action:"session-resume",profile:original.id==="maya"?"lydia":"maya",session:robotId},404);
+    p=(await call({action:"session-resume",profile:p.id,session:daily.id})).profile;
+    assert.equal(p.session.id,daily.id);
+    p=await finish(p);
     for(const game of arcadeGames)for(let level=0;level<3;level++) {
       p=(await call({action:"game-start",profile:p.id,game:game.id,level})).profile;
       const id=p.session.id;
@@ -172,11 +207,12 @@ try {
     assert.equal(p.preferences.autoRead,true);
     await call({action:"preferences",profile:p.id,autoRead:true,reducedMotion:true,paused:true});
     await call({action:"game-start",profile:p.id,game:"robot",level:0},403);
+    await call({action:"session-resume",profile:p.id,session:robotId},403);
     await call({action:"preferences",profile:p.id,autoRead:true,reducedMotion:true,paused:false});
   }
   await parentCall({action:"lock"});
   await call({action:"offline-confirm",profile:profiles[0].id},403);
-  console.log("PASS: both story tracks, 48 game missions, private answer scoring, saved favorites, comfort settings, parent PIN/recovery/rate limits, retries, persistence, and Team Quest.");
+  console.log("PASS: game switching and saved places, both story tracks, 48 game missions, private answer scoring, saved favorites, comfort settings, parent PIN/recovery/rate limits, retries, persistence, and Team Quest.");
   console.log("Isolated test state: "+state);
 } finally {
   child.kill();
