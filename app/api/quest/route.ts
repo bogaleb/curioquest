@@ -18,6 +18,9 @@ import { validGarden } from "@/lib/adventure";
 import { startTeamQuest, completeTeamQuest } from "@/lib/team-quest";
 import { authoredHint } from "@/lib/nova";
 import { startDiscovery, advanceDiscovery } from "@/lib/discovery";
+import { arcadeKey, arcadeQuestionIds, gameById } from "@/lib/arcade";
+import { parentAuthorized, familyAuthorized } from "@/lib/parent-security";
+import { requestJson, RequestBodyError } from "@/lib/request-json";
 
 const subjects: Subject[] = ["reading", "math", "logic"];
 const allowedGoals = [8, 10, 15, 20];
@@ -111,9 +114,10 @@ function validGoal(value: unknown) {
   return allowedGoals.includes(Number(value));
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    return Response.json({ profiles: await readAll() });
+    if(!(await familyAuthorized(request)))return Response.json({error:"Sign in with this family's account to open its adventures."},{status:403,headers:{"Cache-Control":"no-store"}});
+    return Response.json({ profiles: await readAll() }, {headers:{"Cache-Control":"no-store"}});
   } catch (error) {
     console.error(error);
     return Response.json(
@@ -125,19 +129,18 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    if(!(await familyAuthorized(request)))return Response.json({error:"Sign in with this family's account to open its adventures."},{status:403});
     const origin = request.headers.get("origin");
     if (origin && origin !== new URL(request.url).origin) {
       return Response.json({ error: "Request not allowed." }, { status: 403 });
     }
 
-    let body: unknown;
-    try { body = await request.json(); }
-    catch { return Response.json({error:"Please send a valid request."},{status:400}); }
-    if (!body || typeof body !== "object") {
-      return Response.json({ error: "Invalid request." }, { status: 400 });
+    let input:Record<string,unknown>;
+    try { input=await requestJson(request,12000); }
+    catch(error){if(error instanceof RequestBodyError)return Response.json({error:error.message},{status:error.status});throw error;}
+    if (["create-profile","profile","offline-confirm","preferences"].includes(String(input.action)) && !(await parentAuthorized(request))) {
+      return Response.json({error:"Unlock Parent Corner to change family settings."},{status:403});
     }
-
-    const input = body as Record<string, unknown>;
 
     if (input.action === "create-profile") {
       if (
@@ -190,6 +193,9 @@ export async function POST(request: Request) {
     }
 
     const profile = normalizeExplorer(JSON.parse(old.data));
+    if (profile.preferences.paused && ["start","game-start","campaign-start","discovery-start","team-start","answer","hint","save-garden"].includes(String(input.action))) {
+      return Response.json({error:"Your adventures are taking a little rest. A grown-up can resume them in Parent Corner."},{status:403});
+    }
     if (input.action === "team-start" || input.action === "team-complete") {
       const partnerId=input.action==="team-start"?input.partner:profile.team?.partnerId;
       if (typeof partnerId!=="string" || partnerId===profile.id) return Response.json({error:"Choose a different explorer to join you."},{status:400});
@@ -224,6 +230,7 @@ export async function POST(request: Request) {
       }
 
       if (input.grade !== profile.grade) {
+        if(profile.team&&!profile.team.completedAt)return Response.json({error:"Finish the shared Team Quest before changing learning tracks."},{status:409});
         const reset = newExplorer(
           profile.id,
           profile.name,
@@ -243,6 +250,23 @@ export async function POST(request: Request) {
       profile.avatar = input.avatar;
       profile.interests = input.interests;
       profile.dailyGoal = Number(input.dailyGoal);
+    } else if (input.action === "favorite-game") {
+      const game = gameById(input.game);
+      if (!game || typeof input.favorite !== "boolean") return Response.json({error:"Choose a game."},{status:400});
+      profile.favorites = profile.favorites.filter(id=>id!==game.id);
+      if (input.favorite) profile.favorites.push(game.id);
+    } else if (input.action === "preferences") {
+      if (typeof input.autoRead !== "boolean" || typeof input.reducedMotion !== "boolean" || (input.paused!==undefined&&typeof input.paused!=="boolean")) return Response.json({error:"Choose your comfort settings."},{status:400});
+      profile.preferences = {autoRead:input.autoRead,reducedMotion:input.reducedMotion,paused:typeof input.paused==="boolean"?input.paused:profile.preferences.paused};
+    } else if (input.action === "game-start") {
+      const game = gameById(input.game), level = input.level;
+      if (!game || typeof level!=="number" || !Number.isInteger(level) || level<0 || level>2) return Response.json({error:"Choose a game mission."},{status:400});
+      if (profile.session && profile.session.index<profile.session.questions.length) return Response.json({profile:clean(profile)});
+      const completed=profile.arcade[arcadeKey(profile.grade,game.id)]?.levels??[];
+      if (level>0 && !completed.includes(level-1)) return Response.json({error:"Explore the earlier mission first."},{status:409});
+      const ids=arcadeQuestionIds(profile.grade,game.id,level);
+      profile.session={id:crypto.randomUUID(),subject:game.subject,questions:ids,index:0,misses:0,hinted:false,first:0,started:Date.now(),estimatedMinutes:8,gameId:game.id,gameLevel:level,
+        plan:ids.map(id=>({questionId:id,skillId:questions.find(q=>q.id===id)!.skillId,reason:"game-mission"}))};
     } else if (input.action === "reflect") {
       const session=profile.session;
       if (!session || session.id!==input.session || session.index<1 ||
@@ -372,6 +396,10 @@ export async function POST(request: Request) {
             else if (ratio < 0.5) skill.level = Math.max(1, skill.level - 1);
           }
           if (session.index === session.questions.length) {
+            if (session.gameId && session.gameLevel!==undefined) {
+              const key=arcadeKey(profile.grade,session.gameId), previous=profile.arcade[key];
+              profile.arcade[key]={levels:[...new Set([...(previous?.levels??[]),session.gameLevel])],plays:(previous?.plays??0)+1,lastPlayedAt:new Date().toISOString()};
+            }
             if (session.chapter !== undefined && !profile.adventure.chapters.includes(session.chapter)) {
               profile.adventure.chapters.push(session.chapter);
               const unlock=campaignChapters[session.chapter]?.unlock;
@@ -392,6 +420,8 @@ export async function POST(request: Request) {
                 chapter:session.chapter,
                 teamId:session.teamId,
                 discovery:!!session.discovery,
+                gameId:session.gameId,
+                gameLevel:session.gameLevel,
               },
               ...profile.history,
             ].slice(0, 100);

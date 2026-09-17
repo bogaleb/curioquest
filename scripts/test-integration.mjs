@@ -1,27 +1,40 @@
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { loadTs } from "../tests/load-typescript.mjs";
+import { solveRoute } from "../tests/solve-route.mjs";
 
 const root=resolve(import.meta.dirname,"..");
 const state=mkdtempSync(join(tmpdir(),"curioquest-integration-"));
 const wrangler=join(root,"node_modules/wrangler/bin/wrangler.js");
 const config=join(root,"dist/server/wrangler.json");
 const {questions}=loadTs("lib/curriculum");
+const {arcadeGames}=loadTs("lib/arcade");
 const env={...process.env,WRANGLER_SEND_METRICS:"false",CLOUDFLARE_CF_FETCH_ENABLED:"false",WRANGLER_LOG_PATH:join(state,"logs")};
-const migration=spawnSync(process.execPath,[wrangler,"d1","execute","DB","--local","--config",config,"--persist-to",state,"--file",join(root,"drizzle/0000_left_talisman.sql")],{cwd:root,env,encoding:"utf8"});
-assert.equal(migration.status,0,migration.stderr);
+for(const file of readdirSync(join(root,"drizzle")).filter(f=>f.endsWith(".sql")).sort()) {
+  const migration=spawnSync(process.execPath,[wrangler,"d1","execute","DB","--local","--config",config,"--persist-to",state,"--file",join(root,"drizzle",file)],{cwd:root,env,encoding:"utf8"});
+  assert.equal(migration.status,0,migration.stderr);
+}
 const child=spawn(process.execPath,[wrangler,"dev","--config",config,"--local","--persist-to",state,"--ip","127.0.0.1","--port","4187","--inspector-port","0"],{cwd:root,env,stdio:["pipe","pipe","pipe"]});
 let logs="";child.stdout.on("data",chunk=>logs+=chunk);child.stderr.on("data",chunk=>logs+=chunk);
 const base="http://127.0.0.1:4187";
+let parentCookie="";
+async function parentCall(body,expected=200){
+  const response=await fetch(base+"/api/parent",{method:"POST",headers:{"Content-Type":"application/json",Cookie:parentCookie},body:JSON.stringify(body)});
+  const data=await response.json();assert.equal(response.status,expected,JSON.stringify(data));
+  if(response.headers.get("set-cookie"))parentCookie=response.headers.get("set-cookie").split(";")[0];
+  return data;
+}
 async function call(body,expected=200) {
-  const response=await fetch(base+"/api/quest",body?{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)}:undefined);
+  const response=await fetch(base+"/api/quest",body?{method:"POST",headers:{"Content-Type":"application/json",Cookie:parentCookie},body:JSON.stringify(body)}:undefined);
   const data=await response.json();assert.equal(response.status,expected,JSON.stringify(data));return data;
 }
 function answerFor(q) {
   if(q.engine?.kind==="sorting") return JSON.stringify(q.engine.solution);
+  if(q.engine?.kind==="matching"||q.engine?.kind==="ordering") return JSON.stringify(q.engine.solution);
+  if(q.engine?.kind==="route") return JSON.stringify(solveRoute(q.engine));
   if(q.engine?.kind==="memory") return JSON.stringify(q.engine.sequence);
   return q.answer;
 }
@@ -56,6 +69,29 @@ try {
   }
   let {profiles}=await call();
   assert.equal(profiles.length,2);
+  assert.equal((await fetch(base+"/api/parent/export")).status,403);
+  await call({action:"create-profile",name:"Blocked",grade:"prek",avatar:"owl",interests:[],dailyGoal:10},403);
+  const setup=await parentCall({action:"setup",pin:"482619"});
+  assert.equal(setup.recoveryCode.length,64);
+  const strangerHeaders={"oai-authenticated-user-id":"other-family",Cookie:parentCookie};
+  assert.equal((await fetch(base+"/api/quest",{headers:strangerHeaders})).status,403);
+  assert.equal((await fetch(base+"/api/parent",{headers:strangerHeaders})).status,403);
+  assert.equal((await fetch(base+"/api/parent/export",{headers:strangerHeaders})).status,403);
+  const exported=await fetch(base+"/api/parent/export",{headers:{Cookie:parentCookie}});
+  assert.equal(exported.status,200);assert.equal((await exported.json()).profiles.length,2);
+  await parentCall({action:"setup",pin:"123456"},409);
+  await parentCall({action:"lock"});
+  await call({action:"preferences",profile:profiles[0].id,autoRead:true,reducedMotion:true},403);
+  for(let i=0;i<5;i++)await parentCall({action:"unlock",pin:"000000"},403);
+  await parentCall({action:"unlock",pin:"482619"},429);
+  // Advance the isolated rate-limit window, never the user's database.
+  const resetWindow=spawnSync(process.execPath,[wrangler,"d1","execute","DB","--local","--config",config,"--persist-to",state,"--command","UPDATE parent_lock SET window_until = 0 WHERE id = 1"],{cwd:root,env,encoding:"utf8"});
+  assert.equal(resetWindow.status,0,resetWindow.stderr);
+  const recovered=await parentCall({action:"recover",pin:"618294",recoveryCode:setup.recoveryCode});
+  assert.notEqual(recovered.recoveryCode,setup.recoveryCode);
+  await parentCall({action:"lock"});
+  await parentCall({action:"unlock",pin:"482619"},403);
+  await parentCall({action:"unlock",pin:"618294"});
   const malformed=await fetch(base+"/api/quest",{method:"POST",headers:{"Content-Type":"application/json"},body:"{"});assert.equal(malformed.status,400);
   const unknown=await call({action:"start",profile:"missing",subject:"daily"},404);assert.ok(unknown.error);
   for(const original of profiles) {
@@ -117,7 +153,30 @@ try {
     await call({action:"discovery-start",profile:p.id},409);
     assert.ok((await call()).profiles.find(x=>x.id===p.id).discovery.completedAt);
   }
-  console.log("PASS: both campaign tracks, retry evidence, replay protection, garden persistence, offline confirmation, feelings, and atomic Team Quest completion.");
+  for(const original of (await call()).profiles.slice(0,2)) {
+    let p=original;
+    await call({action:"game-start",profile:p.id,game:"robot",level:2},409);
+    for(const game of arcadeGames)for(let level=0;level<3;level++) {
+      p=(await call({action:"game-start",profile:p.id,game:game.id,level})).profile;
+      const id=p.session.id;
+      assert.equal((await call({action:"game-start",profile:p.id,game:game.id,level})).profile.session.id,id);
+      p=await finish(p);
+      assert.ok(p.arcade[`${p.grade}:${game.id}`].levels.includes(level));
+    }
+    p=(await call({action:"favorite-game",profile:p.id,game:"robot",favorite:true})).profile;
+    await call({action:"favorite-game",profile:p.id,game:"robot",favorite:true});
+    const restored=(await call()).profiles.find(x=>x.id===p.id);
+    assert.equal(restored.favorites.filter(id=>id==="robot").length,1);
+    assert.equal(Object.values(restored.arcade).reduce((sum,g)=>sum+g.levels.length,0),24);
+    p=(await call({action:"preferences",profile:p.id,autoRead:true,reducedMotion:true})).profile;
+    assert.equal(p.preferences.autoRead,true);
+    await call({action:"preferences",profile:p.id,autoRead:true,reducedMotion:true,paused:true});
+    await call({action:"game-start",profile:p.id,game:"robot",level:0},403);
+    await call({action:"preferences",profile:p.id,autoRead:true,reducedMotion:true,paused:false});
+  }
+  await parentCall({action:"lock"});
+  await call({action:"offline-confirm",profile:profiles[0].id},403);
+  console.log("PASS: both story tracks, 48 game missions, private answer scoring, saved favorites, comfort settings, parent PIN/recovery/rate limits, retries, persistence, and Team Quest.");
   console.log("Isolated test state: "+state);
 } finally {
   child.kill();

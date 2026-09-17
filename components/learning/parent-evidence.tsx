@@ -5,6 +5,7 @@ import type { ExplorerProfile } from "@/lib/explorers";
 import { skillById } from "@/lib/skill-graph";
 import { progressionState } from "@/lib/mastery";
 import { gardenPieces } from "@/lib/adventure";
+import { arcadeGames, arcadeKey } from "@/lib/arcade";
 
 const homeIdeas:Record<string,string>={
   reading:"At story time, pause and ask: “Which clue helped you know?” Listen to their explanation together.",
@@ -24,6 +25,10 @@ export function ParentEvidence({profile,busy,onConfirm}:{
   const due=skills.filter(([,m])=>m.nextReviewAt&&Date.parse(m.nextReviewAt)<=Date.now()).length;
   const focus=skills[0]?skillById.get(skills[0][0]):undefined;
   return <section className="evidence-dashboard">
+    <section className="panel parent-game-summary"><div className="section-heading"><h2>Learning through play</h2><a className="text-button" href="/api/parent/export">Download family learning records</a></div>
+      <p>Game missions contribute to the same skill evidence as Daily Quests. Passport stamps celebrate participation, not mastery.</p>
+      <div className="parent-game-grid">{arcadeGames.map(game=>{const progress=profile.arcade[arcadeKey(profile.grade,game.id)];return <div key={game.id}><span aria-hidden="true">{game.emoji}</span><strong>{game.title}</strong><small>{progress?.levels.length??0}/3 missions explored</small></div>;})}</div>
+    </section>
     {profile.discovery&&<section className="panel discovery-summary"><div className="eyebrow">GETTING TO KNOW YOUR EXPLORER</div>
       <h2>Nova’s starting paths</h2><p>From six welcome discoveries on {new Date(profile.discovery.completedAt).toLocaleDateString()}. These are starting suggestions, not a grade or diagnosis. Future practice keeps adjusting the path.</p>
       <div className="discovery-paths">{(["reading","math","logic"] as const).map(subject=><span key={subject}>

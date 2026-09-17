@@ -2,7 +2,7 @@
 
 This folder contains the CurioQuest playable prototype source. The complete product specification remains in `PRODUCT_BLUEPRINT.md`; implemented and unfinished features are documented in `IMPLEMENTATION.md` and `docs/product/MVP_BACKLOG.md`.
 
-Included: 132 activities, Pre-K and Grade 1 tracks, adaptive welcome, Daily Quest, Missing Seeds story, garden Build Lab, Team Quest, authored Nova hints, rewards, four-child profiles, parent evidence, and persistent D1 progress.
+Included: 324 activity configurations, eight Game Zone collections, Pre-K and Grade 1 tracks, adaptive welcome, Daily Quest, Missing Seeds story, Build Lab, Team Quest, authored hints, four-child profiles, parent PIN/controls, and persistent D1 progress.
 
 Use Node.js 22.13 or newer and the pnpm version in `package.json`. Preserve the pnpm lockfile. For a fresh local setup:
 
@@ -10,10 +10,14 @@ Use Node.js 22.13 or newer and the pnpm version in `package.json`. Preserve the 
 pnpm install
 pnpm run build
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_left_talisman.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_clammy_annihilus.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_fresh_banshee.sql
 pnpm start
 ```
 
-Open the URL printed by the server. Run the initial SQL only for a fresh database; skip it if the explorers table already exists. Existing local progress lives in `.wrangler/state`; do not delete it to resolve a build problem.
+Open the URL printed by the server. Apply each SQL migration once. For an existing pre-Game-Zone database, skip 0000 and apply only 0001 and 0002. If already applied, skip those too. Existing local progress lives in `.wrangler/state`; do not delete it to resolve a build problem.
+
+Open Parent Corner to choose your six-digit PIN and save its recovery code. Hosted parent setup binds the private workspace to its signed-in account. Local development uses a separate local-family identity; do not copy the local parent-security tables into the hosted database.
 
 Use `pnpm dev` for development with live updates (default port 5173). The production preview above exercises the built Worker and persisted database directly.
 

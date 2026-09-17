@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Check, RotateCcw, Volume2 } from "lucide-react";
 import type { ActivityEngine, PublicQuestion } from "@/lib/activity-types";
+import { TenFrame, RobotRoute, Matching, Ordering } from "./arcade-engines";
+import { readAloud } from "@/lib/speech";
 
 type Props = {
   question: PublicQuestion;
@@ -15,6 +17,10 @@ type Props = {
 
 export function ActivityEngineView(props: Props) {
   const engine = props.question.engine;
+  if (engine?.kind === "ten-frame") return <TenFrame {...props} engine={engine}/>;
+  if (engine?.kind === "route") return <RobotRoute {...props} engine={engine}/>;
+  if (engine?.kind === "matching") return <Matching {...props} engine={engine}/>;
+  if (engine?.kind === "ordering") return <Ordering {...props} engine={engine}/>;
   if (engine?.kind === "counting") return <Counting {...props} engine={engine}/>;
   if (engine?.kind === "sorting") return <Sorting {...props} engine={engine}/>;
   if (engine?.kind === "memory") return <Memory {...props} engine={engine}/>;
@@ -93,6 +99,7 @@ function WordBuilder({engine,question,busy,correct,onAnswer}: Props & {engine: E
   return <fieldset className="engine-stage" disabled={busy||correct}>
     <legend className="engine-instruction">Choose letters from the tray. Tap a placed letter to put it back.</legend>
     <div className="word-picture" aria-hidden="true">{question.visual}</div>
+    {question.audioLabel&&<button type="button" className="read-button" onClick={()=>readAloud(`The word is ${question.audioLabel}. ${question.audioLabel}.`)}><Volume2 size={20}/>Listen to the word</button>}
     <div className="letter-slots">{Array.from({length:engine.length},(_,i)=><button type="button" key={i}
       aria-label={slots[i]===undefined?`Empty letter slot ${i+1}`:`Remove letter ${engine.letters[slots[i]]}`}
       onClick={()=>setSlots(s=>s.filter((_,j)=>j!==i))}>{slots[i]===undefined?"·":engine.letters[slots[i]]}</button>)}</div>

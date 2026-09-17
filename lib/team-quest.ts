@@ -4,6 +4,7 @@ import { questions } from "./curriculum";
 export function startTeamQuest(first: ExplorerProfile, second: ExplorerProfile, id: string, now=Date.now()) {
   if(first.id===second.id) throw new Error("Choose two different explorers.");
   for(const profile of [first,second]) {
+    if(profile.preferences.paused)throw new Error(`${profile.name}'s adventures are paused. A grown-up can resume them in Parent Corner.`);
     if(profile.session && profile.session.index<profile.session.questions.length) {
       throw new Error(`${profile.name} has an adventure in progress. Finish it before starting a Team Quest.`);
     }

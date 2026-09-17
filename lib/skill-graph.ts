@@ -40,6 +40,10 @@ const skill = (
 });
 
 export const skillGraph: SkillNode[] = [
+  skill("LIT.PK.COMP.RECALL_01", "reading", "listening-comprehension", "Remember a story detail", "Recall a stated detail from a short story heard aloud.", ["prek", "grade1"], 1.5, ["LIT.PK.ORAL.WORD_01"], 6, true),
+  skill("MATH.G1.GEO.ATTRIBUTES_01", "math", "geometry", "Describe shape attributes", "Match familiar flat shapes to their side and corner properties.", ["grade1"], 2.2, ["MATH.PK.GEO.SHAPE_01"], 6, true),
+  skill("LOGIC.PK.PLAN.ROUTE_01", "logic", "planning", "Plan a short route", "Arrange moves to reach a destination without obstacles.", ["prek", "grade1"], 1.5, [], 6, true),
+  skill("LOGIC.G1.PLAN.ROUTE_01", "logic", "planning", "Plan around obstacles", "Sequence and revise a route within a move limit.", ["grade1"], 2.5, ["LOGIC.PK.PLAN.ROUTE_01"], 6, true),
   // Pre-K literacy foundations
 skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar words", "Connect common spoken words with familiar objects and actions.", ["prek", "grade1"], 1, [], 5, true),
   skill("LIT.PK.PA.RHYME_01", "reading", "phonological-awareness", "Recognize rhyming words", "Identify two spoken words that share an ending sound.", ["prek", "grade1"], 1.1, ["LIT.PK.ORAL.WORD_01"], 5, true),
@@ -68,7 +72,7 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("MATH.PK.COMP.MORE_01", "math", "comparison", "Compare two quantities", "Decide which of two small quantities is greater.", ["prek", "grade1"], 1.8, ["MATH.PK.NUM.CARDINAL_01"], 6, true),
   skill("MATH.PK.COMP.EQUAL_01", "math", "comparison", "Recognize equal groups", "Decide whether two small groups contain the same quantity.", ["prek", "grade1"], 1.9, ["MATH.PK.NUM.CARDINAL_01"]),
   skill("MATH.PK.COMP.ADD_ONE_01", "math", "operations", "Add one to a group", "Find the new total when one object joins a small group.", ["prek", "grade1"], 2.1, ["MATH.PK.COMP.MORE_01"], 6, true),
-  skill("MATH.PK.GEO.SHAPE_01", "math", "geometry", "Name basic shapes", "Recognize circles, squares, rectangles, and triangles.", ["prek", "grade1"], 1.3),
+  skill("MATH.PK.GEO.SHAPE_01", "math", "geometry", "Name basic shapes", "Recognize circles, squares, rectangles, and triangles.", ["prek", "grade1"], 1.3, [], 5, true),
   skill("MATH.PK.SPATIAL.POSITION_01", "math", "spatial-reasoning", "Use position words", "Understand above, below, beside, and between.", ["prek", "grade1"], 1.5),
 
   // Grade 1 mathematics progression
@@ -77,7 +81,7 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("MATH.G1.SUB.CONCEPT_01", "math", "operations", "Model taking away", "Represent subtraction by removing objects from a group.", ["grade1"], 2.2, ["MATH.PK.NUM.CARDINAL_01"]),
   skill("MATH.G1.SUB.WITHIN10_01", "math", "operations", "Subtract within 10", "Solve take-away problems within ten.", ["grade1"], 2.7, ["MATH.G1.SUB.CONCEPT_01"], 8, true),
   skill("MATH.G1.PLACE.TENS_ONES_01", "math", "place-value", "Build teen numbers", "Interpret teen numbers as one ten and some ones.", ["grade1"], 2.9, ["MATH.PK.NUM.NUMERAL_01"], 8, true),
-  skill("MATH.G1.ADD.WITHIN20_01", "math", "operations", "Add within 20", "Use counting-on or make-ten strategies to add within twenty.", ["grade1"], 3.3, ["MATH.G1.ADD.WITHIN10_01", "MATH.G1.PLACE.TENS_ONES_01"]),
+  skill("MATH.G1.ADD.WITHIN20_01", "math", "operations", "Add within 20", "Use counting-on or make-ten strategies to add within twenty.", ["grade1"], 3.3, ["MATH.G1.ADD.WITHIN10_01", "MATH.G1.PLACE.TENS_ONES_01"], 8, true),
   skill("MATH.G1.SUB.WITHIN20_01", "math", "operations", "Subtract within 20", "Use counting-back or related facts to subtract within twenty.", ["grade1"], 3.5, ["MATH.G1.SUB.WITHIN10_01", "MATH.G1.PLACE.TENS_ONES_01"], 8, true),
   skill("MATH.G1.MEASURE.COMPARE_01", "math", "measurement", "Compare lengths", "Compare object lengths using direct comparison or equal units.", ["grade1"], 2.6, ["MATH.PK.SPATIAL.POSITION_01"]),
 

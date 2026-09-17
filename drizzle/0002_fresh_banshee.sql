@@ -1,0 +1,1 @@
+ALTER TABLE `parent_lock` ADD `owner_identity` text;

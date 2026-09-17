@@ -6,6 +6,7 @@ import {
 } from "@/lib/skill-graph";
 import type { ActivityEngine } from "./activity-types";
 import { gardenActivities } from "./garden-content";
+import { arcadeActivities } from "./arcade-content";
 
 export type Subject = SkillSubject;
 export type ActivityType =
@@ -14,7 +15,8 @@ export type ActivityType =
   | "story-choice"
   | "number-choice"
   | "pattern-choice"
-  | "reasoning-choice" | "counting" | "sorting" | "memory" | "word-builder" | "pattern";
+  | "reasoning-choice" | "counting" | "sorting" | "memory" | "word-builder" | "pattern"
+  | "ten-frame" | "route" | "matching" | "ordering";
 export type ContextTag = "animals" | "stories" | "building" | "space" | "nature" | "puzzles";
 
 export type Question = {
@@ -35,6 +37,8 @@ export type Question = {
   explanation: string;
   engine?: ActivityEngine;
   campaignOnly?: boolean;
+  passage?: { title: string; text: string; emoji: string };
+  audioLabel?: string;
 };
 
 export const questions: Question[] = [];
@@ -309,6 +313,7 @@ for (let index = 0; index < 18; index += 1) {
 }
 
 questions.push(...gardenActivities);
+questions.push(...arcadeActivities);
 
 export function validateCurriculum() {
   const ids = new Set<string>();
@@ -328,7 +333,7 @@ validateCurriculum();
 
 export function publicQuestion(question: Question) {
   const { answer, explanation, ...safe } = question;
-  if (safe.engine?.kind === "sorting") {
+  if (safe.engine?.kind === "sorting" || safe.engine?.kind === "matching" || safe.engine?.kind === "ordering") {
     const { solution, ...engine } = safe.engine;
     return { ...safe, engine };
   }

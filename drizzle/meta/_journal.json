@@ -8,6 +8,20 @@
       "when": 1789614723579,
       "tag": "0000_left_talisman",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1789677679498,
+      "tag": "0001_clammy_annihilus",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1789678269891,
+      "tag": "0002_fresh_banshee",
+      "breakpoints": true
     }
   ]
 }

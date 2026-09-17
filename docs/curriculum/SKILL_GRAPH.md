@@ -4,8 +4,8 @@
 
 ## Current scope
 
-- 49 measurable Pre-K and Grade 1 skills.
-- 34 active skills currently backed by one or more playable activities.
+- 53 measurable Pre-K and Grade 1 skills.
+- 40 active skills currently backed by one or more playable activities.
 - Literacy: oral language, phonological/phonemic awareness, alphabet knowledge, decoding, phonics, and comprehension.
 - Mathematics: counting, cardinality, comparison, early operations, place value, geometry, spatial reasoning, and measurement.
 - Logic and executive function: matching, classification, patterns, sequencing, working memory, deduction, spatial reasoning, and engineering stability.

@@ -1,5 +1,6 @@
 import type { ActivityType, Subject } from "@/lib/curriculum";
 import type { DiscoveryProgress } from "./discovery";
+import { normalizeArcade, type ArcadeProgress } from "./arcade";
 import { normalizeMastery, type SkillMasteryMap } from "@/lib/mastery";
 import { emptyAdventure, normalizeAdventure, type AdventureProgress } from "./adventure";
 
@@ -39,6 +40,9 @@ export type ExplorerProfile = {
   interests: InterestId[];
   dailyGoal: number;
   discovery?: DiscoveryProgress;
+  arcade: ArcadeProgress;
+  favorites: string[];
+  preferences: { autoRead: boolean; reducedMotion: boolean; paused: boolean };
   createdAt: string;
   stars: number;
   completed: number;
@@ -54,6 +58,8 @@ export type ExplorerProfile = {
     chapter?: number;
     teamId?: string;
     discovery?: boolean;
+    gameId?: string;
+    gameLevel?: number;
   }>;
   skills: Record<Subject, SkillTrail>;
   skillMastery: SkillMasteryMap;
@@ -73,6 +79,8 @@ export type ExplorerProfile = {
     hinted: boolean;
     hintLevel?: number;
     discovery?: { independent: Record<Subject, number> };
+    gameId?: string;
+    gameLevel?: number;
     first: number;
     started: number;
     estimatedMinutes?: number;
@@ -103,6 +111,9 @@ export function newExplorer(
     avatar,
     interests,
     dailyGoal,
+    arcade: {},
+    favorites: [],
+    preferences: { autoRead: false, reducedMotion: false, paused: false },
     createdAt: new Date().toISOString(),
     stars: 0,
     completed: 0,
@@ -139,6 +150,9 @@ export function normalizeExplorer(value: unknown): ExplorerProfile {
     avatar: AVATARS.some((avatar) => avatar.id === profile.avatar)
       ? (profile.avatar as AvatarId)
       : fallbackAvatar,
+    arcade: normalizeArcade(profile.arcade),
+    favorites: Array.isArray(profile.favorites) ? profile.favorites.filter(id=>typeof id==="string").slice(0,8) : [],
+    preferences: { autoRead: profile.preferences?.autoRead === true, reducedMotion: profile.preferences?.reducedMotion === true, paused: profile.preferences?.paused === true },
     interests: Array.isArray(profile.interests)
       ? profile.interests.filter((interest): interest is InterestId =>
           INTERESTS.some((option) => option.id === interest),
