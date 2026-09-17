@@ -1,15 +1,427 @@
-import {database} from '@/db/raw';
-import {questions,publicQuestion,Subject} from '@/lib/curriculum';
-const subjects:Subject[]=['reading','math','logic'];
-function initial(id:string){return {id,name:id==='maya'?'Maya':'Lydia',grade:id==='maya'?'grade1':'prek',stars:0,completed:0,history:[] as any[],skills:Object.fromEntries(subjects.map(s=>[s,{seen:0,first:0,level:1}])),seen:[] as string[],session:null as any};}
-async function row(id:string){const db=database();await db.prepare('INSERT OR IGNORE INTO explorers (id,data,revision) VALUES (?, ?, 0)').bind(id,JSON.stringify(initial(id))).run();return await db.prepare('SELECT data,revision FROM explorers WHERE id=?').bind(id).first<{data:string;revision:number}>();}
-function clean(p:any){return {...p,session:p.session?{...p.session,questions:undefined,question:p.session.index<p.session.questions.length?publicQuestion(questions.find(q=>q.id===p.session.questions[p.session.index])!):null,total:p.session.questions.length}:null};}
-async function readAll(){return Promise.all(['maya','lydia'].map(async id=>clean(JSON.parse((await row(id))!.data))));}
-export async function GET(){try{return Response.json({profiles:await readAll()});}catch(e){console.error(e);return Response.json({error:'We could not load your adventures. Please try again.'},{status:503});}}
-export async function POST(request:Request){try{const origin=request.headers.get('origin');if(origin&&origin!==new URL(request.url).origin)return Response.json({error:'Request not allowed.'},{status:403});const body:any=await request.json();if(!body||typeof body!=="object")return Response.json({error:"Invalid request."},{status:400});if(!['maya','lydia'].includes(body.profile))return Response.json({error:'Choose an explorer.'},{status:400});const old=await row(body.profile);const p=JSON.parse(old!.data);let feedback:any=null;
-if(body.action==='profile'){if(typeof body.name!=='string'||body.name.trim().length<1||body.name.trim().length>24||!['prek','grade1'].includes(body.grade))return Response.json({error:'Please enter a name and learning track.'},{status:400});if(body.grade!==p.grade){p.skills=initial(p.id).skills;p.seen=[];p.session=null;}p.name=body.name.trim();p.grade=body.grade;}
-else if(body.action==='start'){if(!['daily',...subjects].includes(body.subject))return Response.json({error:'Choose a world.'},{status:400});if(p.session&&p.session.index<p.session.questions.length&&(p.session.subject===body.subject||body.subject==='daily'))return Response.json({profile:clean(p)});const chosen:any[]=[];for(let i=0;i<5;i++){const s=body.subject==='daily'?subjects[i%3]:body.subject;const pool=questions.filter(q=>q.grade===p.grade&&q.subject===s&&q.level===p.skills[s].level&&!chosen.includes(q.id));const unseen=pool.filter(q=>!p.seen.includes(q.id));const candidates=unseen.length?unseen:pool;const q=candidates[(p.completed+i)%candidates.length];chosen.push(q.id);}p.session={id:crypto.randomUUID(),subject:body.subject,questions:chosen,index:0,misses:0,hinted:false,first:0,started:Date.now()};}
-else if(body.action==='answer'||body.action==='hint'){const s=p.session;if(!s||s.id!==body.session||s.index>=s.questions.length||body.question!==s.questions[s.index])return Response.json({error:'This activity changed. Please return to your adventure and try again.'},{status:409});const q=questions.find(q=>q.id===s.questions[s.index])!;if(body.action==='hint'){s.hinted=true;feedback={hint:q.hint};}else{if(!q.options.includes(body.answer))return Response.json({error:'Choose one of the answers.'},{status:400});const correct=body.answer===q.answer;feedback={correct,message:correct?q.explanation:'Good thinking. Let’s try another answer.',hint:correct?null:q.hint};if(correct){const skill=p.skills[q.subject];skill.seen++;if(s.misses===0&&!s.hinted){skill.first++;s.first++;}if(!p.seen.includes(q.id))p.seen.push(q.id);s.index++;s.misses=0;s.hinted=false;if(skill.seen%5===0){const ratio=skill.first/skill.seen;if(ratio>=0.8)skill.level=Math.min(3,skill.level+1);else if(ratio<0.5)skill.level=Math.max(1,skill.level-1);}if(s.index===s.questions.length){p.completed++;p.stars+=10;p.history=[{date:new Date().toISOString(),subject:s.subject,first:s.first,total:5,grade:p.grade},...p.history].slice(0,100);}}else{s.misses++;}}}
-else return Response.json({error:'Unknown action.'},{status:400});
-const result=await database().prepare('UPDATE explorers SET data=?, revision=revision+1 WHERE id=? AND revision=?').bind(JSON.stringify(p),p.id,old!.revision).run();if(!result.meta.changes)return Response.json({error:'Progress changed in another window. Please reload.'},{status:409});return Response.json({profile:clean(p),feedback});
-}catch(e){console.error(e);return Response.json({error:'Your progress could not be saved. Please try again.'},{status:503});}}
+import { database } from "@/db/raw";
+import { questions, publicQuestion, type Subject } from "@/lib/curriculum";
+import {
+  AVATARS,
+  INTERESTS,
+  newExplorer,
+  normalizeExplorer,
+  type AvatarId,
+  type ExplorerProfile,
+  type GradeTrack,
+  type InterestId,
+} from "@/lib/explorers";
+import { recordAttempt, recordHint } from "@/lib/mastery";
+import { recommendQuest, rememberActivityType } from "@/lib/recommendation";
+import { evaluateResponse } from "@/lib/activity-evaluation";
+import { campaignChapters, campaignQuestionIds } from "@/lib/campaign";
+import { validGarden } from "@/lib/adventure";
+import { startTeamQuest, completeTeamQuest } from "@/lib/team-quest";
+import { authoredHint } from "@/lib/nova";
+import { startDiscovery, advanceDiscovery } from "@/lib/discovery";
+
+const subjects: Subject[] = ["reading", "math", "logic"];
+const allowedGoals = [8, 10, 15, 20];
+const maxProfiles = 4;
+
+type ExplorerRow = { data: string; revision: number };
+
+function defaultProfiles() {
+  return [
+    newExplorer("maya", "Maya", "grade1", "fox", ["stories", "puzzles"], 10),
+    newExplorer("lydia", "Lydia", "prek", "rabbit", ["animals", "nature"], 8),
+  ];
+}
+
+async function ensureFamily() {
+  const db = database();
+  const count = await db.prepare("SELECT COUNT(*) AS total FROM explorers").first<{ total: number }>();
+  if (Number(count?.total ?? 0) > 0) return;
+
+  await db.batch(
+    defaultProfiles().map((profile) =>
+      db
+        .prepare("INSERT OR IGNORE INTO explorers (id, data, revision) VALUES (?, ?, 0)")
+        .bind(profile.id, JSON.stringify(profile)),
+    ),
+  );
+}
+
+async function row(id: string) {
+  return database()
+    .prepare("SELECT data, revision FROM explorers WHERE id = ?")
+    .bind(id)
+    .first<ExplorerRow>();
+}
+
+function clean(profile: ExplorerProfile) {
+  return {
+    ...profile,
+    session: profile.session
+      ? {
+          ...profile.session,
+          questions: undefined,
+          question:
+            profile.session.index < profile.session.questions.length
+              ? publicQuestion(
+                  questions.find(
+                    (question) => question.id === profile.session?.questions[profile.session.index],
+                  )!,
+                )
+              : null,
+          total: profile.session.questions.length,
+        }
+      : null,
+  };
+}
+
+async function readAll() {
+  await ensureFamily();
+  const result = await database()
+    .prepare("SELECT data FROM explorers ORDER BY rowid")
+    .all<{ data: string }>();
+  return result.results.map((item) => clean(normalizeExplorer(JSON.parse(item.data))));
+}
+
+function validName(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length >= 1 && value.trim().length <= 24;
+}
+
+function validGrade(value: unknown): value is GradeTrack {
+  return value === "prek" || value === "grade1";
+}
+
+function validAvatar(value: unknown): value is AvatarId {
+  return typeof value === "string" && AVATARS.some((avatar) => avatar.id === value);
+}
+
+function validInterests(value: unknown): value is InterestId[] {
+  return (
+    Array.isArray(value) &&
+    value.length <= 3 &&
+    value.every(
+      (interest, index) =>
+        typeof interest === "string" &&
+        value.indexOf(interest) === index &&
+        INTERESTS.some((option) => option.id === interest),
+    )
+  );
+}
+
+function validGoal(value: unknown) {
+  return allowedGoals.includes(Number(value));
+}
+
+export async function GET() {
+  try {
+    return Response.json({ profiles: await readAll() });
+  } catch (error) {
+    console.error(error);
+    return Response.json(
+      { error: "We could not load your adventures. Please try again." },
+      { status: 503 },
+    );
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const origin = request.headers.get("origin");
+    if (origin && origin !== new URL(request.url).origin) {
+      return Response.json({ error: "Request not allowed." }, { status: 403 });
+    }
+
+    let body: unknown;
+    try { body = await request.json(); }
+    catch { return Response.json({error:"Please send a valid request."},{status:400}); }
+    if (!body || typeof body !== "object") {
+      return Response.json({ error: "Invalid request." }, { status: 400 });
+    }
+
+    const input = body as Record<string, unknown>;
+
+    if (input.action === "create-profile") {
+      if (
+        !validName(input.name) ||
+        !validGrade(input.grade) ||
+        !validAvatar(input.avatar) ||
+        !validInterests(input.interests) ||
+        !validGoal(input.dailyGoal)
+      ) {
+        return Response.json(
+          { error: "Please complete the explorer profile and choose up to three interests." },
+          { status: 400 },
+        );
+      }
+
+      const count = await database()
+        .prepare("SELECT COUNT(*) AS total FROM explorers")
+        .first<{ total: number }>();
+      if (Number(count?.total ?? 0) >= maxProfiles) {
+        return Response.json(
+          { error: "A family can have up to four explorer profiles in this edition." },
+          { status: 409 },
+        );
+      }
+
+      const id = `explorer_${crypto.randomUUID()}`;
+      const profile = newExplorer(
+        id,
+        input.name.trim(),
+        input.grade,
+        input.avatar,
+        input.interests,
+        Number(input.dailyGoal),
+      );
+      const inserted = await database()
+        .prepare("INSERT INTO explorers (id, data, revision) SELECT ?, ?, 0 WHERE (SELECT COUNT(*) FROM explorers) < 4")
+        .bind(id, JSON.stringify(profile))
+        .run();
+      if (!inserted.meta.changes) return Response.json({error:"This family already has four explorers."},{status:409});
+      return Response.json({ profile: clean(profile) }, { status: 201 });
+    }
+
+    if (typeof input.profile !== "string" || input.profile.length > 80) {
+      return Response.json({ error: "Choose an explorer." }, { status: 400 });
+    }
+
+    const old = await row(input.profile);
+    if (!old) {
+      return Response.json({ error: "That explorer profile was not found." }, { status: 404 });
+    }
+
+    const profile = normalizeExplorer(JSON.parse(old.data));
+    if (input.action === "team-start" || input.action === "team-complete") {
+      const partnerId=input.action==="team-start"?input.partner:profile.team?.partnerId;
+      if (typeof partnerId!=="string" || partnerId===profile.id) return Response.json({error:"Choose a different explorer to join you."},{status:400});
+      const partnerRow=await row(partnerId);
+      if (!partnerRow) return Response.json({error:"That explorer was not found."},{status:404});
+      const partner=normalizeExplorer(JSON.parse(partnerRow.data));
+      try {
+        if (input.action==="team-start") startTeamQuest(profile,partner,crypto.randomUUID());
+        else completeTeamQuest(profile,partner);
+      } catch (error) { return Response.json({error:(error as Error).message},{status:409}); }
+      // One SQLite statement updates both records only if both revisions still match.
+      const result=await database().prepare(
+        "UPDATE explorers SET data = CASE id WHEN ? THEN ? ELSE ? END, revision = revision + 1 WHERE id IN (?, ?) AND (SELECT COUNT(*) FROM explorers WHERE (id = ? AND revision = ?) OR (id = ? AND revision = ?)) = 2"
+      ).bind(profile.id,JSON.stringify(profile),JSON.stringify(partner),profile.id,partner.id,profile.id,old.revision,partner.id,partnerRow.revision).run();
+      if(result.meta.changes!==2) return Response.json({error:"Your team changed in another window. Reload and try again."},{status:409});
+      return Response.json({profile:clean(profile),profiles:[clean(profile),clean(partner)]});
+    }
+    let feedback: { correct?: boolean; message?: string; hint?: string | null } | null = null;
+
+    if (input.action === "profile") {
+      if (
+        !validName(input.name) ||
+        !validGrade(input.grade) ||
+        !validAvatar(input.avatar) ||
+        !validInterests(input.interests) ||
+        !validGoal(input.dailyGoal)
+      ) {
+        return Response.json(
+          { error: "Please complete the explorer profile and choose up to three interests." },
+          { status: 400 },
+        );
+      }
+
+      if (input.grade !== profile.grade) {
+        const reset = newExplorer(
+          profile.id,
+          profile.name,
+          input.grade,
+          profile.avatar,
+          profile.interests,
+          profile.dailyGoal,
+        );
+        profile.skills = reset.skills;
+        // Evidence describes the learner, so it survives a change in starting track.
+        profile.recentActivityTypes = [];
+        profile.seen = [];
+        profile.session = null;
+      }
+      profile.name = input.name.trim();
+      profile.grade = input.grade;
+      profile.avatar = input.avatar;
+      profile.interests = input.interests;
+      profile.dailyGoal = Number(input.dailyGoal);
+    } else if (input.action === "reflect") {
+      const session=profile.session;
+      if (!session || session.id!==input.session || session.index<1 ||
+        session.questions[session.index-1]!==input.question ||
+        !["counted","clue","pattern","tried"].includes(String(input.strategy))) {
+        return Response.json({error:"Share a strategy after making a discovery."},{status:400});
+      }
+      profile.reflections=[...profile.reflections.filter(r=>r.sessionId!==session.id||r.questionId!==input.question),
+        {sessionId:session.id,questionId:String(input.question),strategy:String(input.strategy),at:new Date().toISOString()}].slice(-100);
+    } else if (input.action === "save-garden") {
+      if (!validGarden(input.garden)) return Response.json({error:"Choose a garden piece for each space."},{status:400});
+      if (input.garden.includes("sunflower") && !profile.adventure.chapters.includes(2)) {
+        return Response.json({error:"Finish the garden story to unlock sunflowers."},{status:400});
+      }
+      if (input.garden.includes("treehouse") && !profile.adventure.unlocks.includes("Team treehouse")) {
+        return Response.json({error:"Finish a Team Quest together to discover the treehouse."},{status:400});
+      }
+      profile.adventure.garden=input.garden;
+      profile.adventure.gardenSavedAt=new Date().toISOString();
+    } else if (input.action === "offline-request" || input.action === "offline-confirm") {
+      if (!profile.adventure.chapters.includes(2)) return Response.json({error:"Finish the garden story first."},{status:409});
+      if (input.action === "offline-request") profile.adventure.offline.requestedAt ??= new Date().toISOString();
+      else {
+        if (!profile.adventure.offline.requestedAt) return Response.json({error:"Ask your explorer to share their seed mission first."},{status:409});
+        profile.adventure.offline.confirmedAt ??= new Date().toISOString();
+      }
+    } else if (input.action === "feeling") {
+      if (!["easy","right","tricky"].includes(String(input.value)) || typeof input.session!=="string"
+        || !profile.history.some(h=>h.sessionId===input.session)) return Response.json({error:"Choose a feeling for a completed quest."},{status:400});
+      profile.adventure.feelings=[...profile.adventure.feelings.filter(f=>f.sessionId!==input.session),
+        {sessionId:input.session,value:input.value as "easy"|"right"|"tricky",date:new Date().toISOString()}].slice(-30);
+    } else if (input.action === "discovery-start") {
+      try { startDiscovery(profile, crypto.randomUUID()); }
+      catch (error) { return Response.json({ error: (error as Error).message }, { status: 409 }); }
+    } else if (input.action === "campaign-start") {
+      if (profile.session && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile)});
+      const chapter=campaignChapters.findIndex((_,i)=>!profile.adventure.chapters.includes(i));
+      if (chapter<0) return Response.json({error:"You solved the seed mystery! Visit your garden to keep creating."},{status:409});
+      const ids=campaignQuestionIds(profile.grade,chapter);
+      profile.session={id:crypto.randomUUID(),subject:"daily",questions:ids,index:0,misses:0,hinted:false,first:0,
+        started:Date.now(),estimatedMinutes:ids.length*2,chapter,
+        plan:ids.map(id=>({questionId:id,skillId:questions.find(q=>q.id===id)!.skillId,reason:"story-mission"}))};
+    } else if (input.action === "start") {
+      if (input.subject !== "daily" && !subjects.includes(input.subject as Subject)) {
+        return Response.json({ error: "Choose a world." }, { status: 400 });
+      }
+      const requestedSubject = input.subject as Subject | "daily";
+      if (
+        profile.session &&
+        profile.session.index < profile.session.questions.length
+      ) {
+        return Response.json({ profile: clean(profile) });
+      }
+
+      const recommendation = recommendQuest(profile, requestedSubject);
+      if (!recommendation.questionIds.length) {
+        return Response.json({ error: "No quest activities are ready for this explorer." }, { status: 409 });
+      }
+      profile.session = {
+        id: crypto.randomUUID(),
+        subject: requestedSubject,
+        questions: recommendation.questionIds,
+        index: 0,
+        misses: 0,
+        hinted: false,
+        first: 0,
+        started: Date.now(),
+        estimatedMinutes: recommendation.estimatedMinutes,
+        plan: recommendation.plan,
+      };
+    } else if (input.action === "answer" || input.action === "hint") {
+      const session = profile.session;
+      if (
+        !session ||
+        session.id !== input.session ||
+        session.index >= session.questions.length ||
+        input.question !== session.questions[session.index]
+      ) {
+        return Response.json(
+          { error: "This activity changed. Please return to your adventure and try again." },
+          { status: 409 },
+        );
+      }
+
+      const question = questions.find((item) => item.id === session.questions[session.index])!;
+      if (input.action === "hint") {
+        if (!session.hinted) recordHint(profile.skillMastery, question);
+        session.hinted = true;
+        session.hintLevel=Math.min(3,(session.hintLevel??0)+1);
+        feedback = { hint: authoredHint(question,{activityId:question.id,skillId:question.skillId,track:question.grade,hintLevel:session.hintLevel}).text };
+      } else {
+        const evaluation = evaluateResponse(question, input.answer);
+        if (!evaluation.valid) {
+          return Response.json({ error: "Choose one of the answers." }, { status: 400 });
+        }
+        const correct = evaluation.correct;
+        const independent = session.misses === 0 && !session.hinted;
+        // One evidence observation per question. Retries remain useful practice,
+        // but cannot manufacture mastery or inflate confidence.
+        if (session.misses === 0) recordAttempt(profile.skillMastery, question, session.id, correct, independent);
+        feedback = {
+          correct,
+          message: correct ? question.explanation : "Good thinking. Let’s try another answer.",
+          hint: correct ? null : question.hint,
+        };
+        if (correct) {
+          const skill = profile.skills[question.subject];
+          skill.seen += 1;
+          profile.recentActivityTypes = rememberActivityType(
+            profile.recentActivityTypes,
+            question.activityType,
+          );
+          if (independent) {
+            skill.first += 1;
+            session.first += 1;
+          }
+          if (!profile.seen.includes(question.id)) profile.seen.push(question.id);
+          profile.recentQuestionIds = [...profile.recentQuestionIds, question.id].slice(-20);
+          session.index += 1;
+          advanceDiscovery(profile, question, independent);
+          session.misses = 0;
+          session.hinted = false;
+          session.hintLevel = 0;
+          if (skill.seen % 5 === 0) {
+            const ratio = skill.first / skill.seen;
+            if (ratio >= 0.8) skill.level = Math.min(3, skill.level + 1);
+            else if (ratio < 0.5) skill.level = Math.max(1, skill.level - 1);
+          }
+          if (session.index === session.questions.length) {
+            if (session.chapter !== undefined && !profile.adventure.chapters.includes(session.chapter)) {
+              profile.adventure.chapters.push(session.chapter);
+              const unlock=campaignChapters[session.chapter]?.unlock;
+              if (unlock && !profile.adventure.unlocks.includes(unlock)) profile.adventure.unlocks.push(unlock);
+            }
+            profile.completed += 1;
+            profile.stars += session.questions.length * 2;
+            profile.history = [
+              {
+                date: new Date().toISOString(),
+                subject: session.subject,
+                first: session.first,
+                total: session.questions.length,
+                grade: profile.grade,
+                skillIds: [...new Set(session.plan?.map((item) => item.skillId) ?? [])],
+                durationSeconds: Math.max(1, Math.round((Date.now() - session.started) / 1000)),
+                sessionId:session.id,
+                chapter:session.chapter,
+                teamId:session.teamId,
+                discovery:!!session.discovery,
+              },
+              ...profile.history,
+            ].slice(0, 100);
+          }
+        } else {
+          session.misses += 1;
+        }
+      }
+    } else {
+      return Response.json({ error: "Unknown action." }, { status: 400 });
+    }
+
+    profile.events=[...profile.events,{type:String(input.action),at:new Date().toISOString(),
+      ...(typeof input.question==="string"?{questionId:input.question}:{})}].slice(-100);
+    const result = await database()
+      .prepare("UPDATE explorers SET data = ?, revision = revision + 1 WHERE id = ? AND revision = ?")
+      .bind(JSON.stringify(profile), profile.id, old.revision)
+      .run();
+    if (!result.meta.changes) {
+      return Response.json(
+        { error: "Progress changed in another window. Please reload." },
+        { status: 409 },
+      );
+    }
+    return Response.json({ profile: clean(profile), feedback });
+  } catch (error) {
+    console.error(error);
+    return Response.json(
+      { error: "Your progress could not be saved. Please try again." },
+      { status: 503 },
+    );
+  }
+}

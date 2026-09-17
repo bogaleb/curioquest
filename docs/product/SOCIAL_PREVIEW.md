@@ -1,0 +1,5 @@
+# Social preview artwork
+
+Asset: `public/og.png`. Created with the built-in image-generation tool, then inspected for title and subtitle accuracy.
+
+Final prompt: Use case: ads-marketing. Asset type: CurioQuest website social-preview card, landscape 1536x1024. Create the complete designed card including typography as one polished cohesive artwork. Exact large title: "CurioQuest". Exact subtitle: "Small steps. Big discoveries." No other text. Warm elegant rounded serif title in deep forest green, exceptionally legible. Premium whimsical storybook illustration, tactile gouache paper textures, warm cream background, sage green forest, golden sunflowers and tiny garden, gentle lavender mountains. A friendly curious orange fox explorer follows a winding path into this miniature learning world on right half. Type fills left half, generous breathing room and safe margins. Audience: parents and children Pre-K and Grade 1. Magical, inviting, calm and playful, gorgeous illustrated landscape, no classroom worksheet motifs, no devices, no branding apart from specified title. Landscape link card with all content centered within generous margins. Save as a project asset.

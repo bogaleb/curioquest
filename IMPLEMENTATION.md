@@ -1,14 +1,20 @@
 # CurioQuest first playable edition
 
-Based on retrieved September 17 CurioQuest blueprint excerpts: mission-first learning, two profiles, Word Forest, Number City, Logic Mountain, Daily Quest, adaptive practice and a parent dashboard. This implements the first V1 slice, not the full V1–V5 roadmap.
+`PRODUCT_BLUEPRINT.md` is the source of truth. This is a connected playable prototype, not the complete blueprint or a validated learning assessment. The full remaining-feature audit is in `docs/product/MVP_BACKLOG.md`.
 
-- 108 authored/template activities, 54 per track; three subjects with three trails and six activities per trail.
-- Five-question sessions. Correct answers advance. Wrong answers allow retries. Hints and retry history affect the independent-answer measure.
-- Subject trail adjusts at each five completed activities using cumulative independent accuracy: advance at >=80%; step back below 50%. This is a simple practice heuristic, not validated adaptive assessment or demonstrated mastery.
+- 132 authored/template activities mapped to 34 active skills inside a 49-node Pre-K and Grade 1 prerequisite graph. All 108 legacy activity IDs remain available.
+- Duration-aware sessions of 4/5/7/10 discoveries. Correct answers advance; hints and retries affect independent-answer evidence. Each question supplies one observation, so retries cannot inflate mastery.
+- Six presentation engines: visual choice, touch counting, sorting with keyboard/touch and dragging, sequence memory, word building, and pattern completion. Answers are evaluated on the server.
+- Three Missing Seeds chapters per track, persistent garden Build Lab, story unlocks, a real-world seed mission with parent confirmation, and a saved-garden parent portfolio.
+- Optional six-discovery Meet Nova welcome with two activities per subject. Independent success raises the second challenge; help keeps it gentle. Results seed new learners' starting trails without overwriting established progress. This does not cover the full placement specification.
+- Team Quest uses different age-level roles and requires both children to finish. Paired updates are atomic; the shared treehouse reward is idempotent.
+- Subject trails still provide a simple child-facing progression layer. Underneath, each child now has skill-specific evidence with separate mastery and confidence, hint use, independent success, context/format variety, session variety, and scheduled review. This remains an MVP heuristic, not a validated assessment.
 - D1 stores each profile, session, progress, stars, and the last 100 completed sessions. Conditional revision updates reject conflicting writes. Repeated stale answers cannot award extra stars.
-- Profiles default to Maya / Grade 1 and Lydia / Pre-K; names and tracks editable. Track changes preserve rewards/history and reset current learning progress.
+- Profiles default to Maya / Grade 1 and Lydia / Pre-K. A family can create up to four durable profiles and personalize nickname, track, avatar, interests, and quest length. Track changes preserve skill evidence, rewards, and history while resetting trails and the active quest.
+- Existing profile records are upgraded in memory with safe defaults, so the learner-profile expansion does not discard or rewrite legacy progress. Profile creation and all updates are validated on the server.
 - Private owner-only site is the security boundary. Do not make public/shared without family authentication and owner-scoped data access. Parent arithmetic gate is convenience only.
-- Nova provides authored hints and browser speech synthesis, not generative AI. Voice availability depends on the device.
-- Next blueprint phases: broader activity formats, explicitly sequenced literacy curriculum, curriculum review, richer mastery model, science, Creator Mode, offline missions, sibling Team Quest, bounded AI integration, and family accounts before public sharing.
+- Nova provides three authored hint levels through an approved-activity context boundary and browser speech synthesis. Voice availability depends on the device. Optional strategy reflections and quest feelings persist without being treated as objective mastery evidence.
+- Daily Quest prioritizes due review, weak skills, prerequisites, fresh content, interests, challenge level, and variety. Reviews begin the next day; longer intervals require successful delayed independent recall. Same-day repetitions cannot postpone a review.
+- Parent Corner includes weekly practice, detailed evidence, due review, starting-path suggestions, a creative portfolio, and an activity to try at home.
 
-Verification: TypeScript check and production build; 108 unique question IDs and valid distinct answer choices; browser end-to-end Daily Quest including incorrect answer, retry, completion, reward, reload persistence, and separate pre-K profile. WebMCP registry unavailable in testing browser; optional registration is feature-detected.
+Verification: type checking, production build, 13 unit tests, and isolated API integration tests for both story tracks, retries, stale answers, persistence, hints, reflections, adaptive welcome, and Team Quest completion. This pass has not included browser/device testing or child usability sessions. See `docs/testing/BETA_TEST_PLAN.md`.
