@@ -6,6 +6,7 @@ import "./games.css";
 import "./navigation.css";
 import "./studio.css";
 import "./stories.css";
+import "./reading.css";
 import "./polish.css";
 
 export async function generateMetadata(): Promise<Metadata> {

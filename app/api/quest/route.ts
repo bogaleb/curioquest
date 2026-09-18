@@ -481,10 +481,15 @@ export async function POST(request: Request) {
 
     profile.events=[...profile.events,{type:String(input.action),at:new Date().toISOString(),
       ...(typeof input.question==="string"?{questionId:input.question}:{})}].slice(-100);
-    const result = await database()
+    const update = database()
       .prepare("UPDATE explorers SET data = ?, revision = revision + 1 WHERE id = ? AND revision = ?")
-      .bind(JSON.stringify(profile), profile.id, old.revision)
-      .run();
+      .bind(JSON.stringify(profile), profile.id, old.revision);
+    const result = input.action==='reset-progress'&&input.target==='all'
+      ? (await database().batch([
+          database().prepare('DELETE FROM reading_profiles WHERE child_id=? AND EXISTS (SELECT 1 FROM explorers WHERE id=? AND revision=?)').bind(profile.id,profile.id,old.revision),
+          update,
+        ]))[1]
+      : await update.run();
     if (!result.meta.changes) {
       return Response.json(
         { error: "Progress changed in another window. Please reload." },

@@ -1,0 +1,12 @@
+export type ReadingLetter='m'|'s'|'a'|'t'|'p'|'i'|'n';
+export type ReadingSkill={id:string;name:string;domain:'letter-sound'|'decoding'|'encoding'|'comprehension';sequence:number;prerequisites:string[];letter?:ReadingLetter;phoneme?:string;cue?:string;example?:string;audioSrc?:string};
+export type ReadingWord={id:string;word:string;graphemes:string[];phonemes:string[];requiredSkills:string[];pattern:'VC'|'CVC'|'VCC';meaning:string;emoji:string;audioSrc?:string};
+export type ReadingStory={id:string;title:string;requiredSkills:string[];pages:string[];question:string;choices:string[];answer:string;emoji:string};
+export type ReadingSettings={sequence:ReadingLetter[];readyScore:number;masteredScore:number;reviewDays:number[]};
+export type ReadingCatalog={skills:ReadingSkill[];words:ReadingWord[];stories:ReadingStory[];settings:ReadingSettings};
+export type ReadingMastery={score:number;attempts:number;correct:number;independent:number;helpUsed:number;days:string[];lastPracticed:string|null;reviewAt:string|null;retained:number};
+export type ReadingActivity={id:string;kind:'letter-catch'|'blend-train'|'sound-boxes'|'story';skillId:string;target:string;choices:string[];reason:'placement'|'review'|'new'|'practice';taught:boolean};
+export type ReadingSession={id:string;kind:'placement'|'quest';activities:ReadingActivity[];index:number;helpLevel:number;misses:number;startedAt:string;activityStartedAt:string;storyPage:number;completedAt:string|null;placementMisses:number};
+export type ReadingProfile={version:1;level:'beginning-pre-reader'|'early-blending';placementDone:boolean;introduced:string[];mastery:Record<string,ReadingMastery>;session:ReadingSession|null;sessionsCompleted:number;books:string[];recentWords:string[];lastMutation:string;events:{type:string;at:string;skillId?:string}[]};
+export type ReadingAttempt={id:string;childId:string;sessionId:string;activityId:string;kind:ReadingActivity['kind'];skillId:string;stimulus:string;response:string;correct:boolean;helpLevel:number;attemptNumber:number;responseTimeMs:number;errorType:string|null;evidence:'independent-choice'|'supported-practice'|'comprehension';createdAt:string};
+export type ReadingView={profile:Omit<ReadingProfile,'session'|'lastMutation'>;revision:number;session:(Omit<ReadingSession,'activities'> & {total:number;activity:ReadingActivity|null})|null;catalog:Omit<ReadingCatalog,'stories'> & {stories:Omit<ReadingStory,'answer'>[]};readyWords:ReadingWord[];stars:number;feedback?:string;correct?:boolean;error?:string};

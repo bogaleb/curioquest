@@ -1,5 +1,14 @@
 # CurioQuest development log
 
+## Reading Section 94 — September 18, 2026
+
+- Read the supplied reading blueprint completely and retained it in `docs/product/READING_BLUEPRINT.md`. Implemented only the requested first vertical slice; unrelated learning areas are preserved.
+- Added Reading Adventure home/navigation, playful placement, seven initial sound lessons, Letter Catch, Blend Train, Sound Boxes, Sam Sat, saved mastery/review, adaptive reading quests, and a parent reading evidence card.
+- Added six additive D1 tables in migration 0004, editable content/settings records, revision-safe attempts/rewards, parent-only restart, reading-inclusive export, full-reset coherence, and cascade deletion.
+- React quality review kept activity code lazy-loaded, fixed asynchronous loading behavior, and added parent loading retry. Browser testing caught and fixed Parent Corner scroll/focus restoration.
+- Verification: 33 unit tests; complete isolated API suite including Section 95 Maya flow and racing completion; browser child-to-parent flow at desktop/tablet/phone viewport sizes. Type checking/build pass; no lint errors, two existing image advisories.
+- Reading estimates are not validated oral-reading assessments. Device phoneme audio is prototype quality; human recordings and educator/physical-device review remain necessary. Full reading V1 and broader product gaps remain tracked in `docs/product/READING_MILESTONE.md` and `docs/product/RELEASE_STATUS.md`.
+
 ## Expansion pass — September 17, 2026
 
 - Read the product blueprint and audited the existing React/Vinext application, D1 profile storage, ten engines, curriculum graph, recommendations, parent PIN, Team Quest, saved sessions, and test suite.

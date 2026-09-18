@@ -13,6 +13,7 @@ node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_clammy_annihilus.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_fresh_banshee.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_silly_vindicator.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0004_premium_wolverine.sql
 pnpm start
 ```
 
@@ -23,5 +24,7 @@ For an existing Game Zone installation, apply only migration `0003` to add works
 Open Parent Corner to choose your six-digit PIN and save its recovery code. Hosted parent setup binds the private workspace to its signed-in account. Local development uses a separate local-family identity; do not copy the local parent-security tables into the hosted database.
 
 Use `pnpm dev` for development with live updates (default port 5173). The production preview above exercises the built Worker and persisted database directly.
+
+Reading Adventure adds migration `0004`. Apply it once to an existing workspace after `0003`; it creates separate reading tables without changing old curriculum or progress. The bounded Section 94 scope and acceptance evidence are in `docs/product/READING_MILESTONE.md`.
 
 Quality checks: `pnpm run typecheck`, `pnpm test`, `pnpm run build`, and `pnpm run test:integration`. Integration tests use port 4187 and isolated temporary database state, leaving the family database untouched. The test server stops when the test ends; temporary state is retained for debugging.

@@ -21,6 +21,6 @@ export function useDialogFocus(open:boolean,onClose:()=>void) {
       else if(!event.shiftKey&&(document.activeElement===last||!dialog.contains(document.activeElement))){event.preventDefault();first.focus();}
     };
     document.addEventListener("keydown",listener);
-    return()=>{document.removeEventListener("keydown",listener);document.body.style.overflow=oldOverflow;previous?.focus();};
+    return()=>{document.removeEventListener("keydown",listener);document.body.style.overflow=oldOverflow;previous?.focus({preventScroll:true});};
   },[open,onClose]);
 }

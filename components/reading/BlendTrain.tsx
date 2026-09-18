@@ -1,0 +1,7 @@
+'use client';
+import {useState} from 'react';
+import type {ReadingActivity,ReadingWord} from '@/lib/reading/types';
+export function BlendTrain({activity,word,busy,onAnswer}:{activity:ReadingActivity;word:ReadingWord;busy:boolean;onAnswer:(answer:string)=>void}){
+  const [joined,setJoined]=useState(0);
+  return <div className="blend-train"><span className="eyebrow">SOUND BRIDGE</span><h2>Let’s bring the sounds together.</h2><p>Say each sound. Slide the train slowly. Keep the sounds connected.</p><div className="reading-train-track"><div className="reading-train" style={{gap:`${(100-joined)*.12}px`}}><span className="train-engine" aria-hidden="true">🚂</span>{word.graphemes.map((letter,i)=><div className={`train-car ${joined>=(i+1)*100/word.graphemes.length?'connected':''}`} key={i}><strong>{letter}</strong><small>{word.phonemes[i]}</small><i/><i/></div>)}</div></div><label className="blend-slider">Bring the cars together<input type="range" min={0} max={100} value={joined} disabled={busy} onChange={e=>setJoined(Number(e.target.value))}/></label><button className="secondary" disabled={busy||joined===100} onClick={()=>setJoined(100)}>Join the cars</button>{joined===100&&<div className="reading-reveal"><h3>What word did the train make?</h3><p>Read all the sounds from left to right.</p><div className="reading-word-choices">{activity.choices.map(choice=><button key={choice} disabled={busy} onClick={()=>onAnswer(choice)}>{choice}</button>)}</div></div>}</div>;
+}
