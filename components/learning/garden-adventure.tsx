@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Check, Leaf, Save, Volume2 } from "lucide-react";
+import { ArrowRight, Check, Leaf, Save } from "lucide-react";
 import { campaignChapters } from "@/lib/campaign";
 import { gardenChallenge, gardenPieces, type GardenPiece, type AdventureProgress } from "@/lib/adventure";
 
@@ -23,8 +23,8 @@ export function StoryTrail({progress,busy,onStart,onGarden}:Props) {
   </section>;
 }
 
-export function GardenLab({progress,busy,onSave,onOffline}:{
-  progress:AdventureProgress;busy:boolean;onSave:(garden:GardenPiece[])=>Promise<boolean>;onOffline:()=>Promise<boolean>;
+export function GardenLab({progress,busy,onSave,onOffline,offline=true}:{
+  progress:AdventureProgress;busy:boolean;offline?:boolean;onSave:(garden:GardenPiece[])=>Promise<boolean>;onOffline:()=>Promise<boolean>;
 }) {
   const [garden,setGarden]=useState<GardenPiece[]>([...progress.garden]);
   const [piece,setPiece]=useState<GardenPiece>("flower");
@@ -55,7 +55,7 @@ export function GardenLab({progress,busy,onSave,onOffline}:{
       <ul>{checklist.map(c=><li key={c.label}><span>{checked&&c.done?"✓":"○"}</span>{c.label}</li>)}</ul>
       {checked&&<p role="status">{checklist.every(c=>c.done)?"Plants, water, and a path! Tell a grown-up how you planned your garden.":"Engineers try ideas. What would you like to add next?"}</p>}
       <p className="form-note">Your design is yours. Creativity does not get a score.</p>
-    </section>{unlocked&&<section className="panel offline-card"><div className="eyebrow">YOUR NEXT ADVENTURE IS REAL</div><h2>Grow a seed together</h2>
+    </section>{unlocked&&offline&&<section className="panel offline-card"><div className="eyebrow">YOUR NEXT ADVENTURE IS REAL</div><h2>Grow a seed together</h2>
       <p>With a grown-up, put a seed in a small pot of soil. Add a little water. Find a bright spot and check it each day.</p>
       <p>Draw what you notice. What do you predict will happen next?</p>
       <button className="secondary" disabled={busy||!!progress.offline.requestedAt} onClick={onOffline}><Check size={18}/>

@@ -1,14 +1,14 @@
 "use client";
 
 import { ArrowRight, Compass, Volume2 } from "lucide-react";
-import type { ExplorerProfile } from "@/lib/explorers";
+import type { PublicExplorer } from "@/lib/explorer-view";
 
 export function DiscoveryInvitation({ profile, busy, onStart, onListen }: {
-  profile: ExplorerProfile; busy: boolean; onStart: () => void; onListen: (text: string) => void;
+  profile: PublicExplorer; busy: boolean; onStart: () => void; onListen: (text: string) => void;
 }) {
   if (profile.discovery?.grade === profile.grade) return null;
   // The public session contains total rather than the private question queue.
-  const active = profile.session && profile.session.index < ((profile.session as unknown as {total?:number}).total ?? profile.session.questions?.length ?? 0);
+  const active = profile.session && profile.session.index < profile.session.total;
   const inProgress = active && !!profile.session?.discovery;
   if (active && !profile.session?.discovery) return null;
   const message = `Hello ${profile.name}! I’m Nova. Let’s find three paths together. We’ll listen, count, and solve little puzzles. You can ask for help any time.`;

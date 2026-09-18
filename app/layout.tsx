@@ -4,6 +4,9 @@ import "./globals.css";
 import "./learning.css";
 import "./games.css";
 import "./navigation.css";
+import "./studio.css";
+import "./stories.css";
+import "./polish.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();

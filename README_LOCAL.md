@@ -12,10 +12,13 @@ pnpm run build
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_left_talisman.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_clammy_annihilus.sql
 node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_fresh_banshee.sql
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_silly_vindicator.sql
 pnpm start
 ```
 
 Open the URL printed by the server. Apply each SQL migration once. For an existing pre-Game-Zone database, skip 0000 and apply only 0001 and 0002. If already applied, skip those too. Existing local progress lives in `.wrangler/state`; do not delete it to resolve a build problem.
+
+For an existing Game Zone installation, apply only migration `0003` to add workspace collections (artwork, assignments, activity sets, story progress, prayers, and science observations). It creates a new table and index without changing existing profile records. Stop a running production preview before rebuilding on Windows, because it holds the build files open.
 
 Open Parent Corner to choose your six-digit PIN and save its recovery code. Hosted parent setup binds the private workspace to its signed-in account. Local development uses a separate local-family identity; do not copy the local parent-security tables into the hosted database.
 

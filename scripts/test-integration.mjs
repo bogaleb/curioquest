@@ -31,6 +31,7 @@ async function call(body,expected=200) {
   const response=await fetch(base+"/api/quest",body?{method:"POST",headers:{"Content-Type":"application/json",Cookie:parentCookie},body:JSON.stringify(body)}:undefined);
   const data=await response.json();assert.equal(response.status,expected,JSON.stringify(data));return data;
 }
+async function workspace(body,expected=200,cookie=parentCookie){const response=await fetch(base+'/api/workspace',{method:'POST',headers:{'Content-Type':'application/json',Cookie:cookie},body:JSON.stringify(body)});const data=await response.json();assert.equal(response.status,expected,JSON.stringify(data));return data;}
 function answerFor(q) {
   if(q.engine?.kind==="sorting") return JSON.stringify(q.engine.solution);
   if(q.engine?.kind==="matching"||q.engine?.kind==="ordering") return JSON.stringify(q.engine.solution);
@@ -210,9 +211,60 @@ try {
     await call({action:"session-resume",profile:p.id,session:robotId},403);
     await call({action:"preferences",profile:p.id,autoRead:true,reducedMotion:true,paused:false});
   }
+  const owner=(await call()).profiles[0];
+  const shelfBefore=await (await fetch(base+`/api/stories?profile=${owner.id}`)).json();
+  assert.ok(shelfBefore.stories.every(s=>s.category!=='faith'));assert.equal(shelfBefore.prayers.length,0);
+  const blockedStory=await fetch(base+'/api/stories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:owner.id,story:'creation',scene:1})});assert.equal(blockedStory.status,403);
+  await workspace({action:'save-prayer',profile:owner.id,text:'Thank you for today.'},403);
+  const observation=(await workspace({action:'save-observation',profile:owner.id,data:{experiment:'float',item:'cork',prediction:'Sink',reflection:'The cork floated. My prediction changed.'}},201)).item;
+  assert.equal(observation.data.prediction,'Sink');
+  await workspace({action:'save-observation',profile:owner.id,data:{experiment:'float',item:'fake',prediction:'Float',reflection:''}},400);
+  const setData={title:'Parent adventure',questions:[{prompt:'What is 2 plus 3?',answer:'5',choices:['4','5','6'],hint:'Count on from two.',explanation:'Two and three make five.'}]};
+  await workspace({action:'draft-set',profile:profiles[0].id,subject:'reading',level:1,count:5},403,'');
+  const generated=await workspace({action:'draft-set',profile:profiles[0].id,subject:'reading',level:1,count:5});assert.equal(generated.draft.questions.length,5);
+  await workspace({action:'draft-set',profile:profiles[0].id,subject:'reading',level:1,count:999},400);
+  await workspace({action:'save-set',data:setData},403,'');
+  const set=(await workspace({action:'save-set',data:setData},201)).item;
+  let assigned=(await workspace({action:'assign',profile:owner.id,setId:set.id,due:null,badge:true},201)).item;
+  assert.equal(assigned.question.answer,undefined);assert.equal(assigned.question.explanation,undefined);
+  assigned=(await workspace({action:'answer-assignment',profile:owner.id,id:assigned.id,revision:assigned.revision,answer:'4'})).item;
+  assert.equal(assigned.index,0);assert.equal(assigned.misses,1);
+  await workspace({action:'answer-assignment',profile:profiles[1].id,id:assigned.id,revision:assigned.revision,answer:'5'},404);
+  const completedAssignment=await workspace({action:'answer-assignment',profile:owner.id,id:assigned.id,revision:assigned.revision,answer:'5'});
+  assert.ok(completedAssignment.item.completedAt);assert.equal(completedAssignment.item.question,null);
+  await workspace({action:'answer-assignment',profile:owner.id,id:assigned.id,revision:assigned.revision,answer:'5'},409);
+  const artwork={title:'Our rocket',mode:'drawing',template:'rocket',guide:'',caption:'Going to the Moon',marks:[{tool:'pencil',color:'#123456',size:8,points:[[40,50],[60,70]]}]};
+  const art=(await workspace({action:'save-art',profile:owner.id,data:artwork},201)).item;
+  const artList=await (await fetch(base+`/api/workspace?profile=${owner.id}&kind=art`)).json();assert.deepEqual(artList.items[0].data,artwork);
+  assert.equal((await fetch(base+`/api/workspace?profile=${owner.id}&kind=art&page=-1`)).status,400);
+  assert.equal((await (await fetch(base+`/api/workspace?profile=${owner.id}&kind=art&page=1`)).json()).items.length,0);
+  await workspace({action:'save-art',profile:profiles[1].id,id:art.id,revision:art.revision,data:artwork},404);
+  await workspace({action:'save-art',profile:owner.id,id:art.id,revision:art.revision,data:{...artwork,title:'A bigger rocket'}});
+  await workspace({action:'save-art',profile:owner.id,id:art.id,revision:art.revision,data:artwork},409);
+  await call({action:'controls',profile:owner.id,controls:{...owner.controls,faith:true,questLength:7,priorities:['math']}});
+  assert.equal((await call()).profiles[0].controls.faith,true);
+  const shelf=await (await fetch(base+`/api/stories?profile=${owner.id}`)).json();assert.equal(shelf.stories.filter(s=>s.category==='faith').length,14);assert.equal(shelf.prayers.length,9);
+  for(const story of shelf.stories){for(let scene=0;scene<=story.scenes.length;scene++){const response=await fetch(base+'/api/stories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:owner.id,story:story.id,scene})});assert.equal(response.status,200);}}
+  const completedShelf=await (await fetch(base+`/api/stories?profile=${owner.id}`)).json();assert.ok(completedShelf.progress.every(p=>p.completedAt));
+  await workspace({action:'save-prayer',profile:owner.id,text:'Thank you for our family.'},201);
+  await call({action:'reset-progress',profile:owner.id,target:'daily',confirm:'wrong'},400);
+  await call({action:'reset-progress',profile:owner.id,target:'daily',confirm:owner.name});
+  await call({action:'controls',profile:owner.id,controls:{...owner.controls,bedtime:'00:00'}});
+  await call({action:'game-start',profile:owner.id,game:'robot',level:0},403);
+  await workspace({action:'save-art',profile:owner.id,data:artwork},403);
+  await call({action:'controls',profile:owner.id,controls:owner.controls});
+  assert.equal((await fetch(base+`/api/workspace?profile=${owner.id}&kind=prayers`)).status,403);
+  const exportAll=await (await fetch(base+'/api/parent/export',{headers:{Cookie:parentCookie}})).json();assert.ok(exportAll.collections.some(x=>x.id===art.id));
+  const disposable=(await call()).profiles.at(-1);
+  await workspace({action:'save-art',profile:disposable.id,data:artwork},201);
+  await call({action:'delete-profile',profile:disposable.id,confirm:'wrong'},400);
+  const afterDelete=await call({action:'delete-profile',profile:disposable.id,confirm:disposable.name});assert.equal(afterDelete.profiles.length,3);
+  assert.equal((await fetch(base+`/api/workspace?profile=${disposable.id}&kind=art`)).status,404);
   await parentCall({action:"lock"});
   await call({action:"offline-confirm",profile:profiles[0].id},403);
-  console.log("PASS: game switching and saved places, both story tracks, 48 game missions, private answer scoring, saved favorites, comfort settings, parent PIN/recovery/rate limits, retries, persistence, and Team Quest.");
+  await call({action:'reset-progress',profile:owner.id,target:'all',confirm:owner.name},403);
+  await call({action:'delete-profile',profile:owner.id,confirm:owner.name},403);
+  console.log("PASS: 48 game missions, saved sessions, Team Quest, parent PIN/security, curriculum drafts, assignments/private scoring, artwork/pagination/conflicts, all story scenes, faith controls/prayers, science notebooks, schedules, reset/deletion/export, and persistence.");
   console.log("Isolated test state: "+state);
 } finally {
   child.kill();

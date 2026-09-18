@@ -333,8 +333,11 @@ validateCurriculum();
 
 export function publicQuestion(question: Question) {
   const { answer, explanation, ...safe } = question;
+  // Intentionally excluded from the child response until server-side scoring.
+  void answer; void explanation;
   if (safe.engine?.kind === "sorting" || safe.engine?.kind === "matching" || safe.engine?.kind === "ordering") {
     const { solution, ...engine } = safe.engine;
+    void solution;
     return { ...safe, engine };
   }
   return safe;

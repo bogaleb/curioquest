@@ -22,6 +22,8 @@ import { arcadeKey, arcadeQuestionIds, gameById } from "@/lib/arcade";
 import { parentAuthorized, familyAuthorized } from "@/lib/parent-security";
 import { requestJson, RequestBodyError } from "@/lib/request-json";
 import { parkSession, resumeSession } from "@/lib/saved-sessions";
+import {controlsSchema,scheduleMessage} from '@/lib/learning-controls';
+import {skillById} from '@/lib/skill-graph';
 
 const subjects: Subject[] = ["reading", "math", "logic"];
 const allowedGoals = [8, 10, 15, 20];
@@ -140,7 +142,7 @@ export async function POST(request: Request) {
     let input:Record<string,unknown>;
     try { input=await requestJson(request,12000); }
     catch(error){if(error instanceof RequestBodyError)return Response.json({error:error.message},{status:error.status});throw error;}
-    if (["create-profile","profile","offline-confirm","preferences"].includes(String(input.action)) && !(await parentAuthorized(request))) {
+    if (["create-profile","profile","offline-confirm","preferences","controls","reset-progress","delete-profile"].includes(String(input.action)) && !(await parentAuthorized(request))) {
       return Response.json({error:"Unlock Parent Corner to change family settings."},{status:403});
     }
 
@@ -195,6 +197,20 @@ export async function POST(request: Request) {
     }
 
     const profile = normalizeExplorer(JSON.parse(old.data));
+    if(input.action==='offline-request'&&!profile.controls.offline)return Response.json({error:'Offline missions are turned off for this explorer.'},{status:403});
+    const childActions=["start","game-start","session-resume","campaign-start","discovery-start","team-start","answer","hint","save-garden"];
+    const schedule=scheduleMessage(profile.controls);
+    if(schedule&&childActions.includes(String(input.action)))return Response.json({error:schedule},{status:403});
+    if(input.action==='delete-profile'){
+      if(input.confirm!==profile.name)return Response.json({error:'Type the explorer name to confirm deletion.'},{status:400});
+      if(profile.team&&!profile.team.completedAt)return Response.json({error:'Finish the shared Team Quest before deleting this profile.'},{status:409});
+      const results=await database().batch([
+        database().prepare('DELETE FROM explorers WHERE id = ? AND revision = ? AND (SELECT COUNT(*) FROM explorers) > 1').bind(profile.id,old.revision),
+        database().prepare('DELETE FROM workspace_items WHERE profile_id = ? AND NOT EXISTS (SELECT 1 FROM explorers WHERE id = ?)').bind(profile.id,profile.id),
+      ]);
+      if(!results[0].meta.changes)return Response.json({error:'Keep at least one explorer, or reload if this profile changed.'},{status:409});
+      return Response.json({deleted:profile.id,profiles:await readAll()});
+    }
     if (profile.preferences.paused && ["start","game-start","session-resume","campaign-start","discovery-start","team-start","answer","hint","save-garden"].includes(String(input.action))) {
       return Response.json({error:"Your adventures are taking a little rest. A grown-up can resume them in Parent Corner."},{status:403});
     }
@@ -204,6 +220,7 @@ export async function POST(request: Request) {
       const partnerRow=await row(partnerId);
       if (!partnerRow) return Response.json({error:"That explorer was not found."},{status:404});
       const partner=normalizeExplorer(JSON.parse(partnerRow.data));
+      if(input.action==='team-start'&&scheduleMessage(partner.controls))return Response.json({error:'Your teammate is taking a scheduled break. Try a solo adventure for now.'},{status:403});
       try {
         if (input.action==="team-start") startTeamQuest(profile,partner,crypto.randomUUID());
         else completeTeamQuest(profile,partner);
@@ -217,7 +234,24 @@ export async function POST(request: Request) {
     }
     let feedback: { correct?: boolean; message?: string; hint?: string | null } | null = null;
 
-    if (input.action === "profile") {
+    if(input.action==='controls'){
+      const parsed=controlsSchema.safeParse(input.controls);if(!parsed.success)return Response.json({error:parsed.error.issues[0].message},{status:400});
+      profile.controls=parsed.data;
+    } else if(input.action==='reset-progress'){
+      if(input.confirm!==profile.name)return Response.json({error:'Type the explorer name to confirm this reset.'},{status:400});
+      if(profile.team&&!profile.team.completedAt)return Response.json({error:'Finish the shared Team Quest before resetting progress.'},{status:409});
+      const target=String(input.target);
+      const matches=(s:NonNullable<ExplorerProfile['session']>)=>target==='game'?s.gameId===input.game:target==='story'?s.chapter!==undefined:!s.gameId&&s.chapter===undefined&&!s.teamId;
+      if(['game','daily','story'].includes(target)){
+        if(target==='game'){const game=gameById(input.game);if(!game)return Response.json({error:'Choose a game.'},{status:400});delete profile.arcade[arcadeKey(profile.grade,game.id)];}
+        if(target==='story')profile.adventure.chapters=[];
+        if(profile.session&&matches(profile.session))profile.session=null;
+        profile.savedSessions=profile.savedSessions.filter(s=>!matches(s));
+      }else if(target==='rewards'){profile.stars=0;}
+      else if(target==='skill'){if(typeof input.skill!=='string'||!skillById.has(input.skill))return Response.json({error:'Choose a known skill.'},{status:400});delete profile.skillMastery[input.skill];}
+      else if(target==='all'){const fresh=newExplorer(profile.id,profile.name,profile.grade,profile.avatar,profile.interests,profile.dailyGoal);Object.assign(profile,fresh,{controls:profile.controls,preferences:profile.preferences,createdAt:profile.createdAt});}
+      else return Response.json({error:'Choose what to reset.'},{status:400});
+    } else if (input.action === "profile") {
       if (
         !validName(input.name) ||
         !validGrade(input.grade) ||

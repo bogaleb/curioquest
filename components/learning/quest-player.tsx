@@ -5,6 +5,8 @@ import { StoryPage } from "./arcade-engines";
 import { campaignChapters } from "@/lib/campaign";
 import { gameById } from "@/lib/arcade";
 import { readAloud } from "@/lib/speech";
+import {useEffect} from 'react';
+import {celebrate} from '@/lib/audio';
 import type { PublicExplorer, QuestFeedback } from "@/lib/explorer-view";
 import type { PublicQuestion } from "@/lib/activity-types";
 
@@ -19,6 +21,7 @@ export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack
   onReflect:(strategy:string)=>void;onFeeling:(value:string)=>void;onFinish:()=>void;
 }) {
   const session=profile.session;
+  useEffect(()=>{if(feedback?.correct)celebrate(session?.index===session?.total);},[feedback?.correct,session?.index,session?.total]);
   if(!session)return null;
   const game=gameById(session.gameId),chapter=session.chapter!==undefined?campaignChapters[session.chapter]:undefined;
   const title=game?.title??(session.discovery?"Meet Nova":session.teamId?"Garden Rescue Team":chapter?.title??worldName(session.subject));

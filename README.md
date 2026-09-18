@@ -1,4 +1,14 @@
-# vinext-starter
+# CurioQuest
+
+An adventure-led family learning application built on the existing React/Vinext, TypeScript, and Cloudflare D1 foundation. `PRODUCT_BLUEPRINT.md` is the primary specification; `docs/product/RELEASE_STATUS.md` records what is shipped and what is still unfinished.
+
+The app includes adaptive Pre-K/Grade 1 quests, eight game collections, sibling Team Quest, a garden Build Lab, Creative Studio with saved artwork, a parent activity builder and assignments, interactive stories, science notebooks, and an optional parent-enabled Faith & Bible area.
+
+Start with `README_LOCAL.md` for local setup and migrations. Use `pnpm run typecheck`, `pnpm run lint`, `pnpm test`, `pnpm run build`, and `pnpm run test:integration` before publishing. Never delete `.wrangler/state` to fix a build error: it contains local family progress.
+
+Hosting remains owner-private. This is an expanded private beta, not a completed public multi-family product or a validated assessment. The framework reference below documents the retained deployment foundation.
+
+## Framework reference
 
 A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
 

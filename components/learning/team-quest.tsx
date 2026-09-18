@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import { ArrowRight, Users, Check } from "lucide-react";
-import { avatarEmoji, type ExplorerProfile } from "@/lib/explorers";
+import { avatarEmoji } from "@/lib/explorers";
+import type {PublicExplorer} from "@/lib/explorer-view";
 
-type Props={profiles:ExplorerProfile[];profile:ExplorerProfile;busy:boolean;
+type Props={profiles:PublicExplorer[];profile:PublicExplorer;busy:boolean;
   onStart:(partnerId:string)=>Promise<void>;onContinue:(id:string)=>Promise<void>;onComplete:()=>Promise<void>;onGarden:()=>void};
 
 export function TeamQuest({profiles,profile,busy,onStart,onContinue,onComplete,onGarden}:Props) {
@@ -11,13 +12,13 @@ export function TeamQuest({profiles,profile,busy,onStart,onContinue,onComplete,o
   const team=profile.team;
   const partner=profiles.find(p=>p.id===team?.partnerId);
   const participants=partner?[profile,partner]:[];
-  const done=(p:ExplorerProfile)=>p.history.some(h=>h.teamId===team?.id);
+  const done=(p:PublicExplorer)=>p.history.some(h=>h.teamId===team?.id);
   const finished=participants.length===2&&participants.every(done);
   return <section className="team-quest"><div className="eyebrow">TWO EXPLORERS. ONE DISCOVERY.</div><h1>The Garden Rescue Team</h1>
     <p className="lead">Take turns helping Nova. Every explorer has an important part to play.</p>
     <div className="team-banner"><span aria-hidden="true">🌳</span><div><h2>A treehouse for our friends</h2>
       <p>Gather seeds, read the garden labels, and finish the flower path. When both parts are ready, discover a treehouse together.</p></div></div>
-    {team&&partner?<><div className="team-roles">{participants.map((p,i)=><section className="panel" key={p.id}>
+    {team&&partner?<><div className="team-roles">{participants.map((p)=><section className="panel" key={p.id}>
       <span className="team-avatar" aria-hidden="true">{avatarEmoji(p.avatar)}</span><h2>{p.name}</h2>
       <div className="eyebrow">{p.grade==="prek"?"SEED DETECTIVE":"GARDEN PLANNER"}</div>
       <p>{p.grade==="prek"?"Count seeds, find a letter, and follow the flowers.":"Gather supplies, build a word, and finish the garden pattern."}</p>

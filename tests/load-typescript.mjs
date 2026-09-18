@@ -11,8 +11,8 @@ const modules = new Map();
 export function loadTs(name) {
   const filename = resolve(root, name.endsWith(".ts") ? name : name + ".ts");
   if (modules.has(filename)) return modules.get(filename).exports;
-  const module = { exports: {} };
-  modules.set(filename, module);
+  const loadedModule = { exports: {} };
+  modules.set(filename, loadedModule);
   const source = ts.transpileModule(readFileSync(filename, "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
     fileName: filename,
@@ -22,6 +22,6 @@ export function loadTs(name) {
     : specifier.startsWith(".")
       ? loadTs(resolve(dirname(filename), specifier))
       : require(specifier);
-  new Function("require", "module", "exports", source)(localRequire, module, module.exports);
-  return module.exports;
+  new Function("require", "module", "exports", source)(localRequire, loadedModule, loadedModule.exports);
+  return loadedModule.exports;
 }

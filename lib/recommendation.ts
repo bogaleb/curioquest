@@ -27,7 +27,7 @@ export function recommendQuest(
   requestedSubject: Subject | "daily",
   now = new Date(),
 ): QuestRecommendation {
-  const count = questSizeForGoal(profile.dailyGoal);
+  const count = profile.controls.questLength ?? questSizeForGoal(profile.dailyGoal);
   const chosen: Question[] = [];
   const plan: QuestRecommendation["plan"] = [];
   const subjects = subjectSequence(profile, requestedSubject, count);
@@ -67,7 +67,7 @@ function subjectSequence(
 ): Subject[] {
   if (requestedSubject !== "daily") return Array.from({ length: count }, () => requestedSubject);
   const base: Subject[] = ["reading", "math", "logic"];
-  const weakest = [...base].sort((left, right) => subjectStrength(profile, left) - subjectStrength(profile, right));
+  const weakest = [...base].sort((left, right) => (subjectStrength(profile, left)-(profile.controls.priorities.includes(left)?35:0)) - (subjectStrength(profile, right)-(profile.controls.priorities.includes(right)?35:0)));
   const sequence = [...base];
   while (sequence.length < count) sequence.push(weakest[(sequence.length - base.length) % weakest.length]);
   return rotate(sequence, profile.completed % sequence.length);
@@ -94,7 +94,7 @@ function rankQuestion(
   const interestMatch = question.contextTags.some((tag) => profile.interests.includes(tag));
   const recentFormat = profile.recentActivityTypes.slice(-3).includes(question.activityType);
   const repeatedSkill = chosen.filter((item) => item.skillId === question.skillId).length;
-  const expectedLevel = profile.skills[question.subject].level;
+  const expectedLevel = Math.max(1,Math.min(3,profile.skills[question.subject].level+(profile.controls.challenge==='gentle'?-1:profile.controls.challenge==='stretch'?1:0)));
   const prerequisiteWeak = skill.prerequisites.some((id) => {
     const prerequisite = profile.skillMastery[id];
     return prerequisite && prerequisite.attemptCount >= 2 && prerequisite.score < 55;

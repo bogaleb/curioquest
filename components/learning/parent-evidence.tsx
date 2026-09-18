@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Leaf, Check } from "lucide-react";
-import type { ExplorerProfile } from "@/lib/explorers";
+import type { PublicExplorer } from "@/lib/explorer-view";
 import { skillById } from "@/lib/skill-graph";
 import { progressionState } from "@/lib/mastery";
 import { gardenPieces } from "@/lib/adventure";
@@ -14,15 +14,16 @@ const homeIdeas:Record<string,string>={
 };
 
 export function ParentEvidence({profile,busy,onConfirm}:{
-  profile:ExplorerProfile;busy:boolean;onConfirm:()=>Promise<boolean>;
+  profile:PublicExplorer;busy:boolean;onConfirm:()=>Promise<boolean>;
 }) {
   const [expanded,setExpanded]=useState<string|null>(null);
-  const cutoff=Date.now()-7*24*60*60*1000;
+  const [now]=useState(()=>Date.now());
+  const cutoff=now-7*24*60*60*1000;
   const recent=profile.history.filter(h=>Date.parse(h.date)>=cutoff);
   const skills=Object.entries(profile.skillMastery).filter(([,m])=>m.attemptCount>0)
     .sort((a,b)=>a[1].score-b[1].score);
   const practiced=new Set(recent.flatMap(h=>h.skillIds??[])).size;
-  const due=skills.filter(([,m])=>m.nextReviewAt&&Date.parse(m.nextReviewAt)<=Date.now()).length;
+  const due=skills.filter(([,m])=>m.nextReviewAt&&Date.parse(m.nextReviewAt)<=now).length;
   const focus=skills[0]?skillById.get(skills[0][0]):undefined;
   return <section className="evidence-dashboard">
     <section className="panel parent-game-summary"><div className="section-heading"><h2>Learning through play</h2><a className="text-button" href="/api/parent/export">Download family learning records</a></div>

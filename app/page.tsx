@@ -5,68 +5,79 @@ import { QuestPlayer, activityNarration } from '@/components/learning/quest-play
 import { GameZone, GameZoneInvitation } from '@/components/learning/game-zone';
 import { ParentGate } from '@/components/learning/parent-gate';
 import { ComfortSettings } from '@/components/learning/comfort-settings';
-import { Gamepad2 } from 'lucide-react';
 import { StoryTrail, GardenLab } from '@/components/learning/garden-adventure';
 import { TeamQuest } from '@/components/learning/team-quest';
 import { ParentEvidence } from '@/components/learning/parent-evidence';
 import { DiscoveryInvitation } from '@/components/learning/discovery-invitation';
-import { campaignChapters } from '@/lib/campaign';
+import Link from 'next/link';
+import {lazy,Suspense} from 'react';
+import type {PublicExplorer,QuestFeedback} from '@/lib/explorer-view';
+import type {PublicQuestion} from '@/lib/activity-types';
+import {ParentBuilder} from '@/components/learning/parent-builder';
+import {ParentControls} from '@/components/learning/parent-controls';
+import {ParentQuests} from '@/components/learning/parent-quests';
+import {CelebrationLayer} from '@/components/learning/celebration-layer';
+import {AppNavigation} from '@/components/learning/app-navigation';
+import {configureAudio,unlockAudio,quietAudio} from '@/lib/audio';
+import {readAloud as speak} from '@/lib/speech';
+const CreativeStudio=lazy(()=>import('@/components/learning/creative-studio').then(m=>({default:m.CreativeStudio})));
+const ScienceLab=lazy(()=>import('@/components/learning/science-lab').then(m=>({default:m.ScienceLab})));
+const StoryWorld=lazy(()=>import('@/components/learning/story-world').then(m=>({default:m.StoryWorld})));
+type QuestResponse={profile:PublicExplorer;profiles:PublicExplorer[];feedback:QuestFeedback;error?:string;deleted?:string};
 import { questSizeForGoal } from '@/lib/quest-settings';
-import { Compass, Map, Star, BookOpen, Shapes, Mountain, ArrowRight, Volume2, ChevronDown, Check, Flag, Lightbulb, X, ShieldCheck, Sparkles, Leaf, Home, ArrowLeft, LoaderCircle, Trophy, Plus, Users } from 'lucide-react';
+import { Compass, Map, Star, BookOpen, Shapes, Mountain, ArrowRight, Volume2, ChevronDown, Check, Flag, Lightbulb, X, ShieldCheck, Sparkles, Leaf, Home, LoaderCircle, Trophy, Plus, Users } from 'lucide-react';
 import { AVATARS, INTERESTS, avatarEmoji } from '@/lib/explorers';
-const worlds = [{ id: 'reading', name: 'Word Forest', skill: 'Letters, sounds & stories', icon: BookOpen, color: 'green', line: 'Every word opens a new path.' }, { id: 'math', name: 'Number City', skill: 'Numbers, counting & math', icon: Shapes, color: 'yellow', line: 'Big ideas start with little numbers.' }, { id: 'logic', name: 'Logic Mountain', skill: 'Patterns, puzzles & thinking', icon: Mountain, color: 'purple', line: 'A little thinking. A big discovery.' }];
+const worlds = [{ id: 'reading', name: 'Word Forest', skill: 'Letters, sounds & stories', icon: BookOpen, color: 'green', line: 'Every word opens a new path.' }, { id: 'math', name: 'Number City', skill: 'Numbers, counting & math', icon: Shapes, color: 'yellow', line: 'Big ideas start with little numbers.' }, { id: 'logic', name: 'Logic Mountain', skill: 'Patterns, puzzles & thinking', icon: Mountain, color: 'purple', line: 'A little thinking. A big discovery.' }] as const;
 const worldName = (id: string) => worlds.find(w => w.id === id)?.name || 'Daily Quest';
-function speak(text: string) { if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.rate = .85;
-    window.speechSynthesis.speak(u);
-} }
 export default function HomePage() {
-    const [profiles, setProfiles] = useState<any[]>([]), [pid, setPid] = useState('maya'), [view, setView] = useState('adventure'), [busy, setBusy] = useState(false), [error, setError] = useState(''), [play, setPlay] = useState(false), [current, setCurrent] = useState<any>(null), [feedback, setFeedback] = useState<any>(null), [selected, setSelected] = useState(''), [gate, setGate] = useState(false), [gateValue, setGateValue] = useState(''), [parentOpen, setParentOpen] = useState(false), [saved, setSaved] = useState(false), [adding, setAdding] = useState(false);
+    const [profiles, setProfiles] = useState<PublicExplorer[]>([]), [pid, setPid] = useState('maya'), [view, setViewRaw] = useState('adventure'), [busy, setBusy] = useState(false), [error, setError] = useState(''), [play, setPlay] = useState(false), [current, setCurrent] = useState<PublicQuestion|null>(null), [feedback, setFeedback] = useState<QuestFeedback>(null), [selected, setSelected] = useState(''), [gate, setGate] = useState(false), [parentOpen, setParentOpen] = useState(false), [saved, setSaved] = useState(false), [adding, setAdding] = useState(false);
+    const [studioDirty,setStudioDirty]=useState(false);
+    const setView=useCallback((next:React.SetStateAction<string>)=>{if(studioDirty&&!window.confirm('Leave the studio without saving these changes?'))return;setStudioDirty(false);setViewRaw(next);window.scrollTo({top:0,behavior:'instant'});},[studioDirty]);
     const p = profiles.find(x => x.id === pid);
     const session = p?.session;
-    const active = session && session.index < session.total;
-    const today = p?.history.filter((h: any) => h.date.slice(0, 10) === new Date().toISOString().slice(0, 10)).length || 0;
-    const questCount = active ? session.total : questSizeForGoal(p?.dailyGoal || 10);
+    const active = session && session.index < session!.total;
+    const today = p?.history.filter((h) => h.date.slice(0, 10) === new Date().toISOString().slice(0, 10)).length || 0;
+    const questCount = active ? session!.total : p?.controls.questLength??questSizeForGoal(p?.dailyGoal || 10);
+    const [assignmentVersion,setAssignmentVersion]=useState(0);
     const requestLock = useRef(false);
     async function load() { setError(''); try {
         const r = await fetch('/api/quest');
-        const d: any = await r.json();
+        const d: QuestResponse = await r.json();
         if (!r.ok)
-            throw Error(d.error);
+            throw Error(d.error||'Please try again.');
         setProfiles(d.profiles);
-        if (d.profiles.length && !d.profiles.some((profile: any) => profile.id === pid))
+        if (d.profiles.length && !d.profiles.some((profile) => profile.id === pid))
             setPid(d.profiles[0].id);
     }
-    catch (e: any) {
-        setError(e.message);
+    catch (e: unknown) {
+        setError(e instanceof Error?e.message:'Please try again.');
     } }
-    useEffect(() => { load(); }, []);
-    async function action(body: any, explorerId = pid) { if (requestLock.current)
+    useEffect(() => { const controller=new AbortController();fetch('/api/quest',{signal:controller.signal}).then(async r=>{const d=await r.json() as QuestResponse;if(!r.ok)throw Error(d.error);setProfiles(d.profiles);setPid(id=>d.profiles.some((profile:PublicExplorer)=>profile.id===id)?id:d.profiles[0]?.id??'');}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return ()=>controller.abort(); }, []);
+    const action=useCallback(async (body: Record<string,unknown>, explorerId = pid) => { if (requestLock.current)
         return null; requestLock.current = true; setBusy(true); setError(''); try {
         const r = await fetch('/api/quest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, profile: explorerId }) });
-        const d: any = await r.json();
+        const d: QuestResponse = await r.json();
         if (!r.ok)
-            throw Error(d.error);
-        setProfiles(ps => ps.map(a => (d.profiles || [d.profile]).find((b: any) => b.id === a.id) || a));
+            throw Error(d.error||'Please try again.');
+        setProfiles(ps => d.deleted ? d.profiles : ps.map(a => (d.profiles || [d.profile]).find((b) => b.id === a.id) || a));
+        if(d.deleted&&d.profiles[0])setPid(d.profiles[0].id);
         return d;
     }
-    catch (e: any) {
-        setError(e.message);
+    catch (e: unknown) {
+        setError(e instanceof Error?e.message:'Please try again.');
         return null;
     }
     finally {
         requestLock.current = false;
         setBusy(false);
-    } }
+    } },[pid]);
     async function createProfile(form: HTMLFormElement) { if (requestLock.current)
         return false; requestLock.current = true; setBusy(true); setError(''); try {
         const fd = new FormData(form);
         const r = await fetch('/api/quest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'create-profile', name: fd.get('name'), grade: fd.get('grade'), avatar: fd.get('avatar'), dailyGoal: Number(fd.get('dailyGoal')), interests: fd.getAll('interests') }) });
-        const d: any = await r.json();
+        const d: QuestResponse = await r.json();
         if (!r.ok)
-            throw Error(d.error);
+            throw Error(d.error||'Please try again.');
         setProfiles(ps => [...ps, d.profile]);
         setPid(d.profile.id);
         setAdding(false);
@@ -74,8 +85,8 @@ export default function HomePage() {
         setView('adventure');
         return true;
     }
-    catch (e: any) {
-        setError(e.message);
+    catch (e: unknown) {
+        setError(e instanceof Error?e.message:'Please try again.');
         return false;
     }
     finally {
@@ -84,66 +95,71 @@ export default function HomePage() {
     } }
     async function continueAs(id: string) {
         const explorer=profiles.find(profile=>profile.id===id);
-        const savedTeam=explorer?.savedSessions?.find((saved:any)=>saved.teamId===explorer.team?.id);
+        const savedTeam=explorer?.savedSessions?.find((saved)=>saved.teamId===explorer.team?.id);
         const d = await action(savedTeam ? {action:'session-resume',session:savedTeam.id} : { action: 'start', subject: 'daily' }, id); if (d) {
         setPid(id);
-        setCurrent(d.profile.session.question);
+        setCurrent(d.profile.session!.question);
         setFeedback(null);
         setSelected('');
         setPlay(true);
     } }
     async function startCampaign() { if (busy || !p)
         return; const d = await action({ action: 'campaign-start' }); if (d) {
-        setCurrent(d.profile.session.question);
+        setCurrent(d.profile.session!.question);
         setFeedback(null);
         setSelected('');
         setPlay(true);
     } }
-    async function start(subject: string) { if (busy || !p)
+    const start=useCallback(async (subject: string) => { if (busy || !p)
         return; const d = await action({ action: 'start', subject }); if (d) {
-        setCurrent(d.profile.session.question);
+        setCurrent(d.profile.session!.question);
         setFeedback(null);
         setSelected('');
         setPlay(true);
         return true;
-    } return false; }
-    async function answer(value: string) { if (busy || feedback?.correct)
-        return; setSelected(value); const d = await action({ action: 'answer', session: session.id, question: current.id, answer: value }); if (d)
+    } return false; },[busy,p,action]);
+    async function answer(value: string) { if (!session || !current || busy || feedback?.correct)
+        return; setSelected(value); const d = await action({ action: 'answer', session: session!.id, question: current!.id, answer: value }); if (d)
         setFeedback(d.feedback); }
-    async function hint() { const d = await action({ action: 'hint', session: session.id, question: current.id }); if (d)
+    async function hint() { if(!session||!current)return null;const d = await action({ action: 'hint', session: session!.id, question: current!.id }); if (d)
         setFeedback(d.feedback); return d; }
     async function startDiscovery() { const d = await action({ action: 'discovery-start' }); if (d) {
-        setCurrent(d.profile.session.question);
+        setCurrent(d.profile.session!.question);
         setFeedback(null);
         setSelected('');
         setPlay(true);
     } }
-    async function startGame(game:string,level:number) {const d=await action({action:'game-start',game,level});if(d){setCurrent(d.profile.session.question);setFeedback(null);setSelected('');setPlay(true);}}
-    async function resumeSaved(id:string) {const d=await action({action:'session-resume',session:id});if(d){setCurrent(d.profile.session.question);setFeedback(null);setSelected('');setPlay(true);}}
-    useEffect(()=>{if(play&&current&&p?.preferences?.autoRead)speak(activityNarration(current));return ()=>window.speechSynthesis?.cancel();},[play,current?.id,p?.preferences?.autoRead]);
-    function next() { setFeedback(null); setSelected(''); setCurrent(session.question); }
-    useEffect(() => { const context = (document as any).modelContext; if (!context?.registerTool)
-        return; const controller = new AbortController(); Promise.resolve(context.registerTool({ name: 'start_learning_quest', description: 'Open a personalized learning quest for the selected explorer.', inputSchema: { type: 'object', properties: { world: { type: 'string', enum: ['daily', 'reading', 'math', 'logic'] } }, required: ['world'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: async (input: any) => { if (!['daily', 'reading', 'math', 'logic'].includes(input.world))
+    async function startGame(game:string,level:number) {const d=await action({action:'game-start',game,level});if(d){setCurrent(d.profile.session!.question);setFeedback(null);setSelected('');setPlay(true);}}
+    async function resumeSaved(id:string) {const d=await action({action:'session-resume',session:id});if(d){setCurrent(d.profile.session!.question);setFeedback(null);setSelected('');setPlay(true);}}
+    useEffect(()=>{if(play&&current&&p?.preferences?.autoRead)speak(activityNarration(current));return ()=>window.speechSynthesis?.cancel();},[play,current,p?.preferences?.autoRead]);
+    function next() { setFeedback(null); setSelected(''); setCurrent(session!.question); }
+    useEffect(() => { const context = (document as Document & {modelContext?:{registerTool:(tool:Record<string,unknown>,options:{signal:AbortSignal})=>Promise<void>}}).modelContext; if (!context?.registerTool)
+        return; const controller = new AbortController(); Promise.resolve(context.registerTool({ name: 'start_learning_quest', description: 'Open a personalized learning quest for the selected explorer.', inputSchema: { type: 'object', properties: { world: { type: 'string', enum: ['daily', 'reading', 'math', 'logic'] } }, required: ['world'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: async (input: {world:string}) => { if (!['daily', 'reading', 'math', 'logic'].includes(input.world))
             throw Error('Unknown world'); if (!p || busy)
             throw Error('Explorer not ready'); const opened = await start(input.world); if (!opened)
-            throw Error('Quest could not be opened'); return { opened: true, world: input.world }; } }, { signal: controller.signal })).catch(() => { }); return () => controller.abort(); }, [pid, p, busy]);
+            throw Error('Quest could not be opened'); return { opened: true, world: input.world }; } }, { signal: controller.signal })).catch(() => { }); return () => controller.abort(); }, [pid, p, busy,start]);
     const closeDialog = useCallback(() => { if (requestLock.current)
         return; setPlay(false); setGate(false); setAdding(false); window.speechSynthesis?.cancel(); }, []);
     useDialogFocus(play || gate || adding, closeDialog);
-    const parentUnlocked=useCallback(()=>{setParentOpen(true);setGate(false);setView('parent');},[]);
+    const parentUnlocked=useCallback(()=>{setParentOpen(true);setGate(false);setViewRaw('parent');},[]);
     const parent=()=>setGate(true);
     async function lockParent(){try{const r=await fetch('/api/parent',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'lock'})});if(!r.ok)throw Error('Parent Corner could not be locked. Please try again.');setParentOpen(false);setView('adventure');}catch(e){setError(e instanceof Error?e.message:'Please try again.');}}
-    useEffect(()=>{if(!parentOpen)return;const timer=setTimeout(()=>{setParentOpen(false);setView(v=>v==='parent'?'adventure':v);},15*60*1000);return ()=>clearTimeout(timer);},[parentOpen]);
+    useEffect(()=>{if(!parentOpen)return;const timer=setTimeout(()=>{setParentOpen(false);setView(v=>v==='parent'?'adventure':v);},15*60*1000);return ()=>clearTimeout(timer);},[parentOpen,setView]);
+    useEffect(()=>{if(p)configureAudio(p.preferences.paused?{...p.controls.audio,music:false,effects:false}:p.controls.audio);},[p]);
+    useEffect(()=>{const unlock=()=>{void unlockAudio();};document.addEventListener('pointerdown',unlock);document.addEventListener('keydown',unlock);return()=>{document.removeEventListener('pointerdown',unlock);document.removeEventListener('keydown',unlock);quietAudio();};},[]);
     return <div className="app-shell" data-reduced-motion={p?.preferences?.reducedMotion || undefined}>
-    <aside className="sidebar" inert={play || gate || adding}><a className="brand" href="/" aria-label="CurioQuest home"><span className="brand-icon"><Compass size={29}/></span><span>curio<span className="brand-q">quest</span><small>SMALL STEPS. BIG DISCOVERIES.</small></span></a><div className="explorer-switch"><span className="avatar">{avatarEmoji(p?.avatar)}</span><label><span>YOUR EXPLORER</span><select aria-label="Choose explorer" disabled={busy} value={pid} onChange={e => { setPid(e.target.value); setPlay(false); setSaved(false); }}>{profiles.length ? profiles.map(a => <option key={a.id} value={a.id}>{a.name} · {a.grade === 'prek' ? 'Pre-K' : 'Grade 1'}</option>) : <option>Loading…</option>}</select></label><ChevronDown size={16}/></div>
-    <nav aria-label="Main navigation"><button className={view === 'games' ? 'nav-item active' : 'nav-item'} onClick={() => setView('games')}><Gamepad2 />Game Zone</button><button className={view === 'team' ? 'nav-item active' : 'nav-item'} onClick={() => setView('team')}><Users />Team Quest</button><button className={view === 'garden' ? 'nav-item active' : 'nav-item'} onClick={() => setView('garden')}><Leaf />Build Lab</button><button className={view === 'adventure' ? 'nav-item active' : 'nav-item'} onClick={() => setView('adventure')}><Compass />My adventure</button><button className={view === 'worlds' ? 'nav-item active' : 'nav-item'} onClick={() => setView('worlds')}><Map />My worlds</button><button className={view === 'rewards' ? 'nav-item active' : 'nav-item'} onClick={() => setView('rewards')}><Star />Treasure chest{p?.stars > 0 && <span className="nav-count">{p.stars}</span>}</button></nav>
+    <CelebrationLayer/>
+    <aside className="sidebar" inert={play || gate || adding}><Link className="brand" href="/" aria-label="CurioQuest home"><span className="brand-icon"><Compass size={29}/></span><span>curio<span className="brand-q">quest</span><small>SMALL STEPS. BIG DISCOVERIES.</small></span></Link><div className="explorer-switch"><span className="avatar">{avatarEmoji(p?.avatar)}</span><label><span>YOUR EXPLORER</span><select aria-label="Choose explorer" disabled={busy} value={pid} onChange={e => { if(studioDirty&&!window.confirm('Leave without saving your artwork?'))return;setStudioDirty(false);setPid(e.target.value);if(view==='faith'&&!profiles.find(x=>x.id===e.target.value)?.controls.faith)setViewRaw('adventure'); setPlay(false); setSaved(false); }}>{profiles.length ? profiles.map(a => <option key={a.id} value={a.id}>{a.name} · {a.grade === 'prek' ? 'Pre-K' : 'Grade 1'}</option>) : <option>Loading…</option>}</select></label><ChevronDown size={16}/></div>
+    <AppNavigation view={view} onNavigate={setView} faith={p?.controls.faith??false} stars={p?.stars??0}/>
     <div className="sidebar-bottom"><div className="nova-note"><span className="fox">🦊</span><strong>A little curious?</strong><p>That’s where every great adventure begins.</p><span>— Nova, your quest guide</span></div><button className={view === 'parent' ? 'nav-item active' : 'nav-item'} onClick={parent}><ShieldCheck />Parent corner</button><small className="version">CurioQuest · First adventure edition</small></div></aside>
-    <div className="page-area" inert={play || gate || adding}><header className="topbar"><div className="crumb"><Home size={16}/><span>/</span>{view === 'adventure' ? 'My adventure' : view === 'worlds' ? 'My worlds' : view === 'rewards' ? 'Treasure chest' : view === 'garden' ? 'Build Lab' : view === 'team' ? 'Team Quest' : view === 'games' ? 'Game Zone' : 'Parent corner'}</div><div className="top-actions"><span className="star-pill"><Star size={17} fill="currentColor"/>{p?.stars || 0} stars</span><button className="icon-button" title="Read a welcome" aria-label="Read a welcome" onClick={() => speak(`Hello ${p?.name || 'explorer'}! Ready for a little adventure? Choose your daily quest or explore a world.`)}><Volume2 size={20}/></button><span className="avatar mini">{avatarEmoji(p?.avatar)}</span></div></header>
+    <div className="page-area" inert={play || gate || adding}><header className="topbar"><div className="crumb"><Home size={16}/><span>/</span>{view === 'adventure' ? 'My adventure' : view === 'worlds' ? 'My worlds' : view === 'rewards' ? 'Treasure chest' : view === 'garden' ? 'Build Lab' : view === 'team' ? 'Team Quest' : view === 'games' ? 'Game Zone' : view === 'studio' ? 'Creative Studio' : view === 'science' ? 'Discovery Lab' : view === 'stories' ? 'Story Harbor' : view === 'faith' ? 'Faith & Bible' : 'Parent corner'}</div><div className="top-actions"><span className="star-pill"><Star size={17} fill="currentColor"/>{p?.stars || 0} stars</span><button className="icon-button" title="Read a welcome" aria-label="Read a welcome" onClick={() => speak(`Hello ${p?.name || 'explorer'}! Ready for a little adventure? Choose your daily quest or explore a world.`)}><Volume2 size={20}/></button><span className="avatar mini">{avatarEmoji(p?.avatar)}</span></div></header>
     <main>{error && <div className="error" role="alert">{error} <button onClick={load}>Try again</button></div>}
         {!p ? <div className="loading"><LoaderCircle className="spin"/> Opening your adventure…</div> : <>
             {p.preferences.paused && view !== 'parent' && <section className="pause-card"><span>🌿</span><h2>A little time away from the screen</h2><p>Your adventures and discoveries are safely saved.<br/>A grown-up can resume play in Parent Corner.</p></section>}
             {(view === 'adventure' || view === 'worlds') && <><div className="page-heading"><div><div className="eyebrow">{view === 'adventure' ? 'A LITTLE WONDER, EVERY DAY' : 'FOLLOW YOUR CURIOSITY'}</div><h1>{view === 'adventure' ? `Hey ${p.name}, let’s explore!` : 'A world of possibilities.'}</h1><p>{view === 'adventure' ? 'New things to learn. New things you can do.' : 'Pick a path. Make a discovery. Grow at your own pace.'}</p></div><div className="level-pill"><Sparkles size={19}/><span>Level {Math.floor(p.completed / 3) + 1}<small>{p.completed < 3 ? 'Curious Explorer' : 'Brave Explorer'}</small></span></div></div>
-            {view === 'adventure' && <section className="quest-banner"><img className="quest-art" src="/quest-island.webp" alt="A friendly fox explores a magical island with a forest, golden city, and purple mountains"/><div className="quest-copy"><span className="daily-label"><Flag size={15}/> YOUR DAILY QUEST</span><h2>The adventure<br />starts with you.</h2><p>Follow Nova through a world of words,<br className="desktop"/> numbers, and clever little puzzles.</p><div className="quest-meta"><span>{questCount} discoveries</span><span>About {active ? (session.estimatedMinutes || session.total * 2) : questCount * 2} minutes</span></div><button className="primary" disabled={busy || p.preferences.paused} onClick={() => start('daily')}>{active ? 'Continue my quest' : today ? 'Play another quest' : 'Let’s go, explorer'}<ArrowRight size={19}/></button><div className="reward-caption"><Star size={14} fill="currentColor"/> Earn {questCount * 2} stars for finishing your quest</div></div><span className="art-caption">YOUR NEXT DISCOVERY IS JUST AROUND THE BEND</span></section>}
+            {view === 'adventure' && <section className="quest-banner"><img className="quest-art" src="/quest-island.webp" alt="A friendly fox explores a magical island with a forest, golden city, and purple mountains"/><div className="quest-copy"><span className="daily-label"><Flag size={15}/> YOUR DAILY QUEST</span><h2>The adventure<br />starts with you.</h2><p>Follow Nova through a world of words,<br className="desktop"/> numbers, and clever little puzzles.</p><div className="quest-meta"><span>{questCount} discoveries</span><span>About {active ? (session!.estimatedMinutes || session!.total * 2) : questCount * 2} minutes</span></div><button className="primary" disabled={busy || p.preferences.paused} onClick={() => start('daily')}>{active ? 'Continue my quest' : today ? 'Play another quest' : 'Let’s go, explorer'}<ArrowRight size={19}/></button><div className="reward-caption"><Star size={14} fill="currentColor"/> Earn {questCount * 2} stars for finishing your quest</div></div><span className="art-caption">YOUR NEXT DISCOVERY IS JUST AROUND THE BEND</span></section>}
+            {view === 'adventure' && <ParentQuests key={p.id+assignmentVersion} profileId={p.id} paused={p.preferences.paused}/>}
+            {view === 'adventure' && <button className="studio-home-invitation" onClick={()=>setView('studio')}><span>🎨</span><div><strong>Your ideas belong here</strong><p>Draw, color, write, and build your gallery.</p></div><ArrowRight/></button>}
             {view === 'adventure' && <GameZoneInvitation onOpen={() => setView('games')}/>}
             <StoryTrail progress={p.adventure} busy={busy || p.preferences.paused} onStart={startCampaign} onGarden={() => setView('garden')}/>
             {view === 'adventure' && <DiscoveryInvitation profile={p} busy={busy || p.preferences.paused} onStart={startDiscovery} onListen={speak}/>}
@@ -151,22 +167,26 @@ export default function HomePage() {
             <section className="journey"><div className="section-heading"><h2>Your explorer journey</h2><span>{p.completed} quests complete</span></div><div className="journey-path">{[{ label: 'Get curious', n: 0, icon: Compass }, { label: 'Keep exploring', n: 3, icon: Leaf }, { label: 'Think bigger', n: 6, icon: Lightbulb }, { label: 'Shine bright', n: 9, icon: Star }].map((s, i) => <div className={`journey-stop ${p.completed >= s.n ? 'reached' : ''}`} key={s.label}><span><s.icon size={23}/></span><strong>{s.label}</strong><small>{i === 0 ? 'Your journey begins' : `${s.n} quests`}</small></div>)}</div></section>
             {view === 'worlds' && <div className="future-worlds"><strong>More worlds are on the horizon</strong><p>Design a garden in Build Lab, or follow Nova through the Missing Seeds story.</p></div>}</div>
             <aside className="right-column"><section className="today-card"><div className="section-heading"><h3>A little progress</h3><span className="sun-icon">☀</span></div><p>Small steps add up.</p><div className="daily-progress"><span className="ring"><Check size={24}/></span><div><strong>{today > 0 ? 'You explored today!' : 'A fresh start'}</strong><span>{today > 0 ? `${today} quest${today === 1 ? '' : 's'} completed` : 'Your first discovery awaits'}</span></div></div><div className="today-footer"><span><Star size={17}/>{p.stars} stars earned</span><span><Flag size={17}/>{p.completed} quests</span></div></section><section className="nova-card"><div className="nova-card-title"><span>🦊</span><div><strong>A note from Nova</strong><small>YOUR FRIENDLY GUIDE</small></div></div><p>“You don’t have to know the answer yet. Let’s figure it out together!”</p><button className="text-button" onClick={() => speak('You don’t have to know the answer yet. Let’s figure it out together!')}><Volume2 size={17}/> Listen to Nova</button></section><div className="gentle-note"><Leaf size={17}/><span>No rush. No races.<br />Just your kind of adventure.</span></div></aside></div></>}
-        {view === 'games' && <GameZone key={p.id} profile={p} busy={busy || p.preferences.paused} onStart={startGame} onContinue={()=>resumeSaved(session.id)} onResume={resumeSaved} onFavorite={async(game,favorite)=>{await action({action:'favorite-game',game,favorite});}}/>}
+        {view === 'games' && <GameZone key={p.id} profile={p} busy={busy || p.preferences.paused} onStart={startGame} onContinue={()=>resumeSaved(session!.id)} onResume={resumeSaved} onFavorite={async(game,favorite)=>{await action({action:'favorite-game',game,favorite});}}/>}
         {view === 'parent' && parentOpen && <div className="parent-lock-toolbar"><button className="secondary" onClick={lockParent}><ShieldCheck size={17}/>Lock Parent Corner</button></div>}
+        {view === 'science' && <Suspense fallback={<p>Opening Discovery Lab…</p>}><ScienceLab key={p.id} profileId={p.id} paused={p.preferences.paused} offline={p.controls.offline}/></Suspense>}
+        {(view==='stories'||view==='faith')&&<Suspense fallback={<p>Opening the bookshelf…</p>}>{view==='faith'&&!p.controls.faith?<p>Choose another adventure from the menu.</p>:<StoryWorld key={p.id+view} profileId={p.id} faith={view==='faith'} paused={p.preferences.paused}/>}</Suspense>}
+        {view === 'studio' && <Suspense fallback={<div className="loading">Opening Mira’s studio…</div>}><CreativeStudio key={p.id} profileId={p.id} name={p.name} paused={p.preferences.paused} onDirtyChange={setStudioDirty}/></Suspense>}
+        {view === 'parent' && parentOpen && <div className="parent-expansion"><header><span className="eyebrow">YOUR FAMILY’S CONTROL CENTER</span><h1>Guide their next discovery.</h1><p>Manage learning, make a personal quest, and keep their creations.</p></header><ParentControls key={p.id+':controls'} profile={p} busy={busy} onAction={action}/><details className="panel"><summary>Parent Activity Builder & assignments</summary><ParentBuilder key={p.id} profile={p} onAssigned={()=>setAssignmentVersion(v=>v+1)}/></details><details className="panel"><summary>Artwork portfolio</summary><Suspense fallback={<p>Opening portfolio…</p>}><CreativeStudio key={p.id+':parent'} profileId={p.id} name={p.name} paused={false} parent onDirtyChange={setStudioDirty}/></Suspense></details></div>}
         {view === 'parent' && parentOpen && <ComfortSettings key={p.id} preferences={p.preferences} busy={busy} onSave={async preferences=>!!(await action({action:'preferences',...preferences}))}/>}
         {view === 'team' && <TeamQuest key={p.id} profiles={profiles} profile={p} busy={busy || p.preferences.paused} onStart={async (partner) => { await action({ action: 'team-start', partner }); }} onContinue={continueAs} onComplete={async () => { await action({ action: 'team-complete' }); }} onGarden={() => setView('garden')}/>}
-        {view === 'garden' && <GardenLab key={p.id} progress={p.adventure} busy={busy || p.preferences.paused} onSave={async (garden) => !!(await action({ action: 'save-garden', garden }))} onOffline={async () => !!(await action({ action: 'offline-request' }))}/>}
+        {view === 'garden' && <GardenLab key={p.id} progress={p.adventure} offline={p.controls.offline} busy={busy || p.preferences.paused} onSave={async (garden) => !!(await action({ action: 'save-garden', garden }))} onOffline={async () => !!(await action({ action: 'offline-request' }))}/>}
         {view === 'rewards' && <><div className="eyebrow">LOOK HOW FAR YOU’VE COME</div><h1>Your treasure chest</h1><p className="lead">Every discovery is something to be proud of.</p><div className="reward-total"><Star size={48} fill="#f4bd46"/><div><strong>{p.stars}</strong><span>stars collected</span></div></div><div className="badge-grid">{[{ name: 'First discovery', n: 1, icon: Compass }, { name: 'Trail finder', n: 3, icon: Map }, { name: 'Brave thinker', n: 6, icon: Lightbulb }, { name: 'Wonder seeker', n: 9, icon: Trophy }].map(b => <div key={b.name} className={`badge-card ${p.completed >= b.n ? 'earned' : ''}`}><b.icon size={48}/><h3>{b.name}</h3><p>{p.completed >= b.n ? 'You earned this!' : `${b.n} completed quests`}</p></div>)}</div><button className="primary" onClick={() => setView('adventure')}>Back to my adventure <ArrowRight size={18}/></button></>}
         {view === 'parent' && parentOpen && <><div className="eyebrow">SUPPORT THEIR NEXT SMALL STEP</div><h1>Parent corner</h1><p className="lead">A clear view of {p.name}’s practice, without pressure.</p><ParentEvidence profile={p} busy={busy} onConfirm={async () => !!(await action({ action: 'offline-confirm' }))}/><div className="parent-grid"><section className="panel profile-panel"><div className="panel-title"><div><h2>Explorer profile</h2><p>Personalize the adventure without collecting sensitive details.</p></div><span className="profile-avatar">{avatarEmoji(p.avatar)}</span></div><form key={p.id} onSubmit={async (e) => { e.preventDefault(); const fd = new FormData(e.currentTarget); const d = await action({ action: 'profile', name: fd.get('name'), grade: fd.get('grade'), avatar: fd.get('avatar'), dailyGoal: Number(fd.get('dailyGoal')), interests: fd.getAll('interests') }); if (d)
-            setSaved(true); }}><div className="form-two"><label>Explorer name<input name="name" defaultValue={p.name} required maxLength={24}/></label><label>Learning track<select name="grade" defaultValue={p.grade}><option value="prek">Pre-K · First discoveries</option><option value="grade1">Grade 1 · Growing explorers</option></select></label></div><fieldset><legend>Choose a quest buddy</legend><div className="avatar-options">{AVATARS.map(a => <label key={a.id} title={a.label}><input type="radio" name="avatar" value={a.id} defaultChecked={p.avatar === a.id}/><span aria-hidden="true">{a.emoji}</span><small>{a.label.split(' ')[1]}</small></label>)}</div></fieldset><fieldset><legend>Favorite things <small>Choose up to 3</small></legend><div className="interest-options">{INTERESTS.map(i => <label key={i.id}><input type="checkbox" name="interests" value={i.id} defaultChecked={p.interests?.includes(i.id)}/><span>{i.emoji} {i.label}</span></label>)}</div></fieldset><label>Daily adventure length<select name="dailyGoal" defaultValue={p.dailyGoal || 10}><option value="8">About 8 minutes</option><option value="10">About 10 minutes</option><option value="15">About 15 minutes</option><option value="20">About 20 minutes</option></select></label><p className="form-note">Changing tracks adjusts the starting trails. Skill evidence, earned stars, and quest history stay.</p><button className="primary" disabled={busy}>Save profile <Check size={17}/></button>{saved && <p role="status" className="success">Profile saved.</p>}</form></section><section className="panel family-panel"><div className="panel-title"><div><h2>Your explorers</h2><p>{profiles.length} of 4 family profiles</p></div><Users size={25}/></div><div className="family-list">{profiles.map(profile => <button key={profile.id} disabled={busy} className={profile.id === p.id ? 'active' : ''} onClick={() => setPid(profile.id)}><span className="avatar">{avatarEmoji(profile.avatar)}</span><span><strong>{profile.name}</strong><small>{profile.grade === 'prek' ? 'Pre-K' : 'Grade 1'} · {profile.completed} quests</small></span>{profile.id === p.id && <Check size={18}/>}</button>)}</div><button className="secondary" disabled={profiles.length >= 4} onClick={() => { setError(''); setAdding(true); }}><Plus size={18}/> Add an explorer</button>{profiles.length >= 4 && <p className="form-note">This edition supports up to four explorer profiles.</p>}</section><section className="panel"><h2>Learning snapshot</h2>{worlds.map(w => { const s = p.skills[w.id]; return <div key={w.id} className="skill-row"><w.icon size={21}/><div><strong>{w.name}</strong><small>{s.seen} activities practiced · Trail {s.level}</small></div><b>{s.seen ? Math.round(s.first / s.seen * 100) + '%' : '—'}</b></div>; })}<p className="form-note">Percentages show correct answers on the first try without hints. These are practice signals, not mastery scores or an assessment.</p></section><section className="panel"><h2>Recent adventures</h2>{p.history.length ? p.history.slice(0, 6).map((h: any, i: number) => <div className="history-row" key={i}><span><strong>{worldName(h.subject)}</strong><small>{new Date(h.date).toLocaleDateString()} · {h.grade === 'prek' ? 'Pre-K' : 'Grade 1'}</small></span><span>{h.first}/{h.total || 5} independently</span></div>) : <p>Your child’s completed quests will appear here.</p>}</section><section className="panel"><h2>Make room for wonder</h2><p>After a short quest, ask: “What did you discover?” Try counting toys together or finding a word that starts with today’s sound.</p><h3>About this first edition</h3><p>324 activity configurations across two tracks, including eight Game Zone collections and the Missing Seeds story. Nova uses written hints and your browser’s read-aloud voice. There is no open-ended AI chat, advertising, or leaderboard.</p><p className="form-note">This is your private family workspace. Parent changes require an expiring parent PIN session. Keep the site private; this edition is a single-family workspace.</p></section></div></>}
+            setSaved(true); }}><div className="form-two"><label>Explorer name<input name="name" defaultValue={p.name} required maxLength={24}/></label><label>Learning track<select name="grade" defaultValue={p.grade}><option value="prek">Pre-K · First discoveries</option><option value="grade1">Grade 1 · Growing explorers</option></select></label></div><fieldset><legend>Choose a quest buddy</legend><div className="avatar-options">{AVATARS.map(a => <label key={a.id} title={a.label}><input type="radio" name="avatar" value={a.id} defaultChecked={p.avatar === a.id}/><span aria-hidden="true">{a.emoji}</span><small>{a.label.split(' ')[1]}</small></label>)}</div></fieldset><fieldset><legend>Favorite things <small>Choose up to 3</small></legend><div className="interest-options">{INTERESTS.map(i => <label key={i.id}><input type="checkbox" name="interests" value={i.id} defaultChecked={p.interests?.includes(i.id)}/><span>{i.emoji} {i.label}</span></label>)}</div></fieldset><label>Daily adventure length<select name="dailyGoal" defaultValue={p.dailyGoal || 10}><option value="8">About 8 minutes</option><option value="10">About 10 minutes</option><option value="15">About 15 minutes</option><option value="20">About 20 minutes</option></select></label><p className="form-note">Changing tracks adjusts the starting trails. Skill evidence, earned stars, and quest history stay.</p><button className="primary" disabled={busy}>Save profile <Check size={17}/></button>{saved && <p role="status" className="success">Profile saved.</p>}</form></section><section className="panel family-panel"><div className="panel-title"><div><h2>Your explorers</h2><p>{profiles.length} of 4 family profiles</p></div><Users size={25}/></div><div className="family-list">{profiles.map(profile => <button key={profile.id} disabled={busy} className={profile.id === p.id ? 'active' : ''} onClick={() => setPid(profile.id)}><span className="avatar">{avatarEmoji(profile.avatar)}</span><span><strong>{profile.name}</strong><small>{profile.grade === 'prek' ? 'Pre-K' : 'Grade 1'} · {profile.completed} quests</small></span>{profile.id === p.id && <Check size={18}/>}</button>)}</div><button className="secondary" disabled={profiles.length >= 4} onClick={() => { setError(''); setAdding(true); }}><Plus size={18}/> Add an explorer</button>{profiles.length >= 4 && <p className="form-note">This edition supports up to four explorer profiles.</p>}</section><section className="panel"><h2>Learning snapshot</h2>{worlds.map(w => { const s = p.skills[w.id]; return <div key={w.id} className="skill-row"><w.icon size={21}/><div><strong>{w.name}</strong><small>{s.seen} activities practiced · Trail {s.level}</small></div><b>{s.seen ? Math.round(s.first / s.seen * 100) + '%' : '—'}</b></div>; })}<p className="form-note">Percentages show correct answers on the first try without hints. These are practice signals, not mastery scores or an assessment.</p></section><section className="panel"><h2>Recent adventures</h2>{p.history.length ? p.history.slice(0, 6).map((h, i) => <div className="history-row" key={i}><span><strong>{worldName(h.subject)}</strong><small>{new Date(h.date).toLocaleDateString()} · {h.grade === 'prek' ? 'Pre-K' : 'Grade 1'}</small></span><span>{h.first}/{h.total || 5} independently</span></div>) : <p>Your child’s completed quests will appear here.</p>}</section><section className="panel"><h2>Make room for wonder</h2><p>After a short quest, ask: “What did you discover?” Try counting toys together or finding a word that starts with today’s sound.</p><h3>About this first edition</h3><p>324 activity configurations across two tracks, including eight Game Zone collections and the Missing Seeds story. Nova uses written hints and your browser’s read-aloud voice. There is no open-ended AI chat, advertising, or leaderboard.</p><p className="form-note">This is your private family workspace. Parent changes require an expiring parent PIN session. Keep the site private; this edition is a single-family workspace.</p></section></div></>}
         </>}
     <footer><span className="footer-brand"><Compass size={15}/> A little curiosity goes a long way.</span><span>Learn. Think. Build. Explore.</span></footer></main></div>
     {adding && <div className="overlay profile-overlay"><section className="gate panel add-profile" role="dialog" aria-modal="true" aria-labelledby="add-explorer-title"><button className="close" aria-label="Close" onClick={() => { setAdding(false); setError(''); }}><X /></button><div className="add-profile-heading"><span className="add-profile-icon"><Sparkles size={28}/></span><div><div className="eyebrow">A NEW ADVENTURE BEGINS</div><h2 id="add-explorer-title">Create an explorer</h2><p>Just enough detail to make learning feel like theirs.</p></div></div>{error && <div className="error" role="alert">{error}</div>}<form onSubmit={async (e) => { e.preventDefault(); await createProfile(e.currentTarget); }}><div className="form-two"><label>Explorer name<input name="name" autoFocus required maxLength={24} placeholder="What should Nova call them?"/></label><label>Learning track<select name="grade" defaultValue="prek"><option value="prek">Pre-K · First discoveries</option><option value="grade1">Grade 1 · Growing explorers</option></select></label></div><fieldset><legend>Choose a quest buddy</legend><div className="avatar-options">{AVATARS.map((a, index) => <label key={a.id} title={a.label}><input type="radio" name="avatar" value={a.id} defaultChecked={index === 0}/><span aria-hidden="true">{a.emoji}</span><small>{a.label.split(' ')[1]}</small></label>)}</div></fieldset><fieldset><legend>What lights them up? <small>Choose up to 3</small></legend><div className="interest-options">{INTERESTS.map(i => <label key={i.id}><input type="checkbox" name="interests" value={i.id}/><span>{i.emoji} {i.label}</span></label>)}</div></fieldset><label>Daily adventure length<select name="dailyGoal" defaultValue="10"><option value="8">About 8 minutes</option><option value="10">About 10 minutes</option><option value="15">About 15 minutes</option><option value="20">About 20 minutes</option></select></label><p className="privacy-note"><ShieldCheck size={17}/> CurioQuest stores a nickname and learning preferences—not a birth date, child email, or location.</p><div className="modal-actions"><button type="button" className="text-button" onClick={() => { setAdding(false); setError(''); }}>Cancel</button><button className="primary" disabled={busy}>{busy ? 'Creating explorer…' : 'Begin their adventure'}<ArrowRight size={18}/></button></div></form></section></div>}
     {gate && <ParentGate onClose={()=>setGate(false)} onUnlocked={parentUnlocked}/>}
     {play && p && !p.preferences.paused && <QuestPlayer profile={p} current={current} feedback={feedback} selected={selected} busy={busy} error={error}
-      onBack={()=>{setPlay(false);if(session.gameId)setView('games');window.speechSynthesis?.cancel();}} onAnswer={answer} onHint={hint} onNext={next}
-      onReflect={strategy=>action({action:'reflect',session:session.id,question:current.id,strategy})}
-      onFeeling={value=>action({action:'feeling',session:session.id,value})}
-      onFinish={()=>{setPlay(false);setView(session.gameId?'games':session.teamId?'team':session.chapter!==undefined?'garden':'adventure');window.speechSynthesis?.cancel();}}/>}
+      onBack={()=>{setPlay(false);if(session!.gameId)setView('games');window.speechSynthesis?.cancel();}} onAnswer={answer} onHint={hint} onNext={next}
+      onReflect={strategy=>action({action:'reflect',session:session!.id,question:current!.id,strategy})}
+      onFeeling={value=>action({action:'feeling',session:session!.id,value})}
+      onFinish={()=>{setPlay(false);setView(session!.gameId?'games':session!.teamId?'team':session!.chapter!==undefined?'garden':'adventure');window.speechSynthesis?.cancel();}}/>}
     </div>;
 }

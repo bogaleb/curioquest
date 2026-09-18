@@ -1,5 +1,7 @@
 # CurioQuest first playable edition
 
+Update September 18, 2026: the substantial Parent Center, Creative Studio, story/science, audio, and optional faith expansion is documented in `docs/product/RELEASE_STATUS.md` and `DEVELOPMENT_LOG.md`. The original foundation inventory below is retained for traceability; its earlier verification counts are historical.
+
 `PRODUCT_BLUEPRINT.md` is the source of truth. This is a connected playable prototype, not the complete blueprint or a validated learning assessment. The full remaining-feature audit is in `docs/product/MVP_BACKLOG.md`.
 
 - 324 authored/template activity configurations mapped to 40 active skills inside a 53-node Pre-K and Grade 1 prerequisite graph. All 108 legacy activity IDs remain available. Template variants are not counted as separate curriculum skills.

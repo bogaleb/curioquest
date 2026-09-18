@@ -1,0 +1,14 @@
+'use client';
+import {useEffect,useRef,useState} from 'react';
+import {Play,Square,Volume2} from 'lucide-react';
+import {traceLetters,traceNumbers,traceShapes,tracePaths,drawTrace} from '@/lib/handwriting';
+import {readAloud} from '@/lib/speech';
+export function HandwritingGuide({onChoose,disabled}:{onChoose:(key:string)=>void;disabled:boolean}){
+  const [group,setGroup]=useState('Warm-ups'),[selected,setSelected]=useState('line'),[playing,setPlaying]=useState(false);
+  const canvas=useRef<HTMLCanvasElement>(null);
+  useEffect(()=>{const ctx=canvas.current?.getContext('2d');if(!ctx)return;let frame=0,start=0;const paths=tracePaths(selected);const points=paths.flatMap((path,index)=>path.map((p,i)=>({p,stroke:index,first:i===0})));
+    function render(now:number){if(!ctx)return;start||=now;ctx.clearRect(0,0,1000,700);drawTrace(ctx,selected);if(playing){const count=Math.min(points.length,Math.floor((now-start)/35));ctx.strokeStyle='#d77b3d';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();points.slice(0,count).forEach(({p,first})=>first?ctx.moveTo(...p):ctx.lineTo(...p));ctx.stroke();const dot=points[Math.min(count,points.length-1)];if(dot){ctx.fillStyle='#d77b3d';ctx.beginPath();ctx.arc(...dot.p,12,0,Math.PI*2);ctx.fill();}if(count<points.length)frame=requestAnimationFrame(render);else setPlaying(false);}}
+    frame=requestAnimationFrame(render);return()=>cancelAnimationFrame(frame);
+  },[selected,playing]);
+  return <section className="handwriting-guide"><h2>Follow the little trail</h2><p>Watch an example, then make it your own. Start at the numbered dots. Letter styles can differ—your grown-up can help.</p><div className="game-filters">{['Warm-ups','Capital letters','Numbers'].map(g=><button key={g} type="button" aria-pressed={group===g} onClick={()=>setGroup(g)}>{g}</button>)}</div><div className="trace-picker" aria-label="Choose a practice trail">{(group==='Warm-ups'?traceShapes:group==='Numbers'?traceNumbers:traceLetters).map(key=><button type="button" key={key} aria-pressed={selected===key} onClick={()=>{setSelected(key);setPlaying(false);}}>{key}</button>)}</div><div className="trace-demonstration"><canvas ref={canvas} width={1000} height={700} role="img" aria-label={`A dotted ${selected} with numbered starting points`}/><div><button type="button" className="secondary" onClick={()=>setPlaying(!playing)}>{playing?<Square size={18}/>:<Play size={18}/>} {playing?'Stop example':'Watch example'}</button><button type="button" className="secondary" onClick={()=>readAloud(`Let’s practice ${selected}. Follow the trail from the numbered dot.`)}><Volume2 size={18}/>Listen</button><button type="button" className="primary" disabled={disabled} onClick={()=>onChoose(selected)}>Trace this trail</button></div></div><p className="studio-tip">For lowercase letters, names, sight words, or sentences, use the writing guide above. Examples are practice prompts, not a handwriting test.</p></section>;
+}

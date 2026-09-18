@@ -1,4 +1,5 @@
 import type { ActivityType, Subject } from "@/lib/curriculum";
+import { defaultControls, normalizeControls, type LearningControls } from './learning-controls';
 import type { DiscoveryProgress } from "./discovery";
 import { normalizeArcade, type ArcadeProgress } from "./arcade";
 import { normalizeMastery, type SkillMasteryMap } from "@/lib/mastery";
@@ -39,6 +40,7 @@ export type ExplorerProfile = {
   avatar: AvatarId;
   interests: InterestId[];
   dailyGoal: number;
+  controls: LearningControls;
   discovery?: DiscoveryProgress;
   arcade: ArcadeProgress;
   favorites: string[];
@@ -113,6 +115,7 @@ export function newExplorer(
     avatar,
     interests,
     dailyGoal,
+    controls: defaultControls(grade),
     arcade: {},
     favorites: [],
     preferences: { autoRead: false, reducedMotion: false, paused: false },
@@ -153,6 +156,7 @@ export function normalizeExplorer(value: unknown): ExplorerProfile {
     avatar: AVATARS.some((avatar) => avatar.id === profile.avatar)
       ? (profile.avatar as AvatarId)
       : fallbackAvatar,
+    controls: normalizeControls(profile.controls,grade),
     arcade: normalizeArcade(profile.arcade),
     favorites: Array.isArray(profile.favorites) ? profile.favorites.filter(id=>typeof id==="string").slice(0,8) : [],
     preferences: { autoRead: profile.preferences?.autoRead === true, reducedMotion: profile.preferences?.reducedMotion === true, paused: profile.preferences?.paused === true },
