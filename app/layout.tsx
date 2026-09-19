@@ -9,6 +9,7 @@ import "./stories.css";
 import "./reading.css";
 import "./polish.css";
 import "./experience.css";
+import "./wonder.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
