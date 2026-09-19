@@ -1,8 +1,14 @@
-import {database} from '@/db/raw';
-import type {WorkspaceItem} from './workspace-content';
-type Row={id:string;profile_id:string;kind:string;data:string;revision:number;updated_at:string};
-function unpack<T>(r:Row):WorkspaceItem<T>{return {id:r.id,profileId:r.profile_id,kind:r.kind,data:JSON.parse(r.data),revision:r.revision,updatedAt:r.updated_at};}
-export async function itemById<T>(id:string){const row=await database().prepare('SELECT * FROM workspace_items WHERE id = ?').bind(id).first<Row>();return row?unpack<T>(row):null;}
-export async function itemsFor<T>(profile:string,kind:string,limit=100,offset=0){const rows=await database().prepare('SELECT * FROM workspace_items WHERE profile_id = ? AND kind = ? ORDER BY updated_at DESC, id DESC LIMIT ? OFFSET ?').bind(profile,kind,limit,offset).all<Row>();return rows.results.map(unpack<T>);}
-export async function createItem<T>(profile:string,kind:string,data:T){const id=crypto.randomUUID(),updatedAt=new Date().toISOString();const result=await database().prepare('INSERT INTO workspace_items (id,profile_id,kind,data,revision,updated_at) SELECT ?,?,?,?,0,? WHERE (? = ? OR EXISTS (SELECT 1 FROM explorers WHERE id = ?)) AND (SELECT COUNT(*) FROM workspace_items WHERE profile_id = ? AND kind = ?) < 100').bind(id,profile,kind,JSON.stringify(data),updatedAt,profile,'family',profile,profile,kind).run();if(!result.meta.changes)throw new Error('Collection is full or explorer no longer exists.');return {id,profileId:profile,kind,data,revision:0,updatedAt};}
-export async function updateItem(item:WorkspaceItem,data:unknown){const updatedAt=new Date().toISOString();const result=await database().prepare('UPDATE workspace_items SET data = ?, revision = revision + 1, updated_at = ? WHERE id = ? AND revision = ?').bind(JSON.stringify(data),updatedAt,item.id,item.revision).run();return result.meta.changes===1?{...item,data,revision:item.revision+1,updatedAt}:null;}
+import {read, commit, uuid} from '@/lib/backend/repository';
+import type { WorkspaceItem } from './workspace-content';
+export function itemById<T>(id: string) { return uuid(id) ? read<WorkspaceItem<T> | null>('item', {id}) : Promise.resolve(null); }
+export function itemsFor<T>(profile: string, kind: string, limit = 100, offset = 0) {
+  if (profile !== 'family' && !uuid(profile)) return Promise.resolve([] as WorkspaceItem<T>[]);
+  return read<WorkspaceItem<T>[]>('items', {child: profile === 'family' ? undefined : profile, filter: kind, limit, offset});
+}
+export async function createItem<T>(profile: string, kind: string, data: T) {
+  const item = await commit<WorkspaceItem<T> | null>('create-item', {childId: profile === 'family' ? null : profile, kind, data});
+  if (!item) throw new Error('Collection is full or explorer no longer exists.');
+  return item;
+}
+export function updateItem<T>(item: WorkspaceItem, data: T) { return commit<WorkspaceItem<T> | null>('update-item', {id:item.id, revision:item.revision, data}); }
+export function deleteItem(id: string, revision: number) { return commit<boolean>('delete-item', {id, revision}); }

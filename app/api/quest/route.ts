@@ -1,5 +1,6 @@
-import { database } from "@/db/raw";
-import { questions, publicQuestion, type Subject } from "@/lib/curriculum";
+import {readExplorer as row,listExplorers,createExplorer,deleteExplorer,saveExplorers,catalog} from "@/lib/backend/repository";
+import {withFamily} from "@/lib/backend/context";
+import { publicQuestion, type Question, type Subject } from "@/lib/curriculum";
 import {
   AVATARS,
   INTERESTS,
@@ -29,37 +30,7 @@ const subjects: Subject[] = ["reading", "math", "logic"];
 const allowedGoals = [8, 10, 15, 20];
 const maxProfiles = 4;
 
-type ExplorerRow = { data: string; revision: number };
-
-function defaultProfiles() {
-  return [
-    newExplorer("maya", "Maya", "grade1", "fox", ["stories", "puzzles"], 10),
-    newExplorer("lydia", "Lydia", "prek", "rabbit", ["animals", "nature"], 8),
-  ];
-}
-
-async function ensureFamily() {
-  const db = database();
-  const count = await db.prepare("SELECT COUNT(*) AS total FROM explorers").first<{ total: number }>();
-  if (Number(count?.total ?? 0) > 0) return;
-
-  await db.batch(
-    defaultProfiles().map((profile) =>
-      db
-        .prepare("INSERT OR IGNORE INTO explorers (id, data, revision) VALUES (?, ?, 0)")
-        .bind(profile.id, JSON.stringify(profile)),
-    ),
-  );
-}
-
-async function row(id: string) {
-  return database()
-    .prepare("SELECT data, revision FROM explorers WHERE id = ?")
-    .bind(id)
-    .first<ExplorerRow>();
-}
-
-function clean(profile: ExplorerProfile) {
+function clean(profile: ExplorerProfile, questions: Question[]) {
   return {
     ...profile,
     savedSessions: profile.savedSessions.map(({ id, subject, index, questions, gameId, gameLevel, chapter, teamId, discovery }) => ({ id, subject, index, total: questions.length, gameId, gameLevel, chapter, teamId, discovery: !!discovery })),
@@ -81,12 +52,8 @@ function clean(profile: ExplorerProfile) {
   };
 }
 
-async function readAll() {
-  await ensureFamily();
-  const result = await database()
-    .prepare("SELECT data FROM explorers ORDER BY rowid")
-    .all<{ data: string }>();
-  return result.results.map((item) => clean(normalizeExplorer(JSON.parse(item.data))));
+async function readAll(questions: Question[]) {
+  return (await listExplorers()).map(item => clean(normalizeExplorer(JSON.parse(item.data)), questions));
 }
 
 function validName(value: unknown): value is string {
@@ -118,10 +85,11 @@ function validGoal(value: unknown) {
   return allowedGoals.includes(Number(value));
 }
 
-export async function GET(request: Request) {
+async function get(request: Request) {
   try {
+    const questions = await catalog<Question[]>("questions");
     if(!(await familyAuthorized(request)))return Response.json({error:"Sign in with this family's account to open its adventures."},{status:403,headers:{"Cache-Control":"no-store"}});
-    return Response.json({ profiles: await readAll() }, {headers:{"Cache-Control":"no-store"}});
+    return Response.json({ profiles: await readAll(questions) }, {headers:{"Cache-Control":"no-store"}});
   } catch (error) {
     console.error(error);
     return Response.json(
@@ -131,8 +99,9 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+async function post(request: Request) {
   try {
+    const questions = await catalog<Question[]>("questions");
     if(!(await familyAuthorized(request)))return Response.json({error:"Sign in with this family's account to open its adventures."},{status:403});
     const origin = request.headers.get("origin");
     if (origin && origin !== new URL(request.url).origin) {
@@ -160,9 +129,7 @@ export async function POST(request: Request) {
         );
       }
 
-      const count = await database()
-        .prepare("SELECT COUNT(*) AS total FROM explorers")
-        .first<{ total: number }>();
+      const count = {total:(await listExplorers()).length};
       if (Number(count?.total ?? 0) >= maxProfiles) {
         return Response.json(
           { error: "A family can have up to four explorer profiles in this edition." },
@@ -170,7 +137,7 @@ export async function POST(request: Request) {
         );
       }
 
-      const id = `explorer_${crypto.randomUUID()}`;
+      const id = crypto.randomUUID();
       const profile = newExplorer(
         id,
         input.name.trim(),
@@ -179,12 +146,8 @@ export async function POST(request: Request) {
         input.interests,
         Number(input.dailyGoal),
       );
-      const inserted = await database()
-        .prepare("INSERT INTO explorers (id, data, revision) SELECT ?, ?, 0 WHERE (SELECT COUNT(*) FROM explorers) < 4")
-        .bind(id, JSON.stringify(profile))
-        .run();
-      if (!inserted.meta.changes) return Response.json({error:"This family already has four explorers."},{status:409});
-      return Response.json({ profile: clean(profile) }, { status: 201 });
+      if (!await createExplorer(profile)) return Response.json({error:"This family already has four explorers."},{status:409});
+      return Response.json({ profile: clean(profile, questions) }, { status: 201 });
     }
 
     if (typeof input.profile !== "string" || input.profile.length > 80) {
@@ -204,12 +167,8 @@ export async function POST(request: Request) {
     if(input.action==='delete-profile'){
       if(input.confirm!==profile.name)return Response.json({error:'Type the explorer name to confirm deletion.'},{status:400});
       if(profile.team&&!profile.team.completedAt)return Response.json({error:'Finish the shared Team Quest before deleting this profile.'},{status:409});
-      const results=await database().batch([
-        database().prepare('DELETE FROM explorers WHERE id = ? AND revision = ? AND (SELECT COUNT(*) FROM explorers) > 1').bind(profile.id,old.revision),
-        database().prepare('DELETE FROM workspace_items WHERE profile_id = ? AND NOT EXISTS (SELECT 1 FROM explorers WHERE id = ?)').bind(profile.id,profile.id),
-      ]);
-      if(!results[0].meta.changes)return Response.json({error:'Keep at least one explorer, or reload if this profile changed.'},{status:409});
-      return Response.json({deleted:profile.id,profiles:await readAll()});
+      if(!await deleteExplorer(profile.id,old.revision))return Response.json({error:'Keep at least one explorer, or reload if this profile changed.'},{status:409});
+      return Response.json({deleted:profile.id,profiles:await readAll(questions)});
     }
     if (profile.preferences.paused && ["start","game-start","session-resume","campaign-start","discovery-start","team-start","answer","hint","save-garden"].includes(String(input.action))) {
       return Response.json({error:"Your adventures are taking a little rest. A grown-up can resume them in Parent Corner."},{status:403});
@@ -225,13 +184,10 @@ export async function POST(request: Request) {
         if (input.action==="team-start") startTeamQuest(profile,partner,crypto.randomUUID());
         else completeTeamQuest(profile,partner);
       } catch (error) { return Response.json({error:(error as Error).message},{status:409}); }
-      // One SQLite statement updates both records only if both revisions still match.
-      const result=await database().prepare(
-        "UPDATE explorers SET data = CASE id WHEN ? THEN ? ELSE ? END, revision = revision + 1 WHERE id IN (?, ?) AND (SELECT COUNT(*) FROM explorers WHERE (id = ? AND revision = ?) OR (id = ? AND revision = ?)) = 2"
-      ).bind(profile.id,JSON.stringify(profile),JSON.stringify(partner),profile.id,partner.id,profile.id,old.revision,partner.id,partnerRow.revision).run();
-      if(result.meta.changes!==2) return Response.json({error:"Your team changed in another window. Reload and try again."},{status:409});
-      return Response.json({profile:clean(profile),profiles:[clean(profile),clean(partner)]});
+      if(!await saveExplorers([{profile,revision:old.revision},{profile:partner,revision:partnerRow.revision}])) return Response.json({error:"Your team changed in another window. Reload and try again."},{status:409});
+      return Response.json({profile:clean(profile, questions),profiles:[clean(profile, questions),clean(partner, questions)]});
     }
+    let attempt: Record<string,unknown> | null = null;
     let feedback: { correct?: boolean; message?: string; hint?: string | null } | null = null;
 
     if(input.action==='controls'){
@@ -296,14 +252,14 @@ export async function POST(request: Request) {
       if (typeof input.autoRead !== "boolean" || typeof input.reducedMotion !== "boolean" || (input.paused!==undefined&&typeof input.paused!=="boolean")) return Response.json({error:"Choose your comfort settings."},{status:400});
       profile.preferences = {autoRead:input.autoRead,reducedMotion:input.reducedMotion,paused:typeof input.paused==="boolean"?input.paused:profile.preferences.paused};
     } else if (input.action === "session-resume") {
-      if (profile.session && profile.session.id === input.session && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile)});
+      if (profile.session && profile.session.id === input.session && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile, questions)});
       if (typeof input.session !== "string" || !resumeSession(profile, input.session)) return Response.json({error:"That saved adventure is no longer available. Choose a game to play."},{status:404});
     } else if (input.action === "game-start") {
       const game = gameById(input.game), level = input.level;
       if (!game || typeof level!=="number" || !Number.isInteger(level) || level<0 || level>2) return Response.json({error:"Choose a game mission."},{status:400});
       const completed=profile.arcade[arcadeKey(profile.grade,game.id)]?.levels??[];
       if (level>0 && !completed.includes(level-1)) return Response.json({error:"Explore the earlier mission first."},{status:409});
-      if (profile.session?.gameId === game.id && profile.session.gameLevel === level && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile)});
+      if (profile.session?.gameId === game.id && profile.session.gameLevel === level && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile, questions)});
       const saved = profile.savedSessions.find(session => session.gameId === game.id && session.gameLevel === level);
       if (saved) resumeSession(profile, saved.id);
       else {
@@ -347,7 +303,7 @@ export async function POST(request: Request) {
       try { startDiscovery(profile, crypto.randomUUID()); }
       catch (error) { return Response.json({ error: (error as Error).message }, { status: 409 }); }
     } else if (input.action === "campaign-start") {
-      if (profile.session && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile)});
+      if (profile.session && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile, questions)});
       const chapter=campaignChapters.findIndex((_,i)=>!profile.adventure.chapters.includes(i));
       if (chapter<0) return Response.json({error:"You solved the seed mystery! Visit your garden to keep creating."},{status:409});
       const ids=campaignQuestionIds(profile.grade,chapter);
@@ -363,7 +319,7 @@ export async function POST(request: Request) {
         profile.session &&
         profile.session.index < profile.session.questions.length
       ) {
-        return Response.json({ profile: clean(profile) });
+        return Response.json({ profile: clean(profile, questions) });
       }
 
       const recommendation = recommendQuest(profile, requestedSubject);
@@ -409,6 +365,10 @@ export async function POST(request: Request) {
         }
         const correct = evaluation.correct;
         const independent = session.misses === 0 && !session.hinted;
+        attempt = {id:crypto.randomUUID(),childId:profile.id,sessionId:session.id,activityId:question.id,
+          questionSlug:question.id,kind:question.activityType,skillId:question.skillId,response:input.answer,
+          correct,helpLevel:session.hintLevel??0,attemptNumber:session.misses+1,
+          evidence:independent?'independent-choice':'supported-practice',createdAt:new Date().toISOString()};
         // One evidence observation per question. Retries remain useful practice,
         // but cannot manufacture mastery or inflate confidence.
         if (session.misses === 0) recordAttempt(profile.skillMastery, question, session.id, correct, independent);
@@ -481,22 +441,13 @@ export async function POST(request: Request) {
 
     profile.events=[...profile.events,{type:String(input.action),at:new Date().toISOString(),
       ...(typeof input.question==="string"?{questionId:input.question}:{})}].slice(-100);
-    const update = database()
-      .prepare("UPDATE explorers SET data = ?, revision = revision + 1 WHERE id = ? AND revision = ?")
-      .bind(JSON.stringify(profile), profile.id, old.revision);
-    const result = input.action==='reset-progress'&&input.target==='all'
-      ? (await database().batch([
-          database().prepare('DELETE FROM reading_profiles WHERE child_id=? AND EXISTS (SELECT 1 FROM explorers WHERE id=? AND revision=?)').bind(profile.id,profile.id,old.revision),
-          update,
-        ]))[1]
-      : await update.run();
-    if (!result.meta.changes) {
+    if (!await saveExplorers([{profile,revision:old.revision}], input.action==='reset-progress'&&input.target==='all', attempt)) {
       return Response.json(
         { error: "Progress changed in another window. Please reload." },
         { status: 409 },
       );
     }
-    return Response.json({ profile: clean(profile), feedback });
+    return Response.json({ profile: clean(profile, questions), feedback });
   } catch (error) {
     console.error(error);
     return Response.json(
@@ -505,3 +456,6 @@ export async function POST(request: Request) {
     );
   }
 }
+
+export const GET = withFamily(get);
+export const POST = withFamily(post);

@@ -1,30 +1,13 @@
-# CurioQuest local project
+# CurioQuest local development
 
-This folder contains the CurioQuest playable prototype source. The complete product specification remains in `PRODUCT_BLUEPRINT.md`; implemented and unfinished features are documented in `IMPLEMENTATION.md` and `docs/product/MVP_BACKLOG.md`.
+The active app uses native Next.js 16 and Supabase, preserving the existing learning interface and engines.
 
-Included: 324 activity configurations, eight Game Zone collections, Pre-K and Grade 1 tracks, adaptive welcome, Daily Quest, Missing Seeds story, Build Lab, Team Quest, authored hints, four-child profiles, parent PIN/controls, and persistent D1 progress.
+1. Use Node >=22.13 and the pnpm version in package.json.
+2. Run `pnpm install --frozen-lockfile`.
+3. Copy `.env.example` to `.env.local` and configure the URL, publishable key and server-only secret key.
+4. Follow [the Supabase runbook](docs/architecture/SUPABASE_SETUP.md) to apply migrations, then run `pnpm supabase:check`.
+5. Run `pnpm dev` and open http://localhost:5173. Create/confirm a parent account, set the parent PIN and create a child.
 
-Use Node.js 22.13 or newer and the pnpm version in `package.json`. Preserve the pnpm lockfile. For a fresh local setup:
+Use `pnpm build` and `pnpm start` for the production server. Checks: `pnpm typecheck`, `pnpm test`, `pnpm test:integration` (requires PostgreSQL binaries; see the runbook).
 
-```powershell
-pnpm install
-pnpm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_left_talisman.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0001_clammy_annihilus.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0002_fresh_banshee.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0003_silly_vindicator.sql
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0004_premium_wolverine.sql
-pnpm start
-```
-
-Open the URL printed by the server. Apply each SQL migration once. For an existing pre-Game-Zone database, skip 0000 and apply only 0001 and 0002. If already applied, skip those too. Existing local progress lives in `.wrangler/state`; do not delete it to resolve a build problem.
-
-For an existing Game Zone installation, apply only migration `0003` to add workspace collections (artwork, assignments, activity sets, story progress, prayers, and science observations). It creates a new table and index without changing existing profile records. Stop a running production preview before rebuilding on Windows, because it holds the build files open.
-
-Open Parent Corner to choose your six-digit PIN and save its recovery code. Hosted parent setup binds the private workspace to its signed-in account. Local development uses a separate local-family identity; do not copy the local parent-security tables into the hosted database.
-
-Use `pnpm dev` for development with live updates (default port 5173). The production preview above exercises the built Worker and persisted database directly.
-
-Reading Adventure adds migration `0004`. Apply it once to an existing workspace after `0003`; it creates separate reading tables without changing old curriculum or progress. The bounded Section 94 scope and acceptance evidence are in `docs/product/READING_MILESTONE.md`.
-
-Quality checks: `pnpm run typecheck`, `pnpm test`, `pnpm run build`, and `pnpm run test:integration`. Integration tests use port 4187 and isolated temporary database state, leaving the family database untouched. The test server stops when the test ends; temporary state is retained for debugging.
+Never delete `.wrangler/state`: it contains legacy family data. Historical D1 tooling is retained for recovery and explicit transfer, but is no longer required for the active app. The runbook documents imports, Vercel configuration and remaining hosted verification gates.

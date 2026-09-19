@@ -6,6 +6,7 @@ import { join, resolve } from "node:path";
 import { loadTs } from "../tests/load-typescript.mjs";
 import { solveRoute } from "../tests/solve-route.mjs";
 import { verifyReadingFlow } from "../tests/reading-flow.mjs";
+import { verifyExperienceFlow } from "../tests/experience-flow.mjs";
 
 const root=resolve(import.meta.dirname,"..");
 const state=mkdtempSync(join(tmpdir(),"curioquest-integration-"));
@@ -262,6 +263,7 @@ try {
   const afterDelete=await call({action:'delete-profile',profile:disposable.id,confirm:disposable.name});assert.equal(afterDelete.profiles.length,3);
   assert.equal((await fetch(base+`/api/workspace?profile=${disposable.id}&kind=art`)).status,404);
   await verifyReadingFlow({base,call,parentCookie});
+  await verifyExperienceFlow({base,call,parentCookie});
   await parentCall({action:"lock"});
   await call({action:"offline-confirm",profile:profiles[0].id},403);
   await call({action:'reset-progress',profile:owner.id,target:'all',confirm:owner.name},403);

@@ -1,14 +1,15 @@
-import {database} from '@/db/raw';
+import {withFamily} from '@/lib/backend/context';
+import {readExplorer} from '@/lib/backend/repository';
 import {familyAuthorized,parentAuthorized} from '@/lib/parent-security';
 import {requestJson,RequestBodyError} from '@/lib/request-json';
 import {normalizeExplorer} from '@/lib/explorers';
 import {scheduleMessage} from '@/lib/learning-controls';
 import {quizSchema,artSchema,publicAssignment,type Quiz,type Assignment,type Artwork} from '@/lib/workspace-content';
-import {createItem,itemById,itemsFor,updateItem} from '@/lib/workspace-store';
+import {createItem,itemById,itemsFor,updateItem,deleteItem} from '@/lib/workspace-store';
 import {experiments} from '@/lib/science-lab';
 import {parentActivityDraft} from '@/lib/parent-activity-draft';
 const reply=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
-export async function GET(request:Request){
+async function get(request:Request){
   try{
     if(!await familyAuthorized(request))return reply({error:'Open your family workspace first.'},403);
     const url=new URL(request.url),profile=url.searchParams.get('profile')??'',kind=url.searchParams.get('kind');
@@ -16,19 +17,19 @@ export async function GET(request:Request){
       if(!await parentAuthorized(request))return reply({error:'Unlock Parent Corner.'},403);
       return reply({items:await itemsFor<Quiz>('family','set')});
     }
-    if(!await database().prepare('SELECT id FROM explorers WHERE id = ?').bind(profile).first())return reply({error:'Choose an explorer.'},404);
+    if(!await readExplorer(profile))return reply({error:'Choose an explorer.'},404);
     if(kind==='assignments')return reply({items:(await itemsFor<Assignment>(profile,'assignment')).map(publicAssignment)});
     if(kind==='art'){const page=Number(url.searchParams.get('page')??0);if(!Number.isInteger(page)||page<0||page>8)return reply({error:'Choose a gallery page.'},400);return reply({items:await itemsFor<Artwork>(profile,'art',12,page*12)});}
     if(kind==='observations')return reply({items:await itemsFor(profile,'observation')});
     if(kind==='prayers'){
-      const row=await database().prepare('SELECT data FROM explorers WHERE id = ?').bind(profile).first<{data:string}>();
+      const row=await readExplorer(profile);
       if(!row||!normalizeExplorer(JSON.parse(row.data)).controls.faith)return reply({error:'Faith & Bible is not enabled.'},403);
       return reply({items:await itemsFor(profile,'prayer')});
     }
     return reply({error:'Choose a collection.'},400);
   }catch{return reply({error:'Your collection could not be opened. Try again.'},503);}
 }
-export async function POST(request:Request){
+async function post(request:Request){
   try{
     if(!await familyAuthorized(request))return reply({error:'Open your family workspace first.'},403);
     if(request.headers.get('origin')&&request.headers.get('origin')!==new URL(request.url).origin)return reply({error:'Request not allowed.'},403);
@@ -45,10 +46,9 @@ export async function POST(request:Request){
       if(input.confirm!==true)return reply({error:'Confirm this deletion.'},400);
       const existing=await itemById(String(input.id));if(!existing)return reply({error:'Item not found.'},404);
       if(existing.revision!==input.revision)return reply({error:'This item changed. Reload it first.'},409);
-      const result=await database().prepare('DELETE FROM workspace_items WHERE id = ? AND revision = ?').bind(existing.id,existing.revision).run();
-      return result.meta.changes?reply({deleted:true}):reply({error:'This item changed. Reload it first.'},409);
+      return await deleteItem(existing.id,existing.revision)?reply({deleted:true}):reply({error:'This item changed. Reload it first.'},409);
     }
-    const row=await database().prepare('SELECT data FROM explorers WHERE id = ?').bind(String(input.profile??'')).first<{data:string}>();
+    const row=await readExplorer(String(input.profile??''));
     if(!row)return reply({error:'Choose an explorer.'},404);
     const profile=normalizeExplorer(JSON.parse(row.data));
     if(action==='draft-set'){
@@ -98,3 +98,6 @@ export async function POST(request:Request){
     return reply({error:'Choose an action.'},400);
   }catch(error){if(error instanceof RequestBodyError)return reply({error:error.message},error.status);console.error(error);return reply({error:'Your changes could not be saved. Please try again.'},503);}
 }
+
+export const GET = withFamily(get);
+export const POST = withFamily(post);

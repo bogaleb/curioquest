@@ -1,4 +1,5 @@
-import {database} from '@/db/raw';
+import {withFamily} from '@/lib/backend/context';
+import {readExplorer} from '@/lib/backend/repository';
 import {familyAuthorized,parentAuthorized} from '@/lib/parent-security';
 import {normalizeExplorer} from '@/lib/explorers';
 import {scheduleMessage} from '@/lib/learning-controls';
@@ -12,9 +13,9 @@ function view(profile:ReadingProfile,revision:number,catalog:ReadingCatalog,star
   const stories=catalog.stories.map(({answer,...story})=>{void answer;return story;});
   return {profile:safe,revision,session:session?{...session,activities:undefined,total:session.activities.length,activity:session.activities[session.index]??null} as ReadingView['session']:null,catalog:{...catalog,stories},readyWords:getDecodableWords(profile,catalog),stars};
 }
-async function explorer(id:string){const row=await database().prepare('SELECT data FROM explorers WHERE id=?').bind(id).first<{data:string}>();return row?normalizeExplorer(JSON.parse(row.data)):null;}
-export async function GET(request:Request){try{if(!await familyAuthorized(request))return reply({error:'Open your family workspace first.'},403);const child=await explorer(new URL(request.url).searchParams.get('profile')??'');if(!child)return reply({error:'Choose an explorer.'},404);const [catalog,state]=await Promise.all([readingCatalog(),readingProfile(child.id)]);if(!state)return reply({error:'Explorer not found.'},404);return reply(view(state.profile,state.revision,catalog,child.stars));}catch{return reply({error:'Your reading map could not be opened. Please try again.'},503);}}
-export async function POST(request:Request){try{
+async function explorer(id:string){const row=await readExplorer(id);return row?normalizeExplorer(JSON.parse(row.data)):null;}
+async function get(request:Request){try{if(!await familyAuthorized(request))return reply({error:'Open your family workspace first.'},403);const child=await explorer(new URL(request.url).searchParams.get('profile')??'');if(!child)return reply({error:'Choose an explorer.'},404);const [catalog,state]=await Promise.all([readingCatalog(),readingProfile(child.id)]);if(!state)return reply({error:'Explorer not found.'},404);return reply(view(state.profile,state.revision,catalog,child.stars));}catch{return reply({error:'Your reading map could not be opened. Please try again.'},503);}}
+async function post(request:Request){try{
   if(!await familyAuthorized(request))return reply({error:'Open your family workspace first.'},403);
   if(request.headers.get('origin')&&request.headers.get('origin')!==new URL(request.url).origin)return reply({error:'Request not allowed.'},403);
   const input=await requestJson(request,8000),child=await explorer(String(input.profile??''));if(!child)return reply({error:'Choose an explorer.'},404);
@@ -60,3 +61,6 @@ export async function POST(request:Request){try{
   if(!await saveReading(child.id,profile,state.revision,attempt,stars))return reply({error:'Your reading place changed. Refresh your saved place.'},409);
   const latest=await explorer(child.id);return reply({...view(profile,state.revision+1,catalog,latest?.stars??child.stars),feedback,correct});
 }catch(e){if(e instanceof RequestBodyError)return reply({error:e.message},e.status);console.error('Reading operation failed',e);return reply({error:'Your reading place could not be saved. Try again.'},503);}}
+
+export const GET = withFamily(get);
+export const POST = withFamily(post);

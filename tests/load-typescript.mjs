@@ -17,7 +17,7 @@ export function loadTs(name) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true },
     fileName: filename,
   }).outputText;
-  const localRequire = (specifier) => specifier.startsWith("@/")
+  const localRequire = (specifier) => specifier === 'server-only' ? {} : specifier.startsWith("@/")
     ? loadTs(specifier.slice(2))
     : specifier.startsWith(".")
       ? loadTs(resolve(dirname(filename), specifier))

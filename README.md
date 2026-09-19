@@ -1,6 +1,6 @@
 # CurioQuest
 
-An adventure-led family learning application built on the existing React/Vinext, TypeScript, and Cloudflare D1 foundation. `PRODUCT_BLUEPRINT.md` is the primary specification; `docs/product/RELEASE_STATUS.md` records what is shipped and what is still unfinished.
+An adventure-led family learning application now using native Next.js 16, React, TypeScript and Supabase. See [the current setup and release gates](docs/architecture/SUPABASE_SETUP.md). `PRODUCT_BLUEPRINT.md` is the primary specification; `docs/product/RELEASE_STATUS.md` records what is shipped and what is still unfinished.
 
 The app includes adaptive Pre-K/Grade 1 quests, eight game collections, sibling Team Quest, a garden Build Lab, Creative Studio with saved artwork, a parent activity builder and assignments, interactive stories, science notebooks, and an optional parent-enabled Faith & Bible area.
 
@@ -8,7 +8,9 @@ Start with `README_LOCAL.md` for local setup and migrations. Use `pnpm run typec
 
 Hosting remains owner-private. This is an expanded private beta, not a completed public multi-family product or a validated assessment. The framework reference below documents the retained deployment foundation.
 
-## Framework reference
+## Historical framework reference
+
+The following documents retained Sites tooling. Use README_LOCAL.md for active Next.js commands; hosted Supabase verification and production cutover remain pending.
 
 A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
 

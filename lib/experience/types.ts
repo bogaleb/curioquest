@@ -1,0 +1,12 @@
+import type {ReadingActivity,ReadingWord,ReadingStory} from '@/lib/reading/types';
+export type NovaState='idle'|'wave'|'explain'|'listen'|'point'|'encourage'|'celebrate'|'dance';
+export type ExperienceStep='episode'|'blend'|'collector'|'story'|'reward'|'treehouse'|'offline';
+export type RunMode='daily'|'episode'|'game';
+export type MediaScene={id:string;caption:string;setting:'forest'|'letters'|'garden';duration:number;nova:NovaState;letters?:string};
+export type MediaAsset={id:string;title:string;category:string;domain:string;skills:string[];ageMin:number;ageMax:number;duration:number;active:boolean;videoUrl:string|null;captionUrl:string|null;thumbnail:string;scenes:MediaScene[]};
+export type MediaCue={id:string;mediaId:string;scene:number;at:number;kind:'choice'|'sequence'|'blend';prompt:string;choices:string[];answer:string;skillId:string;help:string};
+export type WorldItem={id:string;name:string;art:string;category:string;zone:'treehouse';unlock:string;description:string};
+export type AdventureRun={id:string;mode:RunMode;day:string;steps:ExperienceStep[];index:number;warmup:string[];warmupIndex:number;scene:number;time:number;cueDone:string[];round:number;page:number;misses:number;help:number;word:string;startedAt:string;completedAt:string|null};
+export type ExperienceState={runs:Partial<Record<RunMode,AdventureRun>>;favoriteMedia:string[];watched:string[];gameCompletions:number;offlineRequestedAt:string|null;offlineConfirmedAt:string|null;lastMutation:string;events:{type:string;at:string;content?:string}[]};
+export type CollectorRound={id:string;kind:'letters'|'words'|'numbers'|'shapes'|'categories';instruction:string;audioText:string;target:string;choices:{id:string;label:string}[];skillId:string};
+export type ExperienceView={state:Omit<ExperienceState,'lastMutation'>;revision:number;media:MediaAsset[];items:WorldItem[];inventory:{item_id:string;earned_at:string}[];placements:{slot:string;item_id:string}[];run:AdventureRun|null;step:ExperienceStep|null;warmup:ReadingActivity|null;letter:{letter:string;phoneme:string;example:string;cue:string}|null;cue:Omit<MediaCue,'answer'>|null;word:ReadingWord|null;activity:ReadingActivity|null;collector:Omit<CollectorRound,'target'>|null;story:Omit<ReadingStory,'answer'>|null;stars:number;feedback?:string;correct?:boolean;error?:string};
