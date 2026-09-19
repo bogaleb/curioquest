@@ -1,7 +1,7 @@
 // Runs migrations and real RLS queries in a new, disposable PostgreSQL cluster.
 // No Docker or hosted database password is needed. Supabase Auth is NOT tested here.
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import assert from 'node:assert/strict';
@@ -23,14 +23,18 @@ function run(name, args, input) {
     ...(name === 'pg_ctl' ? { stdio: 'ignore' } : {}),
   });
   if (result.error) throw new Error(`${name}: ${result.error.message}. Install PostgreSQL 17 and set PG_BIN to its bin directory.`);
-  if (result.status !== 0) throw new Error(`${name} failed: ${result.stderr || result.stdout}`);
+  if (result.status !== 0) {
+    const log = join(directory, 'postgres.log');
+    throw new Error(`${name} failed: ${result.stderr || result.stdout || (existsSync(log) ? readFileSync(log, 'utf8') : 'No database log was created.')}`);
+  }
   return result.stdout;
 }
 const sql = input => run('psql', ['-X', '-q', '-A', '-t', '-v', 'ON_ERROR_STOP=1'], input);
 let started = false;
 try {
   run('initdb', ['-D', data, '-U', 'curioquest_test', '--auth-local=trust', '--auth-host=trust', '--encoding=UTF8', '--locale=C']);
-  run('pg_ctl', ['-D', data, '-l', join(directory, 'postgres.log'), '-o', `-h 127.0.0.1 -p ${port}`, '-w', 'start']);
+  const socket = process.platform === 'win32' ? '' : ` -k "${directory}"`;
+  run('pg_ctl', ['-D', data, '-l', join(directory, 'postgres.log'), '-o', `-h 127.0.0.1 -p ${port}${socket}`, '-w', 'start']);
   started = true;
   // Minimal Supabase identity contract, in this disposable cluster only.
   sql(`create role anon nologin; create role authenticated nologin; create role service_role nologin bypassrls;
