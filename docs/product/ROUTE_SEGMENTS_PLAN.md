@@ -11,10 +11,24 @@ and the Back button work — but the **code** is still one bundle. A child who o
 opens the Creative Studio still downloads the Parent Corner, the Treasure Chest, the
 Game Zone, and every screen's imports on first load.
 
-Measured on `main` before the split: **~1.0 MB of client JS** across the chunk set, with
-the four largest chunks at 224 KB, 164 KB, 160 KB and 112 KB. Seven screens are already
-`React.lazy`, so the win is not uniform; the concentrated wins are the parent surfaces
-(never loaded by a child) and the Game Zone.
+### Result
+
+Measured on production builds (`next start`), summing transferred JavaScript on a cold
+context per route:
+
+| Route | Before | After |
+|---|---|---|
+| `/` (My adventure) | **215 KB** | **55 KB** |
+| `/create`, `/play`, `/rewards` | 215 KB | 65 KB |
+| `/parent` | 215 KB | 100 KB |
+
+A **74% reduction** on the home route. Before the split there was literally one route,
+so every screen paid the same cost — a child opening the Creative Studio downloaded the
+Parent Corner. Now they do not.
+
+Note that *total* bundle size rose (~1.0 MB to ~1.2 MB across 30 chunks). That is the
+expected shape of a route split and is the wrong thing to optimise: what matters is what
+one route needs, not what the whole app weighs.
 
 Secondary benefits, in order of real value:
 
@@ -57,10 +71,9 @@ Three pieces:
 `destinationForPath()`, so the active nav item comes from `usePathname()` rather than
 from state.
 
-## What the first attempt ran into
+## What it ran into
 
-A partial implementation is parked on `wip/route-segments`. It does not compile. The
-obstacles, so they are not rediscovered:
+Recorded so they are not rediscovered:
 
 1. **The god component owns everything.** `curioquest-app.tsx` holds ~20 pieces of state
    and passes them down. They cannot be split per route; they have to be lifted into the
@@ -77,23 +90,25 @@ obstacles, so they are not rediscovered:
 5. **Team Quest switches the active explorer** as part of its flow, so `selectProfile`
    has to be a context action rather than local state.
 
-## Sequence
+## Two faults the split surfaced
 
-Each step ends green on typecheck, lint, tests, and a production build, and is its own
-commit.
+- `ChildWorldHome` and `ParentQuests` are siblings and both carried
+  `key={profile.id}`, which React rejects as a duplicate key. The original code
+  distinguished them with the assignment version; that was lost in the move and is
+  restored.
+- The parent unlock lived only in client state, so refreshing the page silently locked
+  the Corner again even though the server's PIN session was still valid. It now reads
+  the expiring gate cookie on mount, which is where that session actually lives.
 
-1. **Lift state into the provider.** `curioquest-app.tsx` keeps rendering every screen
-   but reads from `useExplorer()`. No routes yet, no behaviour change. This is the step
-   that carries all the risk; everything after it is mechanical.
-2. **Introduce the shell and the group** with a single `page.tsx` that renders the same
-   screen switch. Delete `app/page.tsx`. Verify the whole app still works at `/`.
-3. **Move screens out one at a time**, cheapest first: `rewards`, `build`, `team`,
-   `stories`, `faith`, `theater`, `science`, `read`, `create`, `world`, `today`, `play`.
-   After each, the corresponding branch disappears from the switch.
-4. **Move Parent Corner last.** It is the largest surface and the one with a gate.
-5. **Add `loading.tsx` and `error.tsx`** per segment, replacing the `<p>Opening…</p>`
-   fallbacks with the skeletons already defined in `motion.css`.
-6. **Re-measure** the chunk set and record the before/after in this document.
+## Still to do
+
+- **`loading.tsx` and `error.tsx` per segment**, replacing the `<p>Opening…</p>`
+  fallbacks with the skeletons already defined in `motion.css`. This is the remaining
+  easy win: a slow route currently shows nothing rather than a skeleton, and one broken
+  screen still takes the shell with it.
+- **Server components for the static parts** of each screen. Every page is currently
+  `"use client"` because it reads the shared context; headings and copy could be split
+  out and rendered on the server.
 
 ## Risks
 
