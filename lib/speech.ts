@@ -54,3 +54,16 @@ export function speak(text: string, options: SpeakOptions = {}): SpeechHandle {
 export function readAloud(text: string) {
   speak(text);
 }
+
+/**
+ * Stop whatever is being read aloud.
+ *
+ * `speak` hands back a handle for callers that track one utterance, but several places
+ * need to silence narration without holding one: closing an instructions panel,
+ * pausing a game, leaving a screen mid-sentence. `duckMusic` is released through the
+ * same path so music does not stay quiet after the voice has gone.
+ */
+export function stopReading() {
+  duckMusic(false, 'voice');
+  if (typeof window !== 'undefined') window.speechSynthesis?.cancel();
+}

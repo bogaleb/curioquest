@@ -23,7 +23,7 @@ import { startDiscovery, advanceDiscovery } from "@/lib/discovery";
 import { arcadeKey, arcadeQuestionIds, gameById } from "@/lib/arcade";
 import { parentAuthorized, familyAuthorized } from "@/lib/parent-security";
 import { requestJson, RequestBodyError } from "@/lib/request-json";
-import { parkSession, resumeSession } from "@/lib/saved-sessions";
+import { discardGameSession, parkSession, resumeSession } from "@/lib/saved-sessions";
 import {controlsSchema,scheduleMessage} from '@/lib/learning-controls';
 import {skillById} from '@/lib/skill-graph';
 
@@ -172,7 +172,7 @@ async function post(request: Request) {
 
     const profile = normalizeExplorer(JSON.parse(old.data));
     if(input.action==='offline-request'&&!profile.controls.offline)return Response.json({error:'Offline missions are turned off for this explorer.'},{status:403});
-    const childActions=["start","game-start","session-resume","campaign-start","discovery-start","team-start","answer","hint","save-garden"];
+    const childActions=["start","game-start","game-restart","session-resume","campaign-start","discovery-start","team-start","answer","hint","save-garden"];
     const schedule=scheduleMessage(profile.controls);
     if(schedule&&childActions.includes(String(input.action)))return Response.json({error:schedule},{status:403});
     if(input.action==='delete-profile'){
@@ -181,7 +181,7 @@ async function post(request: Request) {
       if(!await deleteExplorer(profile.id,old.revision))return Response.json({error:'Keep at least one explorer, or reload if this profile changed.'},{status:409});
       return Response.json({deleted:profile.id,profiles:await readAll(questions)});
     }
-    if (profile.preferences.paused && ["start","game-start","session-resume","campaign-start","discovery-start","team-start","answer","hint","save-garden"].includes(String(input.action))) {
+    if (profile.preferences.paused && ["start","game-start","game-restart","session-resume","campaign-start","discovery-start","team-start","answer","hint","save-garden"].includes(String(input.action))) {
       return Response.json({error:"Your adventures are taking a little rest. A grown-up can resume them in Parent Corner."},{status:403});
     }
     if (input.action === "team-start" || input.action === "team-complete") {
@@ -283,6 +283,20 @@ async function post(request: Request) {
       profile.session={id:crypto.randomUUID(),subject:game.subject,questions:ids,index:0,misses:0,hinted:false,first:0,started:Date.now(),estimatedMinutes:8,gameId:game.id,gameLevel:level,
         plan:ids.map(id=>({questionId:id,skillId:questions.find(q=>q.id===id)!.skillId,reason:"game-mission"}))};
       }
+    } else if (input.action === "game-restart") {
+      // Start over. Unlike game-start, this refuses to resume: the live session and any
+      // parked copy of this mission are discarded first, then a fresh one is built.
+      // Recorded attempts, skill evidence and stars are untouched — a child cannot
+      // erase their own history by asking to play a mission again.
+      const game = gameById(input.game), level = input.level;
+      if (!game || typeof level!=="number" || !Number.isInteger(level) || level<0 || level>2) return Response.json({error:"Choose a game mission."},{status:400});
+      const unlocked=profile.arcade[arcadeKey(profile.grade,game.id)]?.levels??[];
+      if (level>0 && !unlocked.includes(level-1)) return Response.json({error:"Explore the earlier mission first."},{status:409});
+      discardGameSession(profile, game.id, level);
+      parkSession(profile);
+      const restartIds=arcadeQuestionIds(profile.grade,game.id,level);
+      profile.session={id:crypto.randomUUID(),subject:game.subject,questions:restartIds,index:0,misses:0,hinted:false,first:0,started:Date.now(),estimatedMinutes:8,gameId:game.id,gameLevel:level,
+        plan:restartIds.map(id=>({questionId:id,skillId:questions.find(q=>q.id===id)!.skillId,reason:"game-mission"}))};
     } else if (input.action === "reflect") {
       const session=profile.session;
       if (!session || session.id!==input.session || session.index<1 ||

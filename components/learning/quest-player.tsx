@@ -15,14 +15,16 @@ import type { PublicExplorer, QuestFeedback } from "@/lib/explorer-view";
 import type { PublicQuestion } from "@/lib/activity-types";
 
 import {worldName} from "@/lib/subjects";
+import {GameControls} from "./game-controls";
+import {gameDesign} from "@/lib/game-design";
 export function activityNarration(question: PublicQuestion) {
   const story=question.passage?`${question.passage.title}. ${question.passage.text}. `:"";
   return story+question.prompt+(question.audioLabel?`. The word is ${question.audioLabel}.`:"")+(question.options.length?`. Your choices are: ${question.options.join(", ")}`:"");
 }
-export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack,onAnswer,onHint,onNext,onReflect,onFeeling,onFinish}: {
+export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack,onAnswer,onHint,onNext,onReflect,onFeeling,onFinish,onRestart}: {
   profile:PublicExplorer;current:PublicQuestion|null;feedback:QuestFeedback;selected:string;busy:boolean;error:string;
   onBack:()=>void;onAnswer:(value:string)=>void;onHint:()=>Promise<unknown>;onNext:()=>void;
-  onReflect:(strategy:string)=>void;onFeeling:(value:string)=>void;onFinish:()=>void;
+  onReflect:(strategy:string)=>void;onFeeling:(value:string)=>void;onFinish:()=>void;onRestart:()=>void;
 }) {
   const session=profile.session;
   const delivery=resolveBand(profile.band).delivery;
@@ -53,6 +55,7 @@ export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack
     {error&&<div className="error" role="alert">{error}<button disabled={busy} onClick={onBack}>Return to my adventure</button></div>}
     {current?<div className="activity"><div className="activity-progress"><span>Discovery {Math.min(session.index+(feedback?.correct?0:1),session.total)} of {session.total}</span><div>{Array.from({length:session.total},(_,i)=><span key={i} className={i<session.index?"done":""}/>)}</div></div>
       {game&&<div className="game-mission-label">{game.missions[session.gameLevel??0]}</div>}
+      {game&&<GameControls design={gameDesign(game.id)} title={game.title} delivery={delivery} busy={busy} onRestart={onRestart} onExit={onBack}/>}
       {current.passage&&<StoryPage passage={current.passage}/>}
       <div className="activity-category">{worldName(current.subject)}</div>{purpose&&<div className="skill-purpose"><Lightbulb size={16}/><span>We are practising:</span> {purpose}</div>}<h1>{current.prompt}</h1>
       <button className="read-button" onClick={()=>readAloud(activityNarration(current))}><Volume2 size={20}/>Read it to me</button>

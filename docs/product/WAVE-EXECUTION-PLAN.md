@@ -22,7 +22,7 @@ The waves and the audit phases are two vocabularies for the same work:
 
 | Wave | Audit phase | Status |
 |---|---|---|
-| 01 Foundation | Phase 1 + 3 + parts of 4 | Substantially done, **finished in this pass** |
+| 01 Foundation | Phase 1 + 3 + parts of 4 | ✅ complete |
 | 02 Entry experience | — | Partly done, not audited |
 | 03 Child home | Phase 1 (home) | Partly done |
 | 04 Adaptive learning | Pre-existing core + Phase 2 | Largely done, strongest area |
@@ -30,12 +30,12 @@ The waves and the audit phases are two vocabularies for the same work:
 | 06 Math | — | Authored content, engines thin |
 | 07 Science | Phase 2 (subject added) | Discovery Lab exists, quiz-shaped |
 | 08 Logic | Phase 2 (subject added) | Skills exist, few formats |
-| 09 Games | Phase 4 | **Largest remaining gap** |
+| 09 Games | Phase 4 | Controls and metadata done; **game loop still open** |
 | 10 Creative studio | Phase 1 (immersive) | Done to a good standard |
 | 11 Stories / video / discovery | — | Stories done, audio is prototype |
 | 12 Rewards | Phase 5 | Done |
 | 13 Parent experience | Phase 6 | Done |
-| 14 Commercial hardening | Phase 7 | **Partly started in this pass** |
+| 14 Commercial hardening | Phase 7 | Error handling and answer-key leak fixed; rest open |
 | 15 Content scale / admin | — | Schema ready, tooling absent |
 
 ## Wave-by-wave standing
@@ -93,11 +93,38 @@ lean on question-and-choices presentation. Wave 06 explicitly forbids "plain tex
 **Next step, in order of value:** Wave 06 math manipulatives (ten frames, number lines,
 counters) — the widest gap between what the wave asks for and what exists.
 
-### Wave 09 — Games, the largest gap
+### Wave 09 — Games (partial)
 
-Eight engine kinds, mostly one-shot question renderers. No shared game loop, no pause,
-no restart, no in-game difficulty ramp. Wave 09's whole premise — "a game should not
-merely be a quiz with decorative graphics" — is not yet met.
+Eleven games run on eleven interaction engines — ten frame, route, matching, ordering,
+counting, sorting, memory, word builder, bubble pop, balance, constellation. The engines
+themselves are better than the earlier audit gave them credit for: they are real
+manipulatives, not four buttons with pictures.
+
+What was missing was everything *around* them.
+
+**Delivered 2026-09-20:**
+
+- **The controls the wave lists.** How to play, take a break, and start over, reachable
+  at any point in a mission (`components/learning/game-controls.tsx`). Instructions are
+  replayable, narrate themselves for audio-first bands, and describe the real mechanic
+  rather than the theme. Exit and full screen already existed in the player header.
+- **Start over is a real server action.** `game-start` deliberately *resumes* a parked
+  mission, so restart could not reuse it; `game-restart` discards the live session and
+  any parked copy first. Recorded attempts, skill evidence and stars are untouched — a
+  child cannot erase their own history by pressing a button.
+- **Educational integrity metadata** (`lib/game-design.ts`). Every game now declares a
+  learning objective, a child-facing goal, how-to-play steps, its skill graph ids, and a
+  difficulty. Skills and difficulty are *derived from the questions each game actually
+  serves* and re-checked by `tests/game-design.test.mjs`, so the Game Zone cannot
+  describe a game it no longer is. This replaced a prose line — "Letter knowledge ·
+  blending · spelling" — that read well and could not be checked.
+- **Band-aware ordering.** Games a child can meet today sort first. Nothing is hidden
+  and nothing is locked by fit: a warm-up is spaced practice, not a demotion.
+
+**Still open, and this is the real remainder:** a shared game loop. The mechanic is still
+"answer four questions, one at a time". There is no in-game difficulty ramp, no scoring
+arc within a mission, and no round structure. Wave 09's premise is closer to met than it
+was, but it is not met.
 
 ### Waves 10–13
 
@@ -105,11 +132,17 @@ Creative Studio (10), rewards (12) and parent reports (13) are delivered to a go
 standard; see the audit. Stories (11) are authored and working; **audio remains the weak
 point** — browser speech synthesis is doing work the wave says it should not do alone.
 
-### Wave 14 — Commercial hardening, started here
+### Wave 14 — Commercial hardening (partial)
 
-Error handling was the missing half of this wave and is delivered in this pass. Still
-open: bundle audit, analytics event architecture, service worker, and the automated
-coverage of critical flows the wave lists.
+Error handling was delivered with Wave 01. A bundle audit then found something worse
+than a performance problem: **every question and its answer was in the client bundle**,
+because Parent Corner imported `activityCount` from `lib/curriculum.ts` to print one
+sentence. Fixed 2026-09-20 with `lib/curriculum-facts.ts`, a test that fails on any
+`"use client"` value-import of the curriculum, and `scripts/check-bundle.mjs` as a
+backstop against a production build.
+
+Still open: analytics event architecture, service worker, and the automated coverage of
+critical flows the wave lists.
 
 ### Wave 15 — Content scale
 
@@ -142,8 +175,10 @@ Not in this pass: any curriculum content, any game engine work, Wave 02 onward.
 
 ## Recommended order from here
 
-1. **Wave 09 game loop** — biggest gap between promise and product.
-2. **Wave 06 math manipulatives** — second biggest, and the wave is explicit about it.
+1. **Wave 09's shared game loop** — the remaining half of the wave. Rounds, an in-game
+   difficulty ramp, and a scoring arc, so a mission stops being four questions.
+2. **Wave 06 math manipulatives** — the wave explicitly forbids question-and-four-buttons
+   as the default, and outside Reading it still is.
 3. **Wave 02 auth state audit** — small, cheap, and it is the first screen anyone sees.
 4. **Wave 14 remainder** — analytics events and flow tests.
 5. **Wave 15 import tooling** — only once content volume actually demands it.

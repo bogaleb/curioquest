@@ -264,7 +264,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
 function PlayerOverlay() {
   const router = useRouter();
   const explorer = useExplorer();
-  const { profile, current, feedback, selected, busy, error, answer, hint, next, action, closeQuest } = explorer;
+  const { profile, current, feedback, selected, busy, error, answer, hint, next, action, closeQuest, openQuest } = explorer;
   const session = profile?.session;
   if (!profile || !session) return null;
 
@@ -293,6 +293,15 @@ function PlayerOverlay() {
       onReflect={(strategy) => action({ action: "reflect", session: session.id, question: current!.id, strategy })}
       onFeeling={(value) => action({ action: "feeling", session: session.id, value })}
       onFinish={leave}
+      onRestart={async () => {
+        // Only a game mission can be restarted; the control is not offered elsewhere.
+        if (!session.gameId) return;
+        openQuest(await action({
+          action: "game-restart",
+          game: session.gameId,
+          level: session.gameLevel ?? 0,
+        }));
+      }}
     />
   );
 }

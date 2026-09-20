@@ -1,5 +1,44 @@
 # CurioQuest development log
 
+## Wave 09 controls, and an answer-key leak — September 20, 2026
+
+- **Every activity answer was in the browser.** `lib/curriculum.ts` carries each question
+  together with its answer. Parent Corner imported `activityCount` from it to print one
+  sentence, and because that page is a client component the import bundled all 462
+  questions and answers into the route's JavaScript. `publicQuestion` was stripping
+  answers from API responses exactly as the audit claims; the bundle went around that
+  boundary entirely. Found by grepping the built chunks during a Wave 09 bundle look.
+- Fixed with `lib/curriculum-facts.ts` (the number restated as a literal), a test that
+  fails on any `"use client"` value-import of the curriculum, and
+  `scripts/check-bundle.mjs` as a backstop that inspects a production build. The guard
+  was run against the build from before the fix, where it fails and names the chunk, and
+  after, where 35 chunks come back clean. Type-only imports are unaffected and were never
+  part of this, which is why `lib/explorers` and `lib/mastery` were not implicated.
+- **Wave 09 controls.** How to play, take a break, and start over are now available at
+  any point in a game mission. Instructions are replayable and narrate themselves for
+  audio-first bands. The break screen covers the question deliberately and stops audio; a
+  child who asked to stop should not still be looking at the thing they stopped.
+- **`game-restart` is a new server action.** `game-start` resumes a parked mission by
+  design, so it could not serve "start over"; the new action discards the live session
+  and any parked copy first. Recorded attempts, skill evidence and stars are untouched,
+  so restarting is not a way for a child to erase their own history.
+- **Educational integrity metadata** (`lib/game-design.ts`): a learning objective, a
+  child-facing goal, how-to-play steps, skill graph ids, and a difficulty for all eleven
+  games. Skills and difficulty are derived from the questions each game actually serves
+  and re-verified by `tests/game-design.test.mjs`, replacing a prose skills line that
+  read well and could not be checked. The Game Zone now shows fit and difficulty, and
+  orders games a child can meet today first. Nothing is hidden or locked by fit.
+- Verification: typecheck clean, lint 0 errors (one pre-existing `no-img-element`
+  warning), 98 unit tests pass (87 before this pass), production build succeeds, and the
+  bundle guard passes. The new game surfaces were rendered against the real stylesheets
+  at 390/768/1440 with no page errors, no horizontal overflow, and every control at or
+  above a 44px target. That check caught a `--space-7` token that does not exist, which
+  was silently dropping the padding on both sheet dialogs.
+- Not delivered, and this is the honest remainder of Wave 09: a shared game loop. A
+  mission is still four questions answered one at a time, with no round structure, no
+  in-game difficulty ramp, and no scoring arc. The controls and the metadata around the
+  games are commercial quality; the loop inside them is not yet.
+
 ## Wave 01 closed — September 20, 2026
 
 - Read the fifteen wave briefs and `COMMERCIAL-UPGRADE.md`, then reconciled them against

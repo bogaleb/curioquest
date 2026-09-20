@@ -4,12 +4,28 @@ import { ArrowRight, Check, Heart, LockKeyhole, Play, Search, Sparkles, Volume2 
 import { arcadeGames, arcadeKey, gameById, type ArcadeGameId } from "@/lib/arcade";
 import type { PublicExplorer } from "@/lib/explorer-view";
 import { readAloud } from "@/lib/speech";
+import { difficultyLabel, fitLabel, gameDesigns, gameFit, type GameFit } from "@/lib/game-design";
+import { resolveBand } from "@/lib/learning-bands";
+import { DifficultyDots } from "./game-controls";
+
+/**
+ * Games a child can meet today come first.
+ *
+ * Nothing is hidden and nothing is locked by fit: a three-year-old who wants to try the
+ * hardest game may, and an older child revisiting a warm-up is doing spaced practice,
+ * not regressing. Ordering is the whole of the adaptation, because a playground that
+ * removes doors is a smaller playground.
+ */
+const FIT_ORDER: Record<GameFit, number> = { "just-right": 0, practice: 1, stretch: 2 };
 
 type Props = { profile: PublicExplorer; busy: boolean; onStart: (game: ArcadeGameId, level: number) => void; onFavorite: (game: ArcadeGameId, favorite: boolean) => void; onContinue: () => void; onResume: (id: string) => void };
 export function GameZone({profile,busy,onStart,onFavorite,onContinue,onResume}:Props) {
   const [filter,setFilter]=useState("all"),[query,setQuery]=useState("");
   const completed=arcadeGames.reduce((total,g)=>total+(profile.arcade[arcadeKey(profile.grade,g.id)]?.levels.length??0),0);
-  const games=arcadeGames.filter(g=>(filter==="all"||filter===g.subject||(filter==="favorites"&&profile.favorites.includes(g.id)))&&`${g.title} ${g.skills}`.toLowerCase().includes(query.toLowerCase()));
+  const band=resolveBand(profile.band);
+  const fitOf=(id:ArcadeGameId)=>gameFit(gameDesigns[id].difficulty[profile.grade],band);
+  const games=arcadeGames.filter(g=>(filter==="all"||filter===g.subject||(filter==="favorites"&&profile.favorites.includes(g.id)))&&`${g.title} ${g.skills}`.toLowerCase().includes(query.toLowerCase()))
+    .slice().sort((a,b)=>FIT_ORDER[fitOf(a.id)]-FIT_ORDER[fitOf(b.id)]);
   const active=profile.session&&profile.session.index<profile.session.total ? profile.session : null;
   const savedPlaces=[...(active?[{...active,isCurrent:true}]:[]),...profile.savedSessions.map(session=>({...session,isCurrent:false}))];
   return <div className="game-zone"><section className="arcade-hero"><div><span className="arcade-kicker"><Sparkles size={16}/>THE CURIOSITY PLAYGROUND</span>
@@ -33,6 +49,10 @@ export function GameZone({profile,busy,onStart,onFavorite,onContinue,onResume}:P
         <button className="game-favorite" disabled={busy} aria-label={`${favorite?"Remove":"Save"} ${game.title} ${favorite?"from":"to"} favorites`} aria-pressed={favorite} onClick={()=>onFavorite(game.id,!favorite)}><Heart size={19} fill={favorite?"currentColor":"none"}/></button>
         <span className="game-card-tag">{game.subject==="logic"?"BRAIN GYM":game.subject==="math"?"NUMBER PLAY":"WORDS & STORIES"}</span></div>
       <div className="game-card-body"><h2>{game.title}</h2><p>{game.description}</p><small className="game-skills">{game.skills}</small>
+      {(()=>{const design=gameDesigns[game.id],difficulty=design.difficulty[profile.grade],fit=fitLabel(fitOf(game.id));return <>
+        <div className="game-card-meta"><span className={`game-fit fit-${fitOf(game.id)}`} title={fit.note}>{fit.label}</span><DifficultyDots difficulty={difficulty} label={difficultyLabel(difficulty)}/></div>
+        <details className="game-objective"><summary>What this practises</summary><p>{design.objective}</p><p className="form-note">{fit.note}</p></details>
+      </>;})()}
       <button className="primary game-play" disabled={busy} onClick={()=>onStart(game.id,nextLevel)} aria-label={`${savedGame?'Continue':'Play'} ${game.title}`}><Play size={18} fill="currentColor"/>{savedGame?'Continue playing':levels.length===3?'Play again':'Let’s play'}</button>
       <div className="game-missions">{game.missions.map((mission,level)=>{const done=levels.includes(level),locked=level>0&&!levels.includes(level-1),savedMission=savedPlaces.find(session=>session.gameId===game.id&&session.gameLevel===level);return <button key={mission} disabled={busy||locked} onClick={()=>onStart(game.id,level)} aria-label={`${mission}, ${savedMission?'continue playing':done?"explore again":locked?"finish earlier mission first":"play 4 discoveries"}`}>
         <span className={`mission-dot ${done?"done":""}`}>{done?<Check size={15}/>:locked?<LockKeyhole size={13}/>:level+1}</span><span>{mission}<small>{savedMission?`Continue · ${savedMission.index}/4 saved`:done?"Explore again":locked?`Finish mission ${level} to unlock`:"Play · 4 discoveries"}</small></span><ArrowRight size={16}/></button>;})}</div></div>
