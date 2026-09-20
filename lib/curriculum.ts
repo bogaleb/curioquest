@@ -5,6 +5,7 @@ import {
   type SkillSubject,
 } from "@/lib/skill-graph";
 import type { ActivityEngine } from "./activity-types";
+import { resolveBand, type LearningBandId } from "./learning-bands";
 import { gardenActivities } from "./garden-content";
 import { arcadeActivities } from "./arcade-content";
 
@@ -331,8 +332,17 @@ export function validateCurriculum() {
 
 validateCurriculum();
 
-export function publicQuestion(question: Question) {
-  const { answer, explanation, ...safe } = question;
+/**
+ * Strips the answer key and narrows the activity to what the child's band should see.
+ *
+ * Choice count is a delivery decision, not a content one: the same authored question
+ * offers two options to a three-year-old and four to an eight-year-old. Trimming
+ * happens here, on the server, so the correct answer is always retained and scoring is
+ * unaffected — the stored answer never changes.
+ */
+export function publicQuestion(question: Question, band?: LearningBandId) {
+  const { answer, explanation, ...original } = question;
+  const safe = band ? { ...original, options: narrowChoices(original.options, answer, band) } : original;
   // Intentionally excluded from the child response until server-side scoring.
   void answer; void explanation;
   if (safe.engine?.kind === "sorting" || safe.engine?.kind === "matching" || safe.engine?.kind === "ordering") {
@@ -341,4 +351,16 @@ export function publicQuestion(question: Question) {
     return { ...safe, engine };
   }
   return safe;
+}
+
+/**
+ * Keeps the answer plus as many distractors as the band allows, preserving the
+ * authored order so the choice layout is stable between renders.
+ */
+function narrowChoices(options: string[], answer: string, band: LearningBandId) {
+  const limit = resolveBand(band).delivery.maxChoices;
+  if (options.length <= limit || !options.includes(answer)) return options;
+  const distractors = options.filter((option) => option !== answer).slice(0, Math.max(0, limit - 1));
+  const kept = new Set([answer, ...distractors]);
+  return options.filter((option) => kept.has(option));
 }

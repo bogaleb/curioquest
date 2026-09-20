@@ -430,3 +430,44 @@
   .cq-sheet-utility .nova-note { display: none; }
   .cq-sheet-utility .nav-item { min-height: var(--touch-min); }
 }
+
+/* ==========================================================================
+   Band-adaptive activity surface.
+   Answer choices, the read-aloud control, and Nova's offer of help all size
+   themselves from the child's band rather than from a single fixed layout.
+   ========================================================================== */
+.answers button { min-height: max(var(--touch-child), 72px); }
+.read-button { min-height: var(--touch-min); }
+
+/* Nova noticing a stall is an invitation, not an alarm: it grows and warms, it
+   does not flash or block. */
+.nova-offer {
+  border-color: #e0c98a;
+  background: var(--gold-soft);
+  color: #8a6a1c;
+  animation: cq-offer-in var(--dur-slow) var(--ease-spring);
+}
+@keyframes cq-offer-in {
+  from { transform: scale(0.96); opacity: 0.4; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* The youngest bands get picture-weight choices: fewer, larger, and stacked so a
+   whole choice is one confident target. */
+[data-band="early-preschool"] .answers,
+[data-band="prek"] .answers { gap: var(--space-4); }
+[data-band="early-preschool"] .answers button { font-size: var(--text-3xl); }
+[data-band="prek"] .answers button { font-size: var(--text-2xl); }
+
+/* Older bands read more, so prompts carry more text and less display weight. */
+[data-band="grade2"] .activity h1,
+[data-band="grade3"] .activity h1 { font-size: var(--text-2xl); line-height: var(--leading-snug); }
+
+@media (max-width: 767px) {
+  .answers { flex-direction: column; }
+  .answers button { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nova-offer { animation: none; }
+}

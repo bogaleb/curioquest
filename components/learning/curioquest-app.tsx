@@ -140,7 +140,9 @@ export default function HomePage() {
     } }
     async function startGame(game:string,level:number) {const d=await action({action:'game-start',game,level});if(d){setCurrent(d.profile.session!.question);setFeedback(null);setSelected('');setPlay(true);}}
     async function resumeSaved(id:string) {const d=await action({action:'session-resume',session:id});if(d){setCurrent(d.profile.session!.question);setFeedback(null);setSelected('');setPlay(true);}}
-    useEffect(()=>{if(play&&current&&p?.preferences?.autoRead)speak(activityNarration(current));return ()=>window.speechSynthesis?.cancel();},[play,current,p?.preferences?.autoRead]);
+    const autoNarrate=(p?.preferences?.autoRead??false)||resolveBand(p?.band).delivery.autoNarrate;
+    // Bands below reading age hear the activity without asking; older bands ask.
+    useEffect(()=>{if(play&&current&&autoNarrate)speak(activityNarration(current));return ()=>window.speechSynthesis?.cancel();},[play,current,autoNarrate]);
     function next() { setFeedback(null); setSelected(''); setCurrent(session!.question); }
     useEffect(() => { const context = (document as Document & {modelContext?:{registerTool:(tool:Record<string,unknown>,options:{signal:AbortSignal})=>Promise<void>}}).modelContext; if (!context?.registerTool)
         return; const controller = new AbortController(); Promise.resolve(context.registerTool({ name: 'start_learning_quest', description: 'Open a personalized learning quest for the selected explorer.', inputSchema: { type: 'object', properties: { world: { type: 'string', enum: ['daily', 'reading', 'math', 'logic'] } }, required: ['world'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: async (input: {world:string}) => { if (!['daily', 'reading', 'math', 'logic'].includes(input.world))

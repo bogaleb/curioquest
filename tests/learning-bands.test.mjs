@@ -161,3 +161,44 @@ test("every band can be served a quest in every subject", () => {
     }
   }
 });
+
+test("choice count narrows by band and never removes the correct answer", () => {
+  const { publicQuestion } = loadTs("lib/curriculum");
+  const multipleChoice = questions.filter((question) => !question.engine && question.options.length >= 3);
+  assert.ok(multipleChoice.length > 0, "expected authored multiple-choice activities");
+
+  for (const question of multipleChoice.slice(0, 40)) {
+    for (const band of learningBands) {
+      const limit = band.delivery.maxChoices;
+      const served = publicQuestion(question, band.id);
+      assert.ok(
+        served.options.length <= Math.max(limit, 1),
+        `${question.id} served ${served.options.length} choices to ${band.id} (limit ${limit})`,
+      );
+      assert.ok(
+        served.options.includes(question.answer),
+        `${question.id} dropped the answer for ${band.id}`,
+      );
+      // Narrowing is presentation only; the answer key must never reach the child.
+      assert.equal(served.answer, undefined);
+      assert.equal(served.explanation, undefined);
+      // Order is preserved so the layout does not reshuffle between renders.
+      assert.deepEqual(served.options, question.options.filter((o) => served.options.includes(o)));
+    }
+  }
+});
+
+test("a three-year-old sees fewer choices than an eight-year-old on the same activity", () => {
+  const { publicQuestion } = loadTs("lib/curriculum");
+  const question = questions.find((q) => !q.engine && q.options.length >= 3);
+  const youngest = publicQuestion(question, "early-preschool").options.length;
+  const oldest = publicQuestion(question, "grade3").options.length;
+  assert.ok(youngest < oldest, `expected fewer choices for the youngest band (${youngest} vs ${oldest})`);
+  assert.equal(youngest, 2);
+});
+
+test("serving without a band leaves the authored activity untouched", () => {
+  const { publicQuestion } = loadTs("lib/curriculum");
+  const question = questions.find((q) => !q.engine && q.options.length >= 3);
+  assert.deepEqual(publicQuestion(question).options, question.options);
+});

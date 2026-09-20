@@ -35,9 +35,13 @@ export async function generateMetadata(): Promise<Metadata> {
   metadataBase: origin,
   title: "CurioQuest · Your next adventure",
   description: "Play, discover, and grow with learning adventures for pre-K and Grade 1.",
+  manifest: "/manifest.webmanifest",
+  applicationName: "CurioQuest",
+  appleWebApp: { capable: true, title: "CurioQuest", statusBarStyle: "default" },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   openGraph: {
     title: "CurioQuest · Small steps. Big discoveries.",

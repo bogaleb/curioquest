@@ -45,6 +45,7 @@ function clean(profile: ExplorerProfile, questions: Question[]) {
                   questions.find(
                     (question) => question.id === profile.session?.questions[profile.session.index],
                   )!,
+                  profile.band,
                 )
               : null,
           total: profile.session.questions.length,
