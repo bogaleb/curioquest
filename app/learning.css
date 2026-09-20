@@ -28,3 +28,19 @@
 @media(max-width:760px){.story-trail{padding:20px}.story-heading{align-items:flex-start;gap:12px}.story-heading h2{font-size:22px}.story-heading p{font-size:14px}.story-medallion{width:45px;height:50px;border-radius:15px;font-size:28px}.story-actions{align-items:flex-start;flex-direction:column;gap:10px}.story-actions .primary{width:100%}.sort-tray{grid-template-columns:repeat(2,1fr)}.sort-tray button{padding:8px}.sorting-baskets{gap:10px}.counting-meadow{padding:15px;gap:10px}.engine-tools{gap:12px;flex-wrap:wrap}.garden-workbench{padding:14px}.garden-board{padding:8px;gap:4px}.garden-board button{border-radius:8px;font-size:27px}.garden-palette button{width:65px}.garden-actions{flex-direction:column}.garden-actions>button{width:100%}.weekly-stats>div{padding:15px}.memory-choices button{min-width:53px}.pattern-stones{gap:6px}.pattern-stones>span{min-width:43px;height:55px;font-size:26px}}
 .discovery-invitation{display:flex;align-items:center;gap:28px;margin:28px 0;padding:30px;border:1px solid #dfd5bc;border-radius:26px;background:radial-gradient(circle at 5% 15%,#fff6d8,transparent 55%),#f3eddf;box-shadow:0 5px 0 #e8e2d1}.discovery-buddy{display:grid;place-items:center;flex:0 0 108px;height:120px;border-radius:50% 50% 42% 42%;background:#e0e8c9;font-size:66px;transform:rotate(-5deg)}.discovery-copy h2{font-size:27px;margin:8px 0 10px;color:#34553c}.discovery-copy p,.discovery-summary p{color:#64725b;font-size:15px;line-height:1.7;max-width:650px}.discovery-paths{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}.discovery-paths>span{background:#fffdf5;border:1px solid #e4dfca;border-radius:13px;padding:10px 14px;font-size:13px;line-height:1.7;color:#4c654c}.discovery-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:14px}.discovery-copy>small{color:#6b745e;font-size:12px}.discovery-summary{margin-bottom:24px}.discovery-actions button{min-height:48px}
 @media(max-width:760px){.discovery-invitation{align-items:flex-start;padding:22px;gap:14px}.discovery-buddy{flex-basis:48px;height:60px;font-size:34px}.discovery-copy h2{font-size:22px}.discovery-paths{gap:6px}.discovery-paths>span{padding:8px 10px}.discovery-actions{gap:12px}.discovery-actions .primary{width:100%;justify-content:center}.discovery-summary .discovery-paths{flex-direction:column}}
+
+/*
+ * Help Nova volunteered after repeated misses, rather than help the child asked for.
+ * Warm rather than corrective: a child who is stuck is having an ordinary experience,
+ * and the panel should not look like a verdict on it.
+ */
+.feedback.assisted {
+  background: var(--sun-100);
+  border-color: var(--sun-200);
+}
+.feedback.assisted .assisted-note {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--sun-600);
+}

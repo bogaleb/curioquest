@@ -1,5 +1,32 @@
 # CurioQuest development log
 
+## Wave 04 struggle response — September 20, 2026
+
+- **Nothing happened when a child kept getting an activity wrong.** `session.misses` was
+  incremented on every wrong answer and read nowhere. A child could answer the same
+  question wrong five times and get the identical sentence each time, while the
+  three-level hint ladder in `lib/nova.ts` went unused unless they pressed "give me a
+  hint". The children least likely to press it are the ones who most need it.
+- `lib/scaffolding.ts` escalates that ladder automatically on repeated misses: a strategy
+  to try, then the worked explanation. Thresholds come from the band, and older bands
+  wait longer, because productive struggle is a stated principle and a seven-year-old
+  shown the reasoning after two tries never gets to find it. A four-year-old stuck twice
+  is not about to have a breakthrough on the third go.
+- Two integrity properties, both covered by tests. Skill evidence is still recorded only
+  on the first attempt, so nothing volunteered afterwards can flatter the mastery model.
+  And level one is deliberately left as it was — the authored hint has always followed a
+  wrong answer silently and uncounted, so counting it now would make every parent's help
+  total jump for behaviour that did not change. Volunteered escalation starts at level 2,
+  where the support is genuinely new, and is recorded as help, because help offered is
+  still help used.
+- The player labels volunteered help as Nova joining in rather than as the child being
+  told, and says "You are still the one who answers." Nova never announces the answer; a
+  test asserts her wording contains neither the answer nor a judgement.
+- Verification: typecheck, lint 0 errors, 115 unit tests (106 before), production build,
+  bundle guard. The nine new tests pin the ladder's shape: it never skips a level, never
+  walks help back once taken, always reaches the worked explanation, and always triggers
+  within five misses for every band.
+
 ## Wave 02 account screens — September 20, 2026
 
 - The account screens were one unstyled panel with inline dimensions (`maxWidth:480`)

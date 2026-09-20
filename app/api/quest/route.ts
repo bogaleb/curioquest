@@ -11,7 +11,8 @@ import {
   type GradeTrack,
   type InterestId,
 } from "@/lib/explorers";
-import { isLearningBandId, primaryContentBand, type LearningBandId } from "@/lib/learning-bands";
+import { isLearningBandId, primaryContentBand, resolveBand, type LearningBandId } from "@/lib/learning-bands";
+import { assistedIntro, nextScaffold } from "@/lib/scaffolding";
 import { recordAttempt, recordHint } from "@/lib/mastery";
 import { recommendQuest, rememberActivityType } from "@/lib/recommendation";
 import { evaluateResponse } from "@/lib/activity-evaluation";
@@ -199,7 +200,7 @@ async function post(request: Request) {
       return Response.json({profile:clean(profile, questions),profiles:[clean(profile, questions),clean(partner, questions)]});
     }
     let attempt: Record<string,unknown> | null = null;
-    let feedback: { correct?: boolean; message?: string; hint?: string | null } | null = null;
+    let feedback: { correct?: boolean; message?: string; hint?: string | null; assisted?: boolean } | null = null;
 
     if(input.action==='controls'){
       const parsed=controlsSchema.safeParse(input.controls);if(!parsed.success)return Response.json({error:parsed.error.issues[0].message},{status:400});
@@ -462,6 +463,32 @@ async function post(request: Request) {
           }
         } else {
           session.misses += 1;
+          // Repeated wrong answers are evidence of struggle, so Nova steps up the
+          // scaffolding ladder without waiting to be asked. Skill evidence was already
+          // captured on the first attempt, so nothing here can flatter the mastery
+          // model; the help count does rise, because help offered is still help used.
+          const owed = nextScaffold(session.misses, session.hintLevel ?? 0, resolveBand(profile.band));
+          // Level 1 is left exactly as it was: the authored hint has always accompanied
+          // a wrong answer, silently and without being counted as help. Counting it now
+          // would make every parent's help total jump for a behaviour that did not
+          // change. Volunteered escalation starts at level 2, where the support is new.
+          if (owed && owed >= 2) {
+            if (!session.hinted) recordHint(profile.skillMastery, question);
+            session.hinted = true;
+            session.hintLevel = owed;
+            const support = authoredHint(question, {
+              activityId: question.id,
+              skillId: question.skillId,
+              track: question.grade,
+              hintLevel: owed,
+            }).text;
+            feedback = {
+              correct: false,
+              message: assistedIntro(owed),
+              hint: support,
+              assisted: true,
+            };
+          }
         }
       }
     } else {

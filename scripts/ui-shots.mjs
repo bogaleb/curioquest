@@ -92,7 +92,7 @@ for (const viewport of VIEWPORTS) {
   await shot.goto(`${BASE}/${view ? `?view=${view}` : ""}`, { waitUntil: "networkidle" });
   // Let entrance animations settle so screenshots are not caught mid-transition.
   await shot.waitForTimeout(1200);
-  await shot.screenshot({ path: `${OUT}/${viewport.name}.png`, fullPage: false });
+  await shot.screenshot({ path: `${OUT}/${viewport.name}.png`, fullPage: process.argv.includes("--full") });
   await shot.close();
   console.log(`captured ${viewport.name} (${viewport.width}x${viewport.height})`);
 }

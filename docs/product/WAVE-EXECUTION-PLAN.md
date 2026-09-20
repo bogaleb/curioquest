@@ -25,7 +25,7 @@ The waves and the audit phases are two vocabularies for the same work:
 | 01 Foundation | Phase 1 + 3 + parts of 4 | ✅ complete |
 | 02 Entry experience | — | Screens and states done; onboarding open |
 | 03 Child home | Phase 1 (home) | Partly done |
-| 04 Adaptive learning | Pre-existing core + Phase 2 | Largely done, strongest area |
+| 04 Adaptive learning | Pre-existing core + Phase 2 | Strongest area; struggle response added |
 | 05 Reading | Reading Section 94 slice | Vertical slice only |
 | 06 Math | — | Authored content, engines thin |
 | 07 Science | Phase 2 (subject added) | Discovery Lab exists, quiz-shaped |
@@ -100,6 +100,21 @@ screen rather than only in the delivery profile.
 confidence, evidence coverage, format variety, session spread and SM-2 review intervals.
 `lib/recommendation.ts` ranks on review-due, prerequisite support, interest and format
 fatigue. Six subjects. This is real and does not need rebuilding.
+
+**Closed 2026-09-20 — adaptation when a child struggles.** The wave's rule is explicit:
+on repeated struggle, increase scaffolding and add worked examples. Nothing did.
+`session.misses` was incremented on every wrong answer and never read anywhere, so a
+child could answer the same activity wrong five times and receive the identical sentence
+each time, while the three-level hint ladder in `lib/nova.ts` stayed unused unless they
+knew to press "give me a hint" — which the children who most need it are least likely to
+do. `lib/scaffolding.ts` now escalates that ladder automatically, and later for older
+bands than younger ones, because productive struggle is a principle and a seven-year-old
+shown the reasoning after two tries never gets to find it.
+
+Two integrity properties, both tested: evidence is still captured from the first attempt
+only, so volunteered help cannot flatter the mastery model; and level one is left exactly
+as it was, silent and uncounted, so no parent's help total jumps for a behaviour that did
+not change.
 
 **Gap:** placement covers only reading, math and logic. Science, Our World and
 Feelings & Friendship have skills but no placement.
