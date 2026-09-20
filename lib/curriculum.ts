@@ -9,6 +9,7 @@ import { resolveBand, type LearningBandId } from "./learning-bands";
 import { gardenActivities } from "./garden-content";
 import { arcadeActivities } from "./arcade-content";
 import { wholeChildActivities } from "./content/whole-child";
+import { playGameActivities } from "./content/play-games";
 
 export type Subject = SkillSubject;
 export type ActivityType =
@@ -18,7 +19,8 @@ export type ActivityType =
   | "number-choice"
   | "pattern-choice"
   | "reasoning-choice" | "counting" | "sorting" | "memory" | "word-builder" | "pattern"
-  | "ten-frame" | "route" | "matching" | "ordering";
+  | "ten-frame" | "route" | "matching" | "ordering"
+  | "bubble-pop" | "balance" | "constellation";
 export type ContextTag = "animals" | "stories" | "building" | "space" | "nature" | "puzzles";
 
 export type Question = {
@@ -317,6 +319,7 @@ for (let index = 0; index < 18; index += 1) {
 questions.push(...gardenActivities);
 questions.push(...arcadeActivities);
 questions.push(...wholeChildActivities);
+questions.push(...playGameActivities);
 
 export function validateCurriculum() {
   const ids = new Set<string>();
@@ -347,7 +350,8 @@ export function publicQuestion(question: Question, band?: LearningBandId) {
   const safe = band ? { ...original, options: narrowChoices(original.options, answer, band) } : original;
   // Intentionally excluded from the child response until server-side scoring.
   void answer; void explanation;
-  if (safe.engine?.kind === "sorting" || safe.engine?.kind === "matching" || safe.engine?.kind === "ordering") {
+  if (safe.engine?.kind === "sorting" || safe.engine?.kind === "matching" || safe.engine?.kind === "ordering"
+    || safe.engine?.kind === "bubble-pop" || safe.engine?.kind === "constellation") {
     const { solution, ...engine } = safe.engine;
     void solution;
     return { ...safe, engine };

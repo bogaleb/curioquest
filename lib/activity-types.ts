@@ -1,3 +1,5 @@
+import type { SkillSubject } from "./skill-graph";
+
 export type ActivityEngine =
   | { kind: "counting"; objects: string[]; max: number }
   | { kind: "sorting"; items: { id: string; label: string; emoji: string }[]; bins: { id: string; label: string; emoji: string }[]; solution?: Record<string, string> }
@@ -7,10 +9,25 @@ export type ActivityEngine =
   | { kind: "ten-frame"; size: number; emoji: string }
   | { kind: "route"; size: number; start: number; goal: number; rocks: number[]; maxMoves: number }
   | { kind: "matching"; items: { id: string; label: string }[]; targets: { id: string; label: string }[]; solution?: Record<string, string> }
-  | { kind: "ordering"; items: { id: string; label: string; emoji: string }[]; solution?: string[] };
+  | { kind: "ordering"; items: { id: string; label: string; emoji: string }[]; solution?: string[] }
+  /**
+   * Pop every bubble that fits a rule. Multi-select rather than single choice, so a
+   * child has to judge each candidate instead of comparing three answers.
+   */
+  | { kind: "bubble-pop"; rule: string; bubbles: { id: string; label: string }[]; solution?: string[] }
+  /**
+   * A balance scale that tilts to whichever side holds more. Comparison made physical:
+   * the child predicts, then watches the scale settle.
+   */
+  | { kind: "balance"; left: { emoji: string; count: number }; right: { emoji: string; count: number }; question: "more" | "fewer" }
+  /**
+   * Join stars in order to reveal a constellation. Sequencing with a payoff a child
+   * can see: the picture only appears if the order is right.
+   */
+  | { kind: "constellation"; name: string; stars: { id: string; label: string; x: number; y: number }[]; solution?: string[] };
 
 export type PublicQuestion = {
-  id: string; subject: "reading" | "math" | "logic"; grade: "prek" | "grade1";
+  id: string; subject: SkillSubject; grade: "prek" | "grade1";
   skillId: string; prompt: string; visual?: string; options: string[];
   engine?: ActivityEngine; hint: string;
   passage?: { title: string; text: string; emoji: string };

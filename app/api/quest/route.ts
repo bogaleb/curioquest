@@ -32,6 +32,13 @@ const allowedGoals = [8, 10, 15, 20];
 const maxProfiles = 4;
 
 function clean(profile: ExplorerProfile, questions: Question[]) {
+  // A session can outlive the activity it points at: the published catalogue is
+  // versioned separately from a family's saved progress, so an id can disappear
+  // between a session being saved and resumed. That must read as "nothing left to
+  // show" and let the child move on, never as a 503 mid-quest.
+  const current = profile.session && profile.session.index < profile.session.questions.length
+    ? questions.find((question) => question.id === profile.session!.questions[profile.session!.index])
+    : undefined;
   return {
     ...profile,
     savedSessions: profile.savedSessions.map(({ id, subject, index, questions, gameId, gameLevel, chapter, teamId, discovery }) => ({ id, subject, index, total: questions.length, gameId, gameLevel, chapter, teamId, discovery: !!discovery })),
@@ -39,15 +46,7 @@ function clean(profile: ExplorerProfile, questions: Question[]) {
       ? {
           ...profile.session,
           questions: undefined,
-          question:
-            profile.session.index < profile.session.questions.length
-              ? publicQuestion(
-                  questions.find(
-                    (question) => question.id === profile.session?.questions[profile.session.index],
-                  )!,
-                  profile.band,
-                )
-              : null,
+          question: current ? publicQuestion(current, profile.band) : null,
           total: profile.session.questions.length,
         }
       : null,
@@ -316,7 +315,7 @@ async function post(request: Request) {
       profile.adventure.feelings=[...profile.adventure.feelings.filter(f=>f.sessionId!==input.session),
         {sessionId:input.session,value:input.value as "easy"|"right"|"tricky",date:new Date().toISOString()}].slice(-30);
     } else if (input.action === "discovery-start") {
-      try { startDiscovery(profile, crypto.randomUUID()); }
+      try { startDiscovery(profile, crypto.randomUUID(), questions); }
       catch (error) { return Response.json({ error: (error as Error).message }, { status: 409 }); }
     } else if (input.action === "campaign-start") {
       if (profile.session && profile.session.index < profile.session.questions.length) return Response.json({profile:clean(profile, questions)});
@@ -338,7 +337,7 @@ async function post(request: Request) {
         return Response.json({ profile: clean(profile, questions) });
       }
 
-      const recommendation = recommendQuest(profile, requestedSubject);
+      const recommendation = recommendQuest(profile, requestedSubject, new Date(), questions);
       if (!recommendation.questionIds.length) {
         return Response.json({ error: "No quest activities are ready for this explorer." }, { status: 409 });
       }
@@ -407,7 +406,7 @@ async function post(request: Request) {
           if (!profile.seen.includes(question.id)) profile.seen.push(question.id);
           profile.recentQuestionIds = [...profile.recentQuestionIds, question.id].slice(-20);
           session.index += 1;
-          advanceDiscovery(profile, question, independent);
+          advanceDiscovery(profile, question, independent, questions);
           session.misses = 0;
           session.hinted = false;
           session.hintLevel = 0;

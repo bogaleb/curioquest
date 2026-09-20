@@ -99,3 +99,33 @@ Configure Supabase email/password authentication, email confirmation, production
 The user deployed to https://curioquest-iota.vercel.app/ and the full live integration suite passed there on 2026-09-19, including account cookies, completed learning, rewards, exports, family isolation and private media. Browser QA, real signup/recovery email delivery and any legacy transfer remain release checks. Apply migrations before future matching releases. After Supabase accepts new writes, rollback requires reconciling those writes with the backup, not merely reverting code.
 
 References: [Supabase SSR](https://supabase.com/docs/guides/auth/server-side/creating-a-client), [migrations](https://supabase.com/docs/guides/local-development/database-migrations), [RLS](https://supabase.com/docs/guides/database/postgres/row-level-security).
+
+## Curriculum refreshes (content-only)
+
+Activities are served from `private.catalogs`, which is versioned separately from the
+code. Shipping new activities in `lib/` does **not** make them reachable — the
+catalogue must be refreshed too.
+
+Selection is hardened against the gap: `recommendQuest` and `startDiscovery` choose
+only from the catalogue the server will actually serve, so a deploy that runs ahead of
+its refresh serves the older content instead of failing. Before that fix, a
+recommendation could name an activity the database did not have and the request
+returned 503 mid-quest.
+
+To publish a content change:
+
+```sh
+pnpm supabase:seed-generate --out supabase/migrations/<timestamp>_curriculum_refresh.sql
+```
+
+Every statement the generator emits carries an `on conflict` clause, so the file is
+safe to run more than once. Paste it into the SQL Editor — CLI administrative access is
+still unavailable for this project. Never regenerate over an already-applied migration
+file; that rewrites history the deployed database has already run.
+
+### Pending
+
+`supabase/migrations/20260920000100_curriculum_refresh.sql` — 390 activities. Adds the
+Science, Our World, and Feelings & Friendship subjects and the Bubble Pop, Balance
+Scale, and Constellation engines. **Not yet applied.** Until it runs, those subjects and
+games are inert and children continue to receive the previous 324 activities.

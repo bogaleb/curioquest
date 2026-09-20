@@ -12,19 +12,20 @@ export type DiscoveryProgress = {
 // subjects would be twelve activities long before a child has played anything.
 const subjects: Subject[] = [...coreSubjects];
 
-function pick(grade: GradeTrack, subject: Subject, level: number, exclude: string[]) {
-  const question = questions.find(q => q.grade === grade && q.subject === subject &&
+function pick(grade: GradeTrack, subject: Subject, level: number, exclude: string[], pool: Question[] = questions) {
+  const question = pool.find(q => q.grade === grade && q.subject === subject &&
     q.level === level && !q.campaignOnly && !exclude.includes(q.id));
   if (!question) throw new Error(`Missing discovery activity for ${grade}/${subject}/${level}`);
   return question;
 }
 
-export function startDiscovery(profile: ExplorerProfile, id: string) {
+// `pool` is the served catalogue; see recommendQuest for why it is threaded through.
+export function startDiscovery(profile: ExplorerProfile, id: string, pool: Question[] = questions) {
   if (profile.session && profile.session.index < profile.session.questions.length) return;
   if (profile.discovery?.grade === profile.grade) throw new Error("Nova already knows your starting paths. Your quests keep adapting as you explore.");
   const selected: Question[] = [];
   for (const subject of subjects) {
-    for (let i = 0; i < 2; i++) selected.push(pick(profile.grade, subject, 1, selected.map(q => q.id)));
+    for (let i = 0; i < 2; i++) selected.push(pick(profile.grade, subject, 1, selected.map(q => q.id), pool));
   }
   profile.session = {
     id, subject: "daily", questions: selected.map(q => q.id), index: 0, misses: 0,
@@ -35,12 +36,12 @@ export function startDiscovery(profile: ExplorerProfile, id: string) {
 }
 
 // Called once, on advancement. A hint or retry keeps the next discovery gentle.
-export function advanceDiscovery(profile: ExplorerProfile, question: Question, independent: boolean) {
+export function advanceDiscovery(profile: ExplorerProfile, question: Question, independent: boolean, pool: Question[] = questions) {
   const session = profile.session;
   if (!session?.discovery) return;
   if (independent) session.discovery.independent[question.subject] += 1;
   if (session.index % 2 === 1) {
-    const next = pick(profile.grade, question.subject, independent ? 2 : 1, session.questions);
+    const next = pick(profile.grade, question.subject, independent ? 2 : 1, session.questions, pool);
     session.questions[session.index] = next.id;
     session.plan![session.index] = { questionId: next.id, skillId: next.skillId, reason: "welcome-discovery" };
   }

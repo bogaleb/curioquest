@@ -1,0 +1,336 @@
+/*
+ * Play engines: Bubble Pop, Balance Scale, Constellation.
+ *
+ * Each has a scene rather than a background. Motion is part of the mechanic — bubbles
+ * drift so they must be caught, the scale settles so the answer is felt rather than
+ * announced, the constellation lights only when the order is right — and every one of
+ * them still works and still teaches with motion switched off.
+ */
+
+.cq-play {
+  display: grid;
+  gap: var(--space-5);
+  justify-items: center;
+  width: 100%;
+}
+
+.cq-play-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+
+/* ---- Shared guide strip --------------------------------------------------- */
+.cq-guide {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 620px;
+  text-align: left;
+}
+.cq-guide .cq-bubble-slot { flex: 1; min-width: 0; }
+
+@media (max-width: 560px) {
+  .cq-guide { align-items: flex-start; gap: var(--space-2); }
+  .cq-guide .nova-character { --nova-size: 60px; }
+  .cq-guide .pip-character { --pip-size: 60px; }
+}
+
+/* ==========================================================================
+   BUBBLE POP
+   ========================================================================== */
+.cq-bubble-field {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: 300px;
+  padding: var(--space-6);
+  border-radius: var(--radius-2xl);
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.55), transparent 42%),
+    linear-gradient(170deg, #d9f0f5 0%, #bfe4ee 55%, #a9d8e6 100%);
+  border: 1px solid var(--w-teal-line);
+  overflow: hidden;
+}
+
+@keyframes cq-bubble-float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(var(--drift, 0px), -14px); }
+}
+
+.cq-bubble-ball {
+  display: grid;
+  place-items: center;
+  min-width: var(--touch-child);
+  min-height: var(--touch-child);
+  padding: var(--space-4) var(--space-5);
+  border: 0;
+  border-radius: 50% 50% 48% 52%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.28) 38%, rgba(125, 196, 214, 0.45) 72%);
+  box-shadow: inset 0 -6px 12px rgba(31, 111, 114, 0.18), var(--shadow-md);
+  color: var(--green-900);
+  font-family: var(--font-reading);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  animation: cq-bubble-float var(--ease-in-out) infinite;
+  transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cq-bubble-ball:hover:not(:disabled) { transform: scale(1.07); }
+}
+
+/* A popped bubble collapses; the label stays visible so the child can review what
+   they chose before submitting. */
+.cq-bubble-ball.is-popped {
+  background: var(--gradient-gold);
+  box-shadow: var(--shadow-gold);
+  border-radius: var(--radius-lg);
+  animation: none;
+  transform: scale(0.94);
+}
+
+@keyframes cq-bubble-burst {
+  0% { transform: scale(0.94); }
+  40% { transform: scale(1.22); }
+  100% { transform: scale(0.94); }
+}
+.cq-bubble-ball.is-popped { animation: cq-bubble-burst var(--dur-base) var(--ease-bounce); }
+
+/* ==========================================================================
+   BALANCE SCALE
+   ========================================================================== */
+.cq-balance { width: 100%; }
+
+.cq-scale {
+  position: relative;
+  width: min(520px, 100%);
+  height: 260px;
+  padding-top: var(--space-4);
+  border-radius: var(--radius-2xl);
+  background: linear-gradient(175deg, #fdf6e6 0%, #f6e8c8 100%);
+  border: 1px solid var(--sun-200);
+}
+
+.cq-scale-beam {
+  position: absolute;
+  top: 36%;
+  left: 50%;
+  width: 78%;
+  height: 10px;
+  translate: -50% 0;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, #b4894a, #8d6a37);
+  transform-origin: center;
+  /* The settle is slow and eased so a child watches the result happen. */
+  transition: rotate var(--dur-slow) var(--ease-spring);
+}
+
+.cq-pan {
+  position: absolute;
+  top: 0;
+  width: 40%;
+  display: grid;
+  justify-items: center;
+}
+.cq-pan[data-side="left"] { left: -4%; }
+.cq-pan[data-side="right"] { right: -4%; }
+
+.cq-pan-items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  min-height: 74px;
+  max-width: 132px;
+  font-size: var(--text-xl);
+  line-height: 1;
+  /* Counter-rotate so the contents sit upright while the beam tilts. */
+  padding-bottom: var(--space-2);
+}
+
+.cq-pan-dish {
+  width: 124px;
+  height: 14px;
+  border-radius: 0 0 var(--radius-pill) var(--radius-pill);
+  background: linear-gradient(180deg, #d9c08a, #b89a5c);
+  box-shadow: var(--shadow-sm);
+}
+
+.cq-scale-post {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  width: 14px;
+  height: 46%;
+  translate: -50% 0;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, #b4894a, #8d6a37);
+}
+.cq-scale-base {
+  position: absolute;
+  bottom: 12%;
+  left: 50%;
+  width: 46%;
+  height: 16px;
+  translate: -50% 0;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, #a9813f, #7d5d2f);
+  box-shadow: var(--shadow-sm);
+}
+
+.cq-balance-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  width: 100%;
+}
+.cq-balance-choice {
+  min-height: var(--touch-child);
+  padding: var(--space-3) var(--space-5);
+  border: 2px solid var(--line);
+  border-bottom-width: 5px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  color: var(--ink);
+  transition: transform var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+.cq-balance-choice.is-chosen { border-color: var(--sun-400); background: var(--sun-100); }
+@media (hover: hover) and (pointer: fine) {
+  .cq-balance-choice:hover:not(:disabled) { transform: translateY(-3px); border-color: var(--green-300); }
+}
+
+/* ==========================================================================
+   CONSTELLATION
+   ========================================================================== */
+.cq-sky {
+  position: relative;
+  width: min(620px, 100%);
+  aspect-ratio: 100 / 62;
+  border-radius: var(--radius-2xl);
+  background:
+    radial-gradient(circle at 78% 18%, rgba(255, 255, 255, 0.14), transparent 40%),
+    linear-gradient(170deg, #1b2b52 0%, #101a36 60%, #0a1228 100%);
+  border: 1px solid #2c3f6d;
+  overflow: hidden;
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.4);
+}
+
+/* Faint background stars, drawn with a repeating gradient rather than markup. */
+.cq-sky::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 28%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.5px 1.5px at 62% 14%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.5px 1.5px at 84% 62%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 28% 76%, rgba(255, 255, 255, 0.45), transparent),
+    radial-gradient(1.5px 1.5px at 46% 52%, rgba(255, 255, 255, 0.35), transparent);
+  pointer-events: none;
+}
+
+.cq-sky-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: rgba(242, 208, 124, 0.85);
+  pointer-events: none;
+}
+
+.cq-star {
+  position: absolute;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: var(--touch-child);
+  height: var(--touch-child);
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.95), rgba(190, 214, 255, 0.35) 55%, transparent 72%);
+  color: #0a1228;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  transition: transform var(--dur-fast) var(--ease-out), filter var(--dur-base) var(--ease-out);
+}
+.cq-star-label {
+  display: grid;
+  place-items: center;
+  width: 62%;
+  height: 62%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+@keyframes cq-star-twinkle {
+  0%, 100% { opacity: 0.82; }
+  50% { opacity: 1; }
+}
+.cq-star:not(.is-joined) { animation: cq-star-twinkle 2.6s var(--ease-in-out) infinite; }
+.cq-star:nth-of-type(2n) { animation-delay: 0.7s; }
+.cq-star:nth-of-type(3n) { animation-delay: 1.3s; }
+
+.cq-star.is-joined {
+  filter: drop-shadow(0 0 12px rgba(242, 208, 124, 0.9));
+  animation: none;
+}
+.cq-star.is-joined .cq-star-label { background: var(--gradient-gold); }
+
+@media (hover: hover) and (pointer: fine) {
+  .cq-star:hover:not(:disabled) { transform: translate(-50%, -50%) scale(1.14); }
+}
+
+.cq-sky[data-complete] { border-color: var(--sun-300); }
+.cq-sky-name {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-4);
+  translate: -50% 0;
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--radius-pill);
+  background: rgba(10, 18, 40, 0.72);
+  color: var(--sun-300);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  animation: cq-pop var(--dur-celebrate) var(--ease-bounce) both;
+}
+
+/* ==========================================================================
+   Compact
+   ========================================================================== */
+@media (max-width: 560px) {
+  .cq-bubble-field { min-height: 240px; padding: var(--space-4); gap: var(--space-3); }
+  .cq-bubble-ball { font-size: var(--text-base); padding: var(--space-3); }
+  .cq-scale { height: 210px; }
+  .cq-pan-items { font-size: var(--text-base); max-width: 96px; min-height: 58px; }
+  .cq-pan-dish { width: 92px; }
+  .cq-balance-choice { font-size: var(--text-base); padding-inline: var(--space-4); }
+  .cq-play-actions { gap: var(--space-3); }
+  .cq-play-actions .primary { width: 100%; }
+}
+
+/* ==========================================================================
+   Reduced motion
+   Every mechanic still reads: bubbles sit still but pop, the scale jumps to its
+   final angle, stars light without twinkling.
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .cq-bubble-ball,
+  .cq-star:not(.is-joined),
+  .cq-sky-name { animation: none; }
+  .cq-scale-beam { transition: none; }
+}

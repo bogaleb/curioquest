@@ -56,7 +56,7 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("LIT.PK.PA.SYLLABLE_01", "reading", "phonological-awareness", "Clap word parts", "Notice and count syllables in familiar spoken words.", ["prek", "grade1"], 1.2, ["LIT.PK.ORAL.WORD_01"]),
   skill("LIT.PK.PA.INITIAL_01", "reading", "phonemic-awareness", "Hear beginning sounds", "Identify the first sound in a familiar spoken word.", ["prek", "grade1"], 1.4, ["LIT.PK.PA.RHYME_01"], 6, true),
   skill("LIT.PK.PA.BLEND_01", "reading", "phonemic-awareness", "Blend two sound parts", "Combine an onset and rime to make a spoken word.", ["prek", "grade1"], 1.7, ["LIT.PK.PA.INITIAL_01"]),
-  skill("LIT.PK.ALPH.NAME_01", "reading", "alphabet-knowledge", "Name common letters", "Recognize and name frequently encountered uppercase letters.", ["prek", "grade1"], 1.2),
+  skill("LIT.PK.ALPH.NAME_01", "reading", "alphabet-knowledge", "Name common letters", "Recognize and name frequently encountered uppercase letters.", ["prek", "grade1"], 1.2, [], 5, true),
   skill("LIT.PK.ALPH.CASE_01", "reading", "alphabet-knowledge", "Match letter partners", "Match uppercase letters with their lowercase forms.", ["prek", "grade1"], 1.6, ["LIT.PK.ALPH.NAME_01"], 6, true),
   skill("LIT.PK.PRINT.DIRECTION_01", "reading", "print-concepts", "Follow print direction", "Track words from left to right during shared reading.", ["prek", "grade1"], 1.3),
 
@@ -71,12 +71,12 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("LIT.G1.COMP.TRAIT_01", "reading", "reading-comprehension", "Infer a character trait", "Use an action as evidence for a simple character trait.", ["grade1"], 3.1, ["LIT.G1.COMP.INFER_01"], 5, true),
 
   // Pre-K mathematics foundations
-  skill("MATH.PK.NUM.RECITE_01", "math", "counting", "Say numbers in order", "Recite the stable number sequence through ten.", ["prek", "grade1"], 1),
+  skill("MATH.PK.NUM.RECITE_01", "math", "counting", "Say numbers in order", "Recite the stable number sequence through ten.", ["prek", "grade1"], 1, [], 5, true),
   skill("MATH.PK.NUM.ONE_TO_ONE_01", "math", "counting", "Count each object once", "Coordinate one count word with each object.", ["prek", "grade1"], 1.2, ["MATH.PK.NUM.RECITE_01"]),
   skill("MATH.PK.NUM.CARDINAL_01", "math", "cardinality", "Count a set to six", "Count up to six objects and tell how many are in the set.", ["prek", "grade1"], 1.4, ["MATH.PK.NUM.ONE_TO_ONE_01"], 6, true),
   skill("MATH.PK.NUM.NUMERAL_01", "math", "number-recognition", "Connect numerals to quantities", "Match written numerals with small quantities.", ["prek", "grade1"], 1.5, ["MATH.PK.NUM.CARDINAL_01"]),
   skill("MATH.PK.COMP.MORE_01", "math", "comparison", "Compare two quantities", "Decide which of two small quantities is greater.", ["prek", "grade1"], 1.8, ["MATH.PK.NUM.CARDINAL_01"], 6, true),
-  skill("MATH.PK.COMP.EQUAL_01", "math", "comparison", "Recognize equal groups", "Decide whether two small groups contain the same quantity.", ["prek", "grade1"], 1.9, ["MATH.PK.NUM.CARDINAL_01"]),
+  skill("MATH.PK.COMP.EQUAL_01", "math", "comparison", "Recognize equal groups", "Decide whether two small groups contain the same quantity.", ["prek", "grade1"], 1.9, ["MATH.PK.NUM.CARDINAL_01"], 5, true),
   skill("MATH.PK.COMP.ADD_ONE_01", "math", "operations", "Add one to a group", "Find the new total when one object joins a small group.", ["prek", "grade1"], 2.1, ["MATH.PK.COMP.MORE_01"], 6, true),
   skill("MATH.PK.GEO.SHAPE_01", "math", "geometry", "Name basic shapes", "Recognize circles, squares, rectangles, and triangles.", ["prek", "grade1"], 1.3, [], 5, true),
   skill("MATH.PK.SPATIAL.POSITION_01", "math", "spatial-reasoning", "Use position words", "Understand above, below, beside, and between.", ["prek", "grade1"], 1.5),

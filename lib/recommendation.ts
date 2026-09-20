@@ -24,10 +24,19 @@ export type QuestRecommendation = {
   estimatedMinutes: number;
 };
 
+/**
+ * Recommends from `pool`, which must be the same activity set the caller will serve.
+ *
+ * The published catalogue is versioned separately from the code, so the two can
+ * legitimately differ — a deploy can ship new content before the catalogue refresh is
+ * applied. Selecting from the served pool means the recommender can never hand back an
+ * id the server cannot then resolve.
+ */
 export function recommendQuest(
   profile: ExplorerProfile,
   requestedSubject: Subject | "daily",
   now = new Date(),
+  pool: Question[] = questions,
 ): QuestRecommendation {
   const count = profile.controls.questLength ?? questSizeForGoal(profile.dailyGoal);
   const chosen: Question[] = [];
@@ -36,7 +45,7 @@ export function recommendQuest(
 
   for (const subject of subjects) {
     const pools = contentBandsFor(profile.band);
-    const candidates = questions.filter(
+    const candidates = pool.filter(
       (question) =>
         (pools.includes(question.grade) || isWeakPrerequisite(profile, question.skillId)) &&
         !question.campaignOnly &&
@@ -44,7 +53,7 @@ export function recommendQuest(
         !chosen.some((item) => item.id === question.id),
     );
     const ranked = candidates
-      .map((question) => rankQuestion(profile, question, chosen, now))
+      .map((question) => rankQuestion(profile, question, chosen, now, pool))
       .sort((left, right) => right.score - left.score || left.question.id.localeCompare(right.question.id));
     const selected = ranked[0];
     if (!selected) continue;
@@ -95,6 +104,7 @@ function rankQuestion(
   question: Question,
   chosen: Question[],
   now: Date,
+  pool: Question[],
 ) {
   const mastery = profile.skillMastery[question.skillId];
   const skill = skillById.get(question.skillId)!;
@@ -134,7 +144,7 @@ function rankQuestion(
   if (prerequisiteWeak) {
     score -= 100;
   } else if (skill.prerequisites.some((id) => (profile.skillMastery[id]?.score ?? 0) < 50)) {
-    const activePrerequisiteAvailable = questions.some(
+    const activePrerequisiteAvailable = pool.some(
       (item) => contentBandsFor(profile.band).includes(item.grade) && skill.prerequisites.includes(item.skillId),
     );
     if (activePrerequisiteAvailable) score -= 14;

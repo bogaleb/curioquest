@@ -1,0 +1,291 @@
+/*
+ * The cast: Nova the fox and Pip the robot.
+ *
+ * Both are CSS puppets — no sprite sheets, no video, nothing to download. A mouth
+ * animates between speech start and end, which reads as talking far more convincingly
+ * than an attempt at phoneme-accurate lip sync would on browsers whose word-boundary
+ * events are unreliable.
+ */
+
+.cq-cast { display: inline-block; line-height: 0; }
+
+/* ==========================================================================
+   Talking mouths
+   ========================================================================== */
+@keyframes cq-talk-nova {
+  0%, 100% { transform: scaleY(0.55) scaleX(1); }
+  25% { transform: scaleY(1.5) scaleX(0.86); }
+  50% { transform: scaleY(0.8) scaleX(1.06); }
+  75% { transform: scaleY(1.7) scaleX(0.92); }
+}
+.nova-character[data-talking] .nova-mouth {
+  transform-origin: center top;
+  animation: cq-talk-nova 340ms var(--ease-in-out) infinite;
+}
+
+/* A head that bobs very slightly while talking sells it more than the mouth alone. */
+@keyframes cq-talk-bob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-2px) rotate(-1deg); }
+}
+.nova-character[data-talking] .nova-head,
+.pip-character[data-talking] .pip-head {
+  animation: cq-talk-bob 680ms var(--ease-in-out) infinite;
+}
+
+/* ==========================================================================
+   Pip
+   ========================================================================== */
+.pip-character {
+  --pip-size: 120px;
+  position: relative;
+  width: var(--pip-size);
+  height: var(--pip-size);
+  display: grid;
+  place-items: center;
+}
+.pip-small { --pip-size: 72px; }
+.pip-large { --pip-size: 190px; }
+
+.pip-shadow {
+  position: absolute;
+  bottom: 2%;
+  width: 56%;
+  height: 7%;
+  border-radius: 50%;
+  background: rgba(35, 63, 55, 0.16);
+  filter: blur(2px);
+}
+
+.pip-antenna {
+  position: absolute;
+  top: 2%;
+  width: 3%;
+  height: 14%;
+  border-radius: var(--radius-pill);
+  background: #8fa3b8;
+}
+.pip-antenna-bulb {
+  position: absolute;
+  top: -42%;
+  left: 50%;
+  translate: -50% 0;
+  width: 320%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #ffe9a8, var(--sun-400));
+  box-shadow: 0 0 10px rgba(229, 180, 67, 0.75);
+}
+
+.pip-head {
+  position: absolute;
+  top: 14%;
+  width: 62%;
+  height: 44%;
+  border-radius: 34% 34% 30% 30%;
+  background: linear-gradient(165deg, #f4f7fa 0%, #d8e2ec 100%);
+  border: 2px solid #b9c8d7;
+  display: grid;
+  place-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.pip-screen {
+  position: relative;
+  width: 76%;
+  height: 68%;
+  border-radius: var(--radius-md);
+  background: linear-gradient(165deg, #1f4a5c, #12333f);
+  display: grid;
+  place-items: center;
+}
+
+.pip-eye {
+  position: absolute;
+  top: 30%;
+  width: 16%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #7fe6dc;
+  box-shadow: 0 0 6px #7fe6dc;
+}
+.pip-eye.left { left: 24%; }
+.pip-eye.right { right: 24%; }
+
+.pip-mouth {
+  position: absolute;
+  bottom: 22%;
+  width: 30%;
+  height: 8%;
+  border-radius: var(--radius-pill);
+  background: #7fe6dc;
+  opacity: 0.85;
+  transform-origin: center;
+}
+
+@keyframes cq-talk-pip {
+  0%, 100% { transform: scaleY(0.6) scaleX(1); }
+  30% { transform: scaleY(2.2) scaleX(0.8); }
+  60% { transform: scaleY(1) scaleX(1.1); }
+  80% { transform: scaleY(2.6) scaleX(0.85); }
+}
+.pip-character[data-talking] .pip-mouth {
+  animation: cq-talk-pip 300ms steps(4, end) infinite;
+}
+
+/* Pip blinks on a long, irregular cycle so he reads as present, not as a machine. */
+@keyframes cq-pip-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.12); }
+}
+.pip-eye { animation: cq-pip-blink 5.5s var(--ease-in-out) infinite; }
+.pip-eye.right { animation-delay: 60ms; }
+
+.pip-body {
+  position: absolute;
+  bottom: 12%;
+  width: 52%;
+  height: 34%;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(165deg, #e8eef5 0%, #c6d4e2 100%);
+  border: 2px solid #b0c0d1;
+  display: grid;
+  place-items: center;
+}
+.pip-light {
+  width: 22%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--green-400);
+  box-shadow: 0 0 8px var(--green-300);
+}
+.pip-arm {
+  position: absolute;
+  top: 18%;
+  width: 16%;
+  height: 46%;
+  border-radius: var(--radius-pill);
+  background: #c2d0de;
+  border: 2px solid #aabbcb;
+}
+.pip-arm.left { left: -22%; transform-origin: top center; }
+.pip-arm.right { right: -22%; transform-origin: top center; }
+
+.pip-tread {
+  position: absolute;
+  bottom: 6%;
+  width: 46%;
+  height: 10%;
+  border-radius: var(--radius-pill);
+  background: #8697a8;
+}
+
+.pip-spark {
+  position: absolute;
+  top: 0;
+  right: 6%;
+  font-size: calc(var(--pip-size) * 0.2);
+  color: var(--sun-400);
+  animation: cq-pop var(--dur-celebrate) var(--ease-bounce);
+}
+
+/* ---- Pip's moods ---------------------------------------------------------- */
+.pip-character[data-state="celebrate"] .pip-arm.left { rotate: -34deg; }
+.pip-character[data-state="celebrate"] .pip-arm.right { rotate: 34deg; }
+.pip-character[data-state="celebrate"] .pip-light { background: var(--sun-400); box-shadow: 0 0 12px var(--sun-300); }
+.pip-character[data-state="point"] .pip-arm.right { rotate: 62deg; }
+.pip-character[data-state="explain"] .pip-arm.left { rotate: -18deg; }
+.pip-character[data-state="listen"] .pip-antenna-bulb { background: radial-gradient(circle at 34% 30%, #cfeffd, var(--w-teal-deep)); }
+
+@keyframes cq-pip-hover {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+.pip-character[data-state="idle"] .pip-head,
+.pip-character[data-state="wave"] .pip-head { animation: cq-pip-hover 3.4s var(--ease-in-out) infinite; }
+
+@keyframes cq-pip-dance {
+  0%, 100% { rotate: -6deg; }
+  50% { rotate: 6deg; }
+}
+.pip-character[data-state="dance"] { animation: cq-pip-dance 520ms var(--ease-in-out) 6; }
+
+/* ==========================================================================
+   Speech bubbles
+   ========================================================================== */
+.cq-bubble-slot { min-height: 0; }
+
+.cq-bubble {
+  position: relative;
+  max-width: 46ch;
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  border: 2px solid var(--line);
+  box-shadow: var(--shadow-md);
+  font-size: var(--text-base);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  animation: cq-bubble-in var(--dur-base) var(--ease-spring) both;
+}
+.cq-bubble > span { flex: 1; min-width: 0; }
+
+@keyframes cq-bubble-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.94); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* The tail points back at whoever is speaking. */
+.cq-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -11px;
+  left: var(--space-8);
+  width: 18px;
+  height: 18px;
+  rotate: 45deg;
+  background: inherit;
+  border-right: 2px solid var(--line);
+  border-bottom: 2px solid var(--line);
+  border-bottom-right-radius: 4px;
+}
+
+.cq-bubble-nova { border-color: var(--w-coral-line); background: #fffaf6; }
+.cq-bubble-nova::after { border-color: var(--w-coral-line); }
+.cq-bubble-pip { border-color: var(--w-teal-line); background: #f5fcfc; }
+.cq-bubble-pip::after { border-color: var(--w-teal-line); }
+
+.cq-bubble-replay {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  color: var(--ink-soft);
+}
+.cq-bubble-replay svg { width: 19px; height: 19px; }
+
+@media (max-width: 767px) {
+  .cq-bubble { font-size: var(--text-sm); padding: var(--space-3) var(--space-4); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nova-character[data-talking] .nova-mouth,
+  .pip-character[data-talking] .pip-mouth,
+  .nova-character[data-talking] .nova-head,
+  .pip-character[data-talking] .pip-head,
+  .pip-eye,
+  .pip-character[data-state="idle"] .pip-head,
+  .pip-character[data-state="wave"] .pip-head,
+  .pip-character[data-state="dance"],
+  .cq-bubble { animation: none; }
+  /* A still, open mouth still reads as "speaking" without movement. */
+  .nova-character[data-talking] .nova-mouth { transform: scaleY(1.3); }
+}

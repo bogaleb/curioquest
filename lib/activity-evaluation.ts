@@ -21,8 +21,29 @@ export function evaluateResponse(question: Question, response: unknown): { valid
     });
     return { valid, correct: valid && response === question.answer };
   }
+  if (engine.kind === "balance") {
+    // The scale itself decides; the authored answer only names the expected side.
+    const heavier = engine.left.count === engine.right.count ? "equal" : engine.left.count > engine.right.count ? "left" : "right";
+    const expected = engine.question === "more" ? heavier : heavier === "equal" ? "equal" : heavier === "left" ? "right" : "left";
+    const valid = ["left", "right", "equal"].includes(response);
+    return { valid, correct: valid && response === expected };
+  }
   try {
     const parsed: unknown = JSON.parse(response);
+    if (engine.kind === "bubble-pop") {
+      const ids = engine.bubbles.map((bubble) => bubble.id);
+      const valid = Array.isArray(parsed) && new Set(parsed).size === parsed.length && parsed.every((id) => ids.includes(id as string));
+      if (!valid) return { valid: false, correct: false };
+      const chosen = [...(parsed as string[])].sort();
+      const solution = [...(engine.solution ?? [])].sort();
+      return { valid, correct: JSON.stringify(chosen) === JSON.stringify(solution) };
+    }
+    if (engine.kind === "constellation") {
+      const valid = Array.isArray(parsed) && parsed.length === engine.stars.length
+        && new Set(parsed).size === parsed.length
+        && parsed.every((id) => engine.stars.some((star) => star.id === id));
+      return { valid, correct: valid && JSON.stringify(parsed) === JSON.stringify(engine.solution) };
+    }
     if (engine.kind === "route") {
       const valid = Array.isArray(parsed) && parsed.length > 0 && parsed.length <= engine.maxMoves && parsed.every(move=>routeDirections.some(d=>d.id===move));
       return {valid,correct:valid&&traceRoute(engine,parsed as string[]).arrived};
