@@ -12,6 +12,7 @@ import "./reading.css";
 import "./polish.css";
 import "./experience.css";
 import "./wonder.css";
+import "./chest.css";
 import "./motion.css";
 import "./shell.css";
 import "./immersive.css";

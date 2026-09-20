@@ -1,0 +1,156 @@
+/*
+ * Treasure Chest.
+ *
+ * Earned awards are warm and lit; locked ones are calm and quiet rather than greyed
+ * out and sad. A locked card shows the path and how far along it the child already is,
+ * because "3 of 5" is an invitation and a dimmed silhouette is a rebuke.
+ */
+
+.cq-chest { display: grid; gap: var(--space-10); }
+
+.cq-chest-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+.cq-chest-head .lead { color: var(--ink-soft); margin-top: var(--space-2); }
+
+.cq-chest-totals { display: flex; gap: var(--space-3); }
+
+.cq-chest-stat {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  min-width: 104px;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--gradient-dawn);
+  border: 1px solid var(--sun-200);
+  box-shadow: var(--shadow-sm);
+  color: var(--sun-600);
+}
+.cq-chest-stat strong {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.cq-chest-of { font-size: var(--text-lg); color: var(--ink-faint); }
+.cq-chest-stat small { font-size: var(--text-xs); color: var(--ink-soft); }
+
+/* ---- Almost there -------------------------------------------------------- */
+.cq-chest-next {
+  padding: var(--space-6);
+  border-radius: var(--radius-2xl);
+  background: var(--gradient-forest);
+  border: 1px solid var(--green-200);
+}
+.cq-chest-next h2 { margin-bottom: var(--space-4); color: var(--green-700); }
+.cq-chest-next-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ---- Groups -------------------------------------------------------------- */
+.cq-chest-group-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.cq-chest-group-head p { color: var(--ink-faint); font-size: var(--text-sm); margin-top: var(--space-1); }
+.cq-chest-count {
+  flex: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.cq-trophy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+/* ---- Award card ----------------------------------------------------------- */
+.cq-trophy {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  box-shadow: var(--shadow-xs);
+  text-align: center;
+  justify-items: center;
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out);
+}
+.cq-trophy h3 { font-size: var(--text-base); }
+.cq-trophy p {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  line-height: var(--leading-snug);
+}
+
+.cq-trophy-badge {
+  display: grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  border-radius: var(--radius-lg);
+  background: var(--surface-sunk);
+  color: var(--ink-faint);
+  transition: background var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out);
+}
+.cq-trophy-badge svg { width: 30px; height: 30px; }
+
+.cq-trophy.is-earned {
+  background: var(--gradient-dawn);
+  border-color: var(--sun-300);
+  box-shadow: var(--shadow-md);
+}
+.cq-trophy.is-earned h3 { color: var(--sun-600); }
+.cq-trophy.is-earned .cq-trophy-badge {
+  background: var(--gradient-gold);
+  color: var(--green-900);
+  box-shadow: var(--shadow-gold);
+}
+
+/* Tier reads through the badge's shape, so colour is never the only signal. */
+.cq-trophy[data-tier="sprout"] .cq-trophy-badge { border-radius: var(--radius-2xl); }
+.cq-trophy[data-tier="bloom"] .cq-trophy-badge { border-radius: var(--radius-pill); }
+
+@media (hover: hover) and (pointer: fine) {
+  .cq-trophy.is-earned:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+}
+
+.cq-trophy-progress { width: 100%; display: grid; gap: var(--space-2); margin-top: var(--space-1); }
+.cq-trophy-progress small { font-size: var(--text-xs); color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+
+.cq-chest-back { justify-self: start; }
+
+@media (max-width: 767px) {
+  .cq-chest { gap: var(--space-8); }
+  .cq-chest-head { align-items: flex-start; }
+  .cq-chest-totals { width: 100%; }
+  .cq-chest-stat { flex: 1; min-width: 0; }
+  .cq-trophy-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--space-3); }
+  .cq-trophy { padding: var(--space-4); }
+  .cq-trophy-badge { width: 52px; height: 52px; }
+  .cq-chest-back { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-trophy { transition: none; }
+}
