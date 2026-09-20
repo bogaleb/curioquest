@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
+import { fontVariables } from "./fonts";
 import "./tokens.css";
 import "./globals.css";
 import "./learning.css";
@@ -11,6 +12,7 @@ import "./reading.css";
 import "./polish.css";
 import "./experience.css";
 import "./wonder.css";
+import "./motion.css";
 import "./shell.css";
 import "./immersive.css";
 
@@ -59,7 +61,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={fontVariables}>
       <body className="antialiased">{children}</body>
     </html>
   );

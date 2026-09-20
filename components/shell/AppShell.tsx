@@ -103,7 +103,8 @@ export function AppShell({
           )}
         </span>
         <span className="cq-nav-label">
-          {variant === "rail" || variant === "sheet" ? destination.label : destination.shortLabel}
+          <span className="cq-label-full">{destination.label}</span>
+          <span className="cq-label-short">{destination.shortLabel}</span>
         </span>
       </button>
     );
@@ -124,6 +125,21 @@ export function AppShell({
           {primary.map((destination) => navButton(destination, "rail"))}
           {secondary.length > 0 && <hr className="cq-rail-divider" />}
           {secondary.map((destination) => navButton(destination, "rail"))}
+          <button
+            type="button"
+            className={`cq-nav-item cq-nav-rail cq-rail-more${inSecondary || sheetOpen ? " is-active" : ""}`}
+            aria-expanded={sheetOpen}
+            aria-controls={moreId}
+            onClick={() => setMoreOpen((open) => !open)}
+          >
+            <span className="cq-nav-icon">
+              <MoreHorizontal aria-hidden="true" />
+            </span>
+            <span className="cq-nav-label">
+              <span className="cq-label-full">More</span>
+              <span className="cq-label-short">More</span>
+            </span>
+          </button>
         </nav>
         <div className="cq-rail-foot">{utility}</div>
       </aside>

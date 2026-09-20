@@ -21,7 +21,9 @@
     "supabase:types": "node scripts/test-supabase-db.mjs --write-types",
     "supabase:seed-generate": "node scripts/seed-supabase-curriculum.mjs",
     "supabase:import": "node scripts/import-legacy.mjs",
-    "supabase:bundle": "node scripts/bundle-supabase-upgrade.mjs"
+    "supabase:bundle": "node scripts/bundle-supabase-upgrade.mjs",
+    "ui:shots": "node scripts/ui-shots.mjs",
+    "ui:test-parent": "node scripts/make-test-parent.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -64,6 +66,7 @@
     "drizzle-kit": "0.31.10",
     "eslint": "9.39.4",
     "eslint-config-next": "16.3.4",
+    "playwright-core": "^1.63.0",
     "react-server-dom-webpack": "19.2.6",
     "tailwindcss": "4.2.1",
     "tw-animate-css": "^1.4.0",

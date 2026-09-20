@@ -1,9 +1,9 @@
 /*
  * CurioQuest design tokens.
  *
- * One source of truth for type, space, radius, elevation, motion, and device metrics.
- * Existing stylesheets keep their literal values until each is migrated; new and
- * reworked surfaces must use these tokens so the product reads as one system.
+ * One source of truth for colour, type, space, radius, elevation, motion, and device
+ * metrics. The brand identity is unchanged — forest green and warm cream — but it is
+ * now expressed as full ramps with tinted depth rather than a handful of flat hexes.
  *
  * Breakpoints (documented here, applied in shell.css and component sheets):
  *   compact   <  768px   phones, portrait
@@ -13,7 +13,103 @@
  */
 
 :root {
-  /* ---- Type scale -------------------------------------------------------- */
+  /* ======================================================================
+     COLOUR
+     ====================================================================== */
+
+  /* ---- Brand green: the forest ---------------------------------------- */
+  --green-50: #f1f7f1;
+  --green-100: #dcecdf;
+  --green-200: #bcdcc4;
+  --green-300: #8ec4a0;
+  --green-400: #5aa57c;
+  --green-500: #2f8760;
+  --green-600: #17694e;
+  --green-700: #125540;
+  --green-800: #0f4434;
+  --green-900: #0c3529;
+
+  /* ---- Warm neutral: parchment and bark -------------------------------- */
+  --sand-50: #fdfcf7;
+  --sand-100: #f8f9f4;
+  --sand-200: #eef0e7;
+  --sand-300: #e0e4d8;
+  --sand-400: #c7cdbb;
+  --sand-500: #9aa392;
+  --sand-600: #77836f;
+  --sand-700: #566052;
+  --sand-800: #3a423a;
+  --sand-900: #233f37;
+
+  /* ---- Sun: reward, warmth, celebration -------------------------------- */
+  --sun-100: #fdf4dc;
+  --sun-200: #f9e6b4;
+  --sun-300: #f2d07c;
+  --sun-400: #e5b443;
+  --sun-500: #d19a22;
+  --sun-600: #a87817;
+
+  /* ---- World families --------------------------------------------------
+     Each learning world owns a hue. A card, a badge, and a progress bar for the
+     same world all read as one place without hard-coding hexes per component. */
+  --w-leaf-soft: #e4f1de;   --w-leaf-line: #c3ddb9;   --w-leaf-ink: #326b3f;   --w-leaf-deep: #4b8a45;
+  --w-amber-soft: #fcf1d9;  --w-amber-line: #eddcaf;  --w-amber-ink: #96721f;  --w-amber-deep: #c99a2e;
+  --w-violet-soft: #efeafa; --w-violet-line: #ddd2f2; --w-violet-ink: #6b52a3; --w-violet-deep: #8d6fc9;
+  --w-teal-soft: #ddf0f0;   --w-teal-line: #b6ddde;   --w-teal-ink: #1f6f72;   --w-teal-deep: #2f9297;
+  --w-coral-soft: #fdeae6;  --w-coral-line: #f6cfc5;  --w-coral-ink: #b05540;  --w-coral-deep: #dd7255;
+  --w-indigo-soft: #e6ebf8; --w-indigo-line: #c8d3ef; --w-indigo-ink: #42588f; --w-indigo-deep: #5d79bd;
+
+  /* ---- Semantic roles --------------------------------------------------- */
+  --ink: var(--sand-900);
+  --ink-soft: var(--sand-700);
+  --ink-faint: var(--sand-500);
+  --muted: var(--sand-600);
+  --cream: var(--sand-100);
+  --line: var(--sand-300);
+  --line-soft: var(--sand-200);
+  --surface: #fffefa;
+  --surface-sunk: var(--sand-200);
+  --surface-accent: var(--green-50);
+  --green: var(--green-600);
+  --leaf: var(--green-600);
+  --leaf-deep: var(--green-700);
+  --gold: var(--sun-500);
+  --gold-soft: var(--sun-100);
+  --berry: #b4524f;
+  --focus-ring: var(--sun-500);
+
+  /* ---- Gradients -------------------------------------------------------
+     Used on hero surfaces and celebration only. Flat fills everywhere else, so
+     depth stays meaningful rather than decorative. */
+  --gradient-forest: linear-gradient(160deg, #eaf3e4 0%, #dcecdf 52%, #cfe4d6 100%);
+  --gradient-dawn: linear-gradient(160deg, #fdf6e6 0%, #fbeccd 55%, #f7e2c0 100%);
+  --gradient-dusk: linear-gradient(160deg, #eef0fb 0%, #e4e6f7 55%, #dcdff3 100%);
+  --gradient-gold: linear-gradient(135deg, var(--sun-300) 0%, var(--sun-400) 100%);
+  --gradient-leaf: linear-gradient(135deg, var(--green-500) 0%, var(--green-700) 100%);
+
+  /* ======================================================================
+     ELEVATION
+     Shadows are tinted with the brand green rather than neutral black. Grey
+     shadows on a warm ground read as dirt; tinted ones read as depth.
+     ====================================================================== */
+  --shadow-xs: 0 1px 2px rgba(35, 63, 55, 0.06);
+  --shadow-sm: 0 2px 6px rgba(35, 63, 55, 0.07);
+  --shadow-md: 0 6px 18px rgba(35, 63, 55, 0.09);
+  --shadow-lg: 0 16px 40px rgba(35, 63, 55, 0.13);
+  --shadow-xl: 0 28px 64px rgba(35, 63, 55, 0.17);
+  --shadow-gold: 0 10px 28px rgba(209, 154, 34, 0.26);
+  --shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  /* The bottom border that gives child-facing controls their tactile weight. */
+  --press-depth: 4px;
+
+  /* ======================================================================
+     TYPE
+     ====================================================================== */
+  --font-display: "Fredoka", "Trebuchet MS", sans-serif;
+  --font-body: "Nunito", "Trebuchet MS", Arial, sans-serif;
+  /* Literacy face: single-storey a/g for text a child is decoding. */
+  --font-reading: "Andika", "Nunito", sans-serif;
+
   --text-2xs: 11px;
   --text-xs: 12px;
   --text-sm: 14px;
@@ -21,18 +117,23 @@
   --text-lg: 18px;
   --text-xl: 21px;
   --text-2xl: 25px;
-  --text-3xl: 30px;
-  --text-4xl: 36px;
-  --text-5xl: 44px;
-  --leading-tight: 1.2;
-  --leading-snug: 1.45;
-  --leading-normal: 1.65;
-  --leading-loose: 1.8;
-  --tracking-tight: -0.035em;
-  --tracking-wide: 1.2px;
-  --tracking-eyebrow: 1.7px;
+  --text-3xl: 31px;
+  --text-4xl: 38px;
+  --text-5xl: 47px;
+  --text-6xl: 58px;
 
-  /* ---- Space scale (4px base) -------------------------------------------- */
+  --leading-tight: 1.15;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-loose: 1.8;
+  --tracking-tight: -0.02em;
+  --tracking-display: -0.03em;
+  --tracking-wide: 0.06em;
+  --tracking-eyebrow: 0.12em;
+
+  /* ======================================================================
+     SPACE / RADIUS
+     ====================================================================== */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -45,63 +146,73 @@
   --space-16: 64px;
   --space-20: 80px;
 
-  /* ---- Radii ------------------------------------------------------------- */
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 17px;
-  --radius-xl: 22px;
-  --radius-2xl: 28px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-3xl: 40px;
   --radius-pill: 999px;
 
-  /* ---- Elevation --------------------------------------------------------- */
-  --shadow-sm: 0 1px 2px #233f370f;
-  --shadow-md: 0 4px 14px #233f3714;
-  --shadow-lg: 0 14px 38px #233f371f;
-  /* The "pressable" bottom border that gives child-facing controls their weight. */
-  --press-depth: 4px;
-
-  /* ---- Colour ------------------------------------------------------------ */
-  /* --ink, --green, --muted, --cream, --line are defined in globals.css and are
-     the established brand values; these extend rather than replace them. */
-  --surface: #fffefa;
-  --surface-sunk: #f3f5ed;
-  --surface-accent: #eff4e6;
-  --ink-soft: #6a796f;
-  --ink-faint: #8a9185;
-  --gold: #da971b;
-  --gold-soft: #fbf2d9;
-  --leaf: #17694e;
-  --leaf-deep: #10513d;
-  --berry: #b4524f;
-  --focus-ring: #da971b;
-
-  /* ---- Motion ------------------------------------------------------------ */
-  --dur-fast: 120ms;
-  --dur-base: 200ms;
-  --dur-slow: 340ms;
+  /* ======================================================================
+     MOTION
+     Curves, not just durations. `spring` overshoots and is reserved for moments
+     of delight; `out` is the everyday curve.
+     ====================================================================== */
+  --dur-instant: 90ms;
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+  --dur-celebrate: 900ms;
   --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
-  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --ease-in-out: cubic-bezier(0.6, 0, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.18, 1.6, 0.5, 1);
 
-  /* ---- Touch targets ----------------------------------------------------- */
-  /* Adult/parent-facing minimum. */
+  /* ======================================================================
+     TOUCH + DEVICE
+     ====================================================================== */
   --touch-min: 48px;
-  /* Child-facing minimum. Overridden per learning band below, so a three-year-old
-     physically gets larger targets than an eight-year-old on the same screen. */
   --touch-child: 64px;
 
-  /* ---- Device safe areas ------------------------------------------------- */
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
 
-  /* ---- Shell metrics ----------------------------------------------------- */
-  --shell-sidebar: 244px;
+  --shell-sidebar: 248px;
   --shell-rail: 96px;
-  --shell-topbar: 82px;
+  --shell-topbar: 78px;
   --shell-tabbar: 0px;
   --shell-gutter: var(--space-5);
   --shell-max: 1530px;
+}
+
+/* World hue selection. A screen or card sets `data-world` and every token below
+   resolves to that family, so one rule set styles all six worlds. */
+[data-world="reading"], [data-world="leaf"] {
+  --world-soft: var(--w-leaf-soft); --world-line: var(--w-leaf-line);
+  --world-ink: var(--w-leaf-ink);   --world-deep: var(--w-leaf-deep);
+}
+[data-world="math"], [data-world="amber"] {
+  --world-soft: var(--w-amber-soft); --world-line: var(--w-amber-line);
+  --world-ink: var(--w-amber-ink);   --world-deep: var(--w-amber-deep);
+}
+[data-world="logic"], [data-world="violet"] {
+  --world-soft: var(--w-violet-soft); --world-line: var(--w-violet-line);
+  --world-ink: var(--w-violet-ink);   --world-deep: var(--w-violet-deep);
+}
+[data-world="science"], [data-world="teal"] {
+  --world-soft: var(--w-teal-soft); --world-line: var(--w-teal-line);
+  --world-ink: var(--w-teal-ink);   --world-deep: var(--w-teal-deep);
+}
+[data-world="creative"], [data-world="coral"] {
+  --world-soft: var(--w-coral-soft); --world-line: var(--w-coral-line);
+  --world-ink: var(--w-coral-ink);   --world-deep: var(--w-coral-deep);
+}
+[data-world="stories"], [data-world="indigo"] {
+  --world-soft: var(--w-indigo-soft); --world-line: var(--w-indigo-line);
+  --world-ink: var(--w-indigo-ink);   --world-deep: var(--w-indigo-deep);
 }
 
 /* Child-facing target sizes scale with the developmental band. */
@@ -113,21 +224,20 @@
 [data-band="grade3"] { --touch-child: 56px; }
 
 @media (min-width: 768px) {
-  :root {
-    --shell-gutter: var(--space-6);
-  }
+  :root { --shell-gutter: var(--space-6); }
 }
 
 @media (min-width: 1181px) {
-  :root {
-    --shell-gutter: var(--space-8);
-  }
+  :root { --shell-gutter: var(--space-8); }
 }
 
+/* Motion is a preference, not a feature. Everything still works without it. */
 @media (prefers-reduced-motion: reduce) {
   :root {
+    --dur-instant: 1ms;
     --dur-fast: 1ms;
     --dur-base: 1ms;
     --dur-slow: 1ms;
+    --dur-celebrate: 1ms;
   }
 }

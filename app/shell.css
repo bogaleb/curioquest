@@ -471,3 +471,92 @@
 @media (prefers-reduced-motion: reduce) {
   .nova-offer { animation: none; }
 }
+
+/* ==========================================================================
+   Label fitting and rail density.
+
+   The rail carries five primary destinations and a More control below 1181px,
+   and the full list above it. Thirteen destinations plus the grown-up controls
+   do not fit a 1024px-tall iPad column, and a nav the child cannot reach the
+   bottom of is worse than a nav with a second level.
+   ========================================================================== */
+.cq-label-short { display: none; }
+.cq-nav-tab .cq-label-full { display: none; }
+.cq-nav-tab .cq-label-short { display: inline; }
+
+.cq-rail-more { display: none; }
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  /* Short labels only: "Reading Adventure" wraps to three lines in a 96px rail. */
+  .cq-nav-rail .cq-label-full { display: none; }
+  .cq-nav-rail .cq-label-short { display: inline; }
+
+  /* Secondary destinations and the grown-up controls move into the sheet. */
+  .cq-rail-divider,
+  .cq-rail-divider ~ .cq-nav-rail:not(.cq-rail-more) { display: none; }
+  .cq-rail-more { display: flex; }
+  .cq-rail-foot { display: none; }
+
+  .cq-rail-nav { justify-content: flex-start; overflow: visible; }
+}
+
+/* The rail itself scrolls as one column if a short viewport still overflows. */
+.cq-rail { overflow-y: auto; overscroll-behavior: contain; }
+
+/* Explorer name must truncate cleanly rather than clip mid-word. */
+.cq-rail-head .explorer-switch select,
+.cq-rail-head .explorer-switch label > span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   The sheet is a bottom sheet on a phone and a centred panel on larger screens,
+   where a full-width sheet from the bottom edge would read as a phone pattern
+   stretched.
+   ========================================================================== */
+@media (min-width: 768px) {
+  .cq-sheet-backdrop { align-items: center; justify-content: center; padding: var(--space-6); }
+  .cq-sheet {
+    width: min(620px, 100%);
+    max-height: min(80dvh, 720px);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-xl);
+    animation: cq-sheet-pop var(--dur-base) var(--ease-spring);
+  }
+  @keyframes cq-sheet-pop {
+    from { transform: scale(0.94); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  /* Grown-up controls live in the sheet at this width, so they need room. */
+  .cq-sheet-utility .nav-item { min-height: var(--touch-min); font-size: var(--text-sm); }
+  .cq-sheet-utility .nova-note { display: none; }
+}
+
+/* ==========================================================================
+   Rail scrolling.
+
+   The nav must not own a scroll container of its own: an inner scrollbar hides
+   destinations behind a scroll gesture nobody discovers. The rail scrolls as a
+   single column instead, so every destination is reachable the obvious way.
+   ========================================================================== */
+.cq-rail-nav { overflow: visible; flex: none; }
+.cq-rail { overflow-y: auto; }
+
+/* The decorative Nova note yields space to destinations whenever height is tight.
+   Destinations are function; the note is atmosphere. */
+@media (max-height: 940px) {
+  .cq-rail-foot .nova-note { display: none; }
+}
+
+/* On tall desktop viewports the note stays, but compactly. */
+@media (min-width: 1181px) and (min-height: 941px) {
+  .cq-rail-foot .nova-note { margin: 0 0 var(--space-3); padding: var(--space-3); }
+  .cq-rail-foot .nova-note .fox { font-size: var(--text-2xl); }
+  .cq-rail-foot .nova-note strong { font-size: var(--text-sm); margin: var(--space-1) 0; }
+  .cq-rail-foot .nova-note p { font-size: var(--text-xs); line-height: var(--leading-snug); }
+  .cq-rail-foot .nova-note > span:last-child { font-size: var(--text-2xs); margin-top: var(--space-2); }
+}

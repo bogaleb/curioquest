@@ -1,0 +1,435 @@
+/*
+ * CurioQuest motion and surface system.
+ *
+ * Principles
+ *  1. Motion explains, it does not decorate. Every animation here either shows where
+ *     something came from, confirms an action, or celebrates a finished effort.
+ *  2. Nothing loops in a child's peripheral vision while they are trying to think.
+ *     Ambient motion is reserved for idle surfaces; activity screens stay still.
+ *  3. Everything degrades to no motion under prefers-reduced-motion, with no loss of
+ *     meaning or feedback.
+ *
+ * Loaded after the legacy sheets, so it also upgrades existing surfaces to the new
+ * type, colour, and elevation tokens without those files being rewritten.
+ */
+
+/* ==========================================================================
+   Typographic foundation
+   ========================================================================== */
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--ink);
+  background: var(--cream);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, .brand, .play-world, .completion h1, .reward-total strong {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-tight);
+  font-weight: 600;
+}
+
+h1 { font-size: var(--text-4xl); }
+h2 { font-size: var(--text-xl); }
+h3 { font-size: var(--text-lg); }
+
+.eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  font-weight: 800;
+  letter-spacing: var(--tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* Numerals in progress, scores, and counters should not jitter as they change. */
+.star-pill, .activity-progress, .today-footer, .reward-total strong, .cq-nav-count {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Text a child is decoding uses the literacy face: single-storey a/g, unambiguous
+ * b/d/p/q. Applied to reading activities and letter work only — never to chrome,
+ * where it would read as a mistake.
+ */
+.activity h1,
+.activity-visual,
+.reading-adventure .scene-text,
+.letter-tiles button,
+.letter-slots button,
+.letter-tray button,
+.phoneme-boxes > button,
+.train-car strong,
+.word-picture,
+.writing-guide input,
+.scene-text,
+.story-book p {
+  font-family: var(--font-reading);
+  letter-spacing: 0.01em;
+}
+
+/* ==========================================================================
+   Surface upgrades
+   Existing class names, new tokens. Cards gain tinted depth and a consistent
+   radius without their original stylesheets being touched.
+   ========================================================================== */
+.panel,
+.today-card,
+.nova-card,
+.badge-card,
+.game-card,
+.story-shelf > button,
+.world-card {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-base) var(--ease-out),
+              box-shadow var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out);
+}
+
+/* A card that can be opened lifts toward the pointer. Cards that only display
+   information do not, so lift continues to mean "this does something". */
+.world-card,
+.game-card,
+.story-shelf > button,
+.plaza-portals button,
+.wonder-world,
+.wonder-destination,
+.creative-doors button {
+  cursor: pointer;
+  transition: transform var(--dur-base) var(--ease-spring),
+              box-shadow var(--dur-base) var(--ease-out),
+              border-color var(--dur-base) var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .world-card:hover,
+  .game-card:hover,
+  .story-shelf > button:hover,
+  .plaza-portals button:hover,
+  .wonder-world:hover,
+  .wonder-destination:hover,
+  .creative-doors button:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+}
+
+/* Touch devices get press feedback instead of hover, which never fires there. */
+.world-card:active,
+.game-card:active,
+.story-shelf > button:active,
+.plaza-portals button:active,
+.wonder-world:active,
+.wonder-destination:active,
+.creative-doors button:active,
+.answers button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: var(--dur-instant);
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.primary {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0;
+  border-radius: var(--radius-md);
+  background: var(--gradient-leaf);
+  border: 0;
+  border-bottom: var(--press-depth) solid var(--green-800);
+  box-shadow: var(--shadow-sm), var(--shadow-inset);
+  transition: transform var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out),
+              filter var(--dur-fast) var(--ease-out);
+}
+.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--shadow-md), var(--shadow-inset); }
+/* The press travels the full depth of the border, so the control feels physical. */
+.primary:active:not(:disabled) {
+  transform: translateY(var(--press-depth));
+  border-bottom-width: 0;
+  margin-bottom: var(--press-depth);
+  box-shadow: none;
+}
+
+.secondary {
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out);
+}
+.secondary:hover:not(:disabled) { border-color: var(--green-300); background: var(--green-50); }
+.secondary:active:not(:disabled) { transform: translateY(1px); }
+
+/* Focus is never removed, only made handsome. */
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   Answer choices
+   The single most-used control in the product. It should feel confident to press
+   and unmistakable once chosen.
+   ========================================================================== */
+.answers button {
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--line);
+  border-bottom-width: 5px;
+  background: var(--surface);
+  box-shadow: var(--shadow-xs);
+  transition: transform var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .answers button:hover:not(:disabled) {
+    border-color: var(--green-300);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+  }
+}
+.answers button.chosen {
+  border-color: var(--sun-400);
+  background: var(--sun-100);
+}
+.answers button.correct {
+  border-color: var(--green-400);
+  background: var(--green-100);
+  animation: cq-correct var(--dur-celebrate) var(--ease-bounce);
+}
+
+@keyframes cq-correct {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.06); }
+  60% { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+/* ==========================================================================
+   Entrances
+   Content arrives from where it belongs rather than appearing.
+   ========================================================================== */
+@keyframes cq-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes cq-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes cq-pop {
+  0% { opacity: 0; transform: scale(0.88); }
+  70% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.cq-main > * { animation: cq-rise var(--dur-slow) var(--ease-out) both; }
+
+/*
+ * Staggered entrance for grids. Capped at eight children: past that the last card
+ * would arrive late enough to feel like a bug rather than a flourish.
+ */
+.worlds-grid > *,
+.game-grid > *,
+.badge-grid > *,
+.wonder-worlds > *,
+.cq-sheet-grid > * {
+  animation: cq-rise var(--dur-slow) var(--ease-out) both;
+}
+.worlds-grid > :nth-child(1), .game-grid > :nth-child(1), .badge-grid > :nth-child(1), .wonder-worlds > :nth-child(1), .cq-sheet-grid > :nth-child(1) { animation-delay: 30ms; }
+.worlds-grid > :nth-child(2), .game-grid > :nth-child(2), .badge-grid > :nth-child(2), .wonder-worlds > :nth-child(2), .cq-sheet-grid > :nth-child(2) { animation-delay: 60ms; }
+.worlds-grid > :nth-child(3), .game-grid > :nth-child(3), .badge-grid > :nth-child(3), .wonder-worlds > :nth-child(3), .cq-sheet-grid > :nth-child(3) { animation-delay: 90ms; }
+.worlds-grid > :nth-child(4), .game-grid > :nth-child(4), .badge-grid > :nth-child(4), .wonder-worlds > :nth-child(4), .cq-sheet-grid > :nth-child(4) { animation-delay: 120ms; }
+.worlds-grid > :nth-child(5), .game-grid > :nth-child(5), .badge-grid > :nth-child(5), .wonder-worlds > :nth-child(5), .cq-sheet-grid > :nth-child(5) { animation-delay: 150ms; }
+.worlds-grid > :nth-child(6), .game-grid > :nth-child(6), .badge-grid > :nth-child(6), .wonder-worlds > :nth-child(6), .cq-sheet-grid > :nth-child(6) { animation-delay: 180ms; }
+.worlds-grid > :nth-child(7), .game-grid > :nth-child(7), .badge-grid > :nth-child(7), .wonder-worlds > :nth-child(7), .cq-sheet-grid > :nth-child(7) { animation-delay: 210ms; }
+.worlds-grid > :nth-child(n + 8), .game-grid > :nth-child(n + 8), .badge-grid > :nth-child(n + 8), .wonder-worlds > :nth-child(n + 8), .cq-sheet-grid > :nth-child(n + 8) { animation-delay: 240ms; }
+
+/* ==========================================================================
+   Progress
+   ========================================================================== */
+.progress-track {
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--line-soft);
+  overflow: hidden;
+}
+.progress-track span {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--gradient-leaf);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.activity-progress > div > span {
+  border-radius: var(--radius-pill);
+  transition: background var(--dur-base) var(--ease-out);
+}
+.activity-progress > div > span.done { background: var(--green-400); }
+
+/* ==========================================================================
+   Reward and celebration
+   ========================================================================== */
+.star-pill {
+  background: var(--gradient-gold);
+  color: var(--green-900);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-xs);
+  font-weight: 800;
+}
+
+.big-reward {
+  background: var(--gradient-gold);
+  color: var(--green-900);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-gold);
+  animation: cq-pop var(--dur-celebrate) var(--ease-bounce) both;
+}
+
+.celebration {
+  background: var(--gradient-gold);
+  box-shadow: var(--shadow-gold);
+  animation: cq-pop var(--dur-celebrate) var(--ease-bounce) both;
+}
+
+.badge-card.earned {
+  background: var(--gradient-dawn);
+  border-color: var(--sun-300);
+  box-shadow: var(--shadow-md);
+}
+
+/* One gentle sweep when a badge is earned, then it rests. */
+@keyframes cq-shine {
+  from { background-position: -160% 0; }
+  to { background-position: 260% 0; }
+}
+.badge-card.earned::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.55) 50%, transparent 62%);
+  background-size: 220% 100%;
+  animation: cq-shine 1.6s var(--ease-out) 1 both;
+}
+.badge-card { position: relative; overflow: hidden; }
+
+/* ==========================================================================
+   Nova
+   The guide breathes while idle so she reads as present, and stops the moment a
+   child is working.
+   ========================================================================== */
+@keyframes cq-breathe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(-1.2deg); }
+}
+.nova-note .fox,
+.nova-card-title > span {
+  display: inline-block;
+  animation: cq-breathe 4.5s var(--ease-in-out) infinite;
+}
+/* Never while an activity is on screen. */
+.activity .fox,
+.feedback .fox { animation: none; }
+
+.feedback {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  animation: cq-rise var(--dur-base) var(--ease-out) both;
+}
+.feedback.positive {
+  background: var(--green-100);
+  border-color: var(--green-200);
+}
+
+/* ==========================================================================
+   Loading
+   Skeletons rather than a bare line of text, so a slow network reads as loading
+   rather than as broken.
+   ========================================================================== */
+@keyframes cq-shimmer {
+  from { background-position: 180% 0; }
+  to { background-position: -80% 0; }
+}
+.cq-skeleton {
+  border-radius: var(--radius-lg);
+  background: linear-gradient(90deg, var(--sand-200) 20%, var(--sand-100) 42%, var(--sand-200) 64%);
+  background-size: 220% 100%;
+  animation: cq-shimmer 1.5s linear infinite;
+}
+.cq-skeleton-text { height: 14px; margin-bottom: var(--space-3); }
+.cq-skeleton-card { height: 168px; }
+.cq-skeleton-hero { height: 280px; }
+
+.loading { color: var(--ink-faint); font-family: var(--font-display); }
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+input, form select, textarea {
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  transition: border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+  min-height: var(--touch-min);
+}
+input:focus, form select:focus, textarea:focus {
+  border-color: var(--green-400);
+  box-shadow: 0 0 0 4px var(--green-50);
+}
+
+/* ==========================================================================
+   Reduced motion
+   Transitions that only move things are removed. Colour and opacity changes are
+   kept, because those carry meaning (chosen, correct, focused).
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+  .cq-main > *,
+  .worlds-grid > *,
+  .game-grid > *,
+  .badge-grid > *,
+  .wonder-worlds > *,
+  .cq-sheet-grid > * { animation: none; opacity: 1; transform: none; }
+  .nova-note .fox,
+  .nova-card-title > span { animation: none; }
+  .badge-card.earned::after { display: none; }
+  .cq-skeleton { animation: none; }
+  .primary:active:not(:disabled) { transform: none; border-bottom-width: var(--press-depth); margin-bottom: 0; }
+}
+
+/* A child who has asked for calm gets the same treatment as the OS setting. */
+[data-reduced-motion] *,
+[data-reduced-motion] *::before,
+[data-reduced-motion] *::after {
+  animation-duration: 1ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
+}
