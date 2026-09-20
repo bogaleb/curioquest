@@ -13,7 +13,7 @@ import { useExplorer } from "@/components/app/explorer-context";
 import { AVATARS, INTERESTS, avatarEmoji } from "@/lib/explorers";
 import { learningBands, primaryContentBand, resolveBand } from "@/lib/learning-bands";
 import { subjectRegistry, worldName } from "@/lib/subjects";
-import { activityCount } from "@/lib/curriculum";
+import { activityCount } from "@/lib/curriculum-facts";
 import { arcadeGames } from "@/lib/arcade";
 import { BookOpen, Shapes, Mountain, FlaskConical, Globe, Heart } from "lucide-react";
 

@@ -23,7 +23,8 @@
     "supabase:import": "node scripts/import-legacy.mjs",
     "supabase:bundle": "node scripts/bundle-supabase-upgrade.mjs",
     "ui:shots": "node scripts/ui-shots.mjs",
-    "ui:test-parent": "node scripts/make-test-parent.mjs"
+    "ui:test-parent": "node scripts/make-test-parent.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
