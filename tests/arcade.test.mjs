@@ -6,7 +6,11 @@ const {questions,publicQuestion}=loadTs("lib/curriculum");
 const {arcadeGames,arcadeQuestionIds,normalizeArcade}=loadTs("lib/arcade");
 const {evaluateResponse}=loadTs("lib/activity-evaluation");
 
-test("all 48 age-specific game missions contain four valid, solvable activities",()=>{
+test("every age-specific game mission contains four valid, solvable activities",()=>{
+  // Counts are derived from the catalogue so adding a game cannot silently skip
+  // this check, and a game missing its content fails here rather than in a child's
+  // hands.
+  const expected=2*arcadeGames.length*3*4;
   const ids=[];
   for(const grade of ["prek","grade1"])for(const game of arcadeGames)for(let level=0;level<3;level++){
     const mission=arcadeQuestionIds(grade,game.id,level);
@@ -22,7 +26,7 @@ test("all 48 age-specific game missions contain four valid, solvable activities"
       assert.equal(publicQuestion(q).engine?.solution,undefined);
     }
   }
-  assert.equal(new Set(ids).size,192);
+  assert.equal(new Set(ids).size,expected);
 });
 test("robot plans cannot wrap edges, cross rocks, forge moves, or exceed their budget",()=>{
   const original=questions.find(q=>q.engine?.kind==="route");

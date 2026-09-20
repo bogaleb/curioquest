@@ -1,4 +1,4 @@
-import {readExplorer as row,listExplorers,createExplorer,deleteExplorer,saveExplorers,catalog} from "@/lib/backend/repository";
+import {readExplorer as row,listExplorers,createExplorer,deleteExplorer,saveExplorers,activityCatalogue} from "@/lib/backend/repository";
 import {withFamily} from "@/lib/backend/context";
 import { publicQuestion, type Question, type Subject } from "@/lib/curriculum";
 import {
@@ -96,7 +96,7 @@ function validGoal(value: unknown) {
 
 async function get(request: Request) {
   try {
-    const questions = await catalog<Question[]>("questions");
+    const questions = await activityCatalogue();
     if(!(await familyAuthorized(request)))return Response.json({error:"Sign in with this family's account to open its adventures."},{status:403,headers:{"Cache-Control":"no-store"}});
     return Response.json({ profiles: await readAll(questions) }, {headers:{"Cache-Control":"no-store"}});
   } catch (error) {
@@ -110,7 +110,7 @@ async function get(request: Request) {
 
 async function post(request: Request) {
   try {
-    const questions = await catalog<Question[]>("questions");
+    const questions = await activityCatalogue();
     if(!(await familyAuthorized(request)))return Response.json({error:"Sign in with this family's account to open its adventures."},{status:403});
     const origin = request.headers.get("origin");
     if (origin && origin !== new URL(request.url).origin) {

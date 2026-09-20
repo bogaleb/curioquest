@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { parentId } from './context';
 import type { Json } from '@/lib/supabase/database.types';
 import type { ExplorerProfile } from '@/lib/explorers';
+import { questions as authoredQuestions, type Question } from '@/lib/curriculum';
 
 export async function read<T>(kind: string, options: {child?: string; id?: string; filter?: string; limit?: number; offset?: number} = {}): Promise<T> {
   const { data, error } = await createAdminClient().rpc('cq_read', {
@@ -37,4 +38,25 @@ export async function catalog<T>(name: string): Promise<T> {
     cached.value.catch(()=>catalogs.delete(name));
   }
   return structuredClone(await cached.value) as T;
+}
+
+/**
+ * The activity catalogue the server will serve.
+ *
+ * The published catalogue in `private.catalogs` stays authoritative — it is what an
+ * eventual admin surface will edit, and anything it defines wins. But an activity that
+ * exists in code and not yet in the database is still served, rather than being
+ * unreachable until someone runs a SQL refresh.
+ *
+ * Without this, a deploy that shipped new activities ahead of its catalogue refresh
+ * could recommend an id the server could not resolve. The refresh is still the right
+ * thing to run; it just stops being a hard gate between writing content and a child
+ * reaching it.
+ */
+export async function activityCatalogue(): Promise<Question[]> {
+  const published = await catalog<Question[]>('questions').catch(() => [] as Question[]);
+  if (!published.length) return authoredQuestions;
+  const byId = new Map(authoredQuestions.map((question) => [question.id, question]));
+  for (const question of published) byId.set(question.id, question);
+  return [...byId.values()];
 }

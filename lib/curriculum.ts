@@ -10,6 +10,7 @@ import { gardenActivities } from "./garden-content";
 import { arcadeActivities } from "./arcade-content";
 import { wholeChildActivities } from "./content/whole-child";
 import { playGameActivities } from "./content/play-games";
+import { arcadePlayActivities } from "./content/arcade-play";
 
 export type Subject = SkillSubject;
 export type ActivityType =
@@ -320,6 +321,10 @@ questions.push(...gardenActivities);
 questions.push(...arcadeActivities);
 questions.push(...wholeChildActivities);
 questions.push(...playGameActivities);
+questions.push(...arcadePlayActivities);
+
+/** Published count, for parent-facing copy that would otherwise drift. */
+export const activityCount = questions.length;
 
 export function validateCurriculum() {
   const ids = new Set<string>();
