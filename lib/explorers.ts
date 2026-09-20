@@ -91,6 +91,12 @@ export type ExplorerProfile = {
     discovery?: { independent: Record<Subject, number> };
     gameId?: string;
     gameLevel?: number;
+    /**
+     * The running scoring arc of a game mission (see lib/game-loop.ts). Absent on
+     * quests, which keep their flat completion reward, and absent on missions parked
+     * before the loop existed — readArc treats both as a fresh arc.
+     */
+    arc?: { points: number; clean: number; streak: number; bestStreak: number };
     first: number;
     started: number;
     suspendedAt?: number;

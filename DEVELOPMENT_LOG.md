@@ -1,5 +1,39 @@
 # CurioQuest development log
 
+## Wave 09 mission loop — September 20, 2026
+
+- **A game mission was four questions in authored order and a flat reward.** Eleven real
+  interaction engines, and the loop around them was "answer four questions, one at a
+  time", ending in `questions.length * 2` stars whether the child solved every one first
+  try or ground through all four with help. No rounds, nothing got harder as they got
+  further, and nothing about the mission's shape was visible while playing it. That is a
+  quiz with an engine attached, which is the one thing Wave 09's own principle forbids.
+- `lib/game-loop.ts` is the loop, as pure functions over data the session already carries.
+  **Ramp:** missions open with their gentlest question and build, weighted by skill
+  difficulty first and by what the engine spec says is hard second — a whole Robot
+  Commander mission is one skill, so only the engine can tell a two-move delivery from a
+  six-move one through rocks. 17 of 66 missions genuinely reorder; the rest are flat and
+  are left alone, which is the right answer rather than a shuffle for its own sake.
+  **Rounds:** round length comes from the band, so the youngest four get a breather at
+  the halfway mark and the oldest two play straight through. **Arc:** every solved
+  question scores — most for first-try and unaided, less for helped, least but never zero
+  for getting there after wrong answers.
+- **Stars can only go up.** The base award is deliberately still `total * 2`, so a child
+  who struggles takes home exactly what they would have before the loop existed. Tying
+  the existing reward to performance would have made every hard-won mission pay less than
+  it used to, which is a strange lesson for a product whose premise is that trying again
+  is the point. A test pins the floor at every mission length.
+- The player shows the round, a gap in the progress dots where rounds hand over, points
+  and a live streak, a one-line beat between rounds, and a rank on the completion screen.
+  A test asserts no rank reads as a verdict — the worst outcome available names what the
+  child actually did, which was finish.
+- Stored arcs are sanitised on read like `normalizeArcade`, because sessions come back
+  from the database. A mission parked before the loop existed resumes as a fresh arc and
+  still pays the old flat award.
+- Verification: typecheck, lint 0 errors, 135 unit tests (115 before), production build,
+  bundle guard. `lib/game-loop.ts` is imported by the player, so it is written against a
+  structural question type and never imports `lib/curriculum.ts`.
+
 ## Wave 04 struggle response — September 20, 2026
 
 - **Nothing happened when a child kept getting an activity wrong.** `session.misses` was

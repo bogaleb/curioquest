@@ -30,7 +30,7 @@ The waves and the audit phases are two vocabularies for the same work:
 | 06 Math | — | Authored content, engines thin |
 | 07 Science | Phase 2 (subject added) | Discovery Lab exists, quiz-shaped |
 | 08 Logic | Phase 2 (subject added) | Skills exist, few formats |
-| 09 Games | Phase 4 | Controls and metadata done; **game loop still open** |
+| 09 Games | Phase 4 | ✅ engines, controls, metadata and the mission loop |
 | 10 Creative studio | Phase 1 (immersive) | Done to a good standard |
 | 11 Stories / video / discovery | — | Stories done, audio is prototype |
 | 12 Rewards | Phase 5 | Done |
@@ -157,10 +157,34 @@ What was missing was everything *around* them.
 - **Band-aware ordering.** Games a child can meet today sort first. Nothing is hidden
   and nothing is locked by fit: a warm-up is spaced practice, not a demotion.
 
-**Still open, and this is the real remainder:** a shared game loop. The mechanic is still
-"answer four questions, one at a time". There is no in-game difficulty ramp, no scoring
-arc within a mission, and no round structure. Wave 09's premise is closer to met than it
-was, but it is not met.
+**Closed 2026-09-20 — the shared mission loop** (`lib/game-loop.ts`). The mechanic was
+"answer four questions, one at a time", in authored order, for a flat
+`questions.length * 2` stars regardless of how it went. Three things replaced that, all
+pure functions over data the session already carried:
+
+- **A difficulty ramp.** Missions open with their gentlest question and build. Weighted
+  by skill difficulty first, then by what the engine spec says is hard — a whole Robot
+  Commander mission is one skill, so only the engine can tell a two-move delivery from a
+  six-move one through rocks. 17 of 66 missions genuinely reorder. The other 49 are
+  genuinely flat and are left alone; a stable sort means equal weights keep their
+  authored order rather than being shuffled for the appearance of adaptivity.
+- **Rounds.** Round length comes from the band, so the youngest four bands get a breather
+  at the halfway mark of a four-question mission and the oldest two play straight
+  through. `roundSizes` evens rounds out rather than packing them, because a final round
+  of one question is a straggler, not a round.
+- **A scoring arc.** Every solved question scores: most for first-try and unaided, less
+  for helped, least but never zero for getting there after wrong answers. Points and a
+  live streak are visible while playing; a rank lands on the completion screen.
+
+**The star floor is deliberate and tested.** The base award is still `total * 2`, so the
+arc can only ever add. Tying the existing reward to performance would have made every
+hard-won mission pay less than it used to, in a product whose premise is that trying
+again is the point. A test pins that floor at every mission length, and another asserts
+no rank reads as a verdict.
+
+**Still open:** the engines themselves are eleven good manipulatives, but the wave's
+engine list is longer than eleven. Adding more is content work, not framework work — the
+framework criterion is met.
 
 ### Waves 10–13
 
@@ -211,14 +235,15 @@ Not in this pass: any curriculum content, any game engine work, Wave 02 onward.
 
 ## Recommended order from here
 
-1. **Wave 09's shared game loop** — the remaining half of the wave. Rounds, an in-game
-   difficulty ramp, and a scoring arc, so a mission stops being four questions.
-2. **Wave 06 math manipulatives** — the wave explicitly forbids question-and-four-buttons
-   as the default, and outside Reading it still is.
-3. **Wave 02 onboarding** — the account screens are done; the add-child sequence and
+1. **Wave 06 math manipulatives** — the wave explicitly forbids question-and-four-buttons
+   as the default, and outside Reading it still is. This is now the widest gap between
+   what a wave asks for and what exists.
+2. **Wave 02 onboarding** — the account screens are done; the add-child sequence and
    profile selection are not.
-4. **Wave 14 remainder** — analytics events and flow tests.
-5. **Wave 15 import tooling** — only once content volume actually demands it.
+3. **Wave 14 remainder** — analytics events and flow tests.
+4. **Wave 15 import tooling** — only once content volume actually demands it.
+
+Done and no longer on this list: Wave 09's mission loop (2026-09-20).
 
 ## Standing constraints (carried forward, do not relax)
 

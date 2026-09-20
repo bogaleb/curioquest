@@ -13,6 +13,7 @@ import {
 } from "@/lib/explorers";
 import { isLearningBandId, primaryContentBand, resolveBand, type LearningBandId } from "@/lib/learning-bands";
 import { assistedIntro, nextScaffold } from "@/lib/scaffolding";
+import { missionStars, rampOrder, readArc, scoreAnswer } from "@/lib/game-loop";
 import { recordAttempt, recordHint } from "@/lib/mastery";
 import { recommendQuest, rememberActivityType } from "@/lib/recommendation";
 import { evaluateResponse } from "@/lib/activity-evaluation";
@@ -280,8 +281,10 @@ async function post(request: Request) {
       if (saved) resumeSession(profile, saved.id);
       else {
       parkSession(profile);
-      const ids=arcadeQuestionIds(profile.grade,game.id,level);
-      profile.session={id:crypto.randomUUID(),subject:game.subject,questions:ids,index:0,misses:0,hinted:false,first:0,started:Date.now(),estimatedMinutes:8,gameId:game.id,gameLevel:level,
+      // A mission opens with its gentlest question and builds from there, so the first
+      // thing a child meets is the one they are most likely to get right (lib/game-loop.ts).
+      const ids=rampOrder(arcadeQuestionIds(profile.grade,game.id,level).map(id=>questions.find(q=>q.id===id)!)).map(q=>q.id);
+      profile.session={id:crypto.randomUUID(),subject:game.subject,questions:ids,index:0,misses:0,hinted:false,first:0,started:Date.now(),estimatedMinutes:8,gameId:game.id,gameLevel:level,arc:{points:0,clean:0,streak:0,bestStreak:0},
         plan:ids.map(id=>({questionId:id,skillId:questions.find(q=>q.id===id)!.skillId,reason:"game-mission"}))};
       }
     } else if (input.action === "game-restart") {
@@ -295,8 +298,10 @@ async function post(request: Request) {
       if (level>0 && !unlocked.includes(level-1)) return Response.json({error:"Explore the earlier mission first."},{status:409});
       discardGameSession(profile, game.id, level);
       parkSession(profile);
-      const restartIds=arcadeQuestionIds(profile.grade,game.id,level);
-      profile.session={id:crypto.randomUUID(),subject:game.subject,questions:restartIds,index:0,misses:0,hinted:false,first:0,started:Date.now(),estimatedMinutes:8,gameId:game.id,gameLevel:level,
+      // A mission opens with its gentlest question and builds from there, so the first
+      // thing a child meets is the one they are most likely to get right (lib/game-loop.ts).
+      const restartIds=rampOrder(arcadeQuestionIds(profile.grade,game.id,level).map(id=>questions.find(q=>q.id===id)!)).map(q=>q.id);
+      profile.session={id:crypto.randomUUID(),subject:game.subject,questions:restartIds,index:0,misses:0,hinted:false,first:0,started:Date.now(),estimatedMinutes:8,gameId:game.id,gameLevel:level,arc:{points:0,clean:0,streak:0,bestStreak:0},
         plan:restartIds.map(id=>({questionId:id,skillId:questions.find(q=>q.id===id)!.skillId,reason:"game-mission"}))};
     } else if (input.action === "reflect") {
       const session=profile.session;
@@ -408,6 +413,10 @@ async function post(request: Request) {
           hint: correct ? null : question.hint,
         };
         if (correct) {
+          // The scoring arc is folded in here, before misses and help level are cleared
+          // for the next question, because those two are exactly what grade this answer.
+          // Games only: quests keep their flat completion reward, which Wave 12 settled.
+          if (session.gameId) session.arc = scoreAnswer(readArc(session.arc), session.misses, session.hintLevel ?? 0);
           const skill = profile.skills[question.subject];
           skill.seen += 1;
           profile.recentActivityTypes = rememberActivityType(
@@ -441,7 +450,11 @@ async function post(request: Request) {
               if (unlock && !profile.adventure.unlocks.includes(unlock)) profile.adventure.unlocks.push(unlock);
             }
             profile.completed += 1;
-            profile.stars += session.questions.length * 2;
+            // A mission pays the old flat award plus whatever the arc earned. The base
+            // is unchanged, so no mission can now pay less than it did before the loop.
+            profile.stars += session.gameId
+              ? missionStars(readArc(session.arc), session.questions.length)
+              : session.questions.length * 2;
             profile.history = [
               {
                 date: new Date().toISOString(),
