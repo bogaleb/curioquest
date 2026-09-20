@@ -433,3 +433,23 @@ input:focus, form select:focus, textarea:focus {
   animation-iteration-count: 1 !important;
   transition-duration: 1ms !important;
 }
+
+/* ==========================================================================
+   World cards take their palette from the shared world tokens, so a seventh
+   world needs a registry entry and a token block — not new component CSS.
+   ========================================================================== */
+.world-card[data-world] {
+  background: var(--world-soft);
+  border: 1px solid var(--world-line);
+}
+.world-card[data-world] h3 { color: var(--world-ink); }
+.world-card[data-world] p,
+.world-card[data-world] .world-progress,
+.world-card[data-world] .world-tag { color: var(--world-ink); opacity: 0.82; }
+.world-card[data-world] .world-symbol {
+  background: color-mix(in srgb, var(--world-line) 72%, #fff);
+  color: var(--world-ink);
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--world-line) 88%, #000 6%);
+}
+.world-card[data-world] .progress-track { background: color-mix(in srgb, var(--world-line) 60%, #fff); }
+.world-card[data-world] .progress-track span { background: var(--world-deep); }

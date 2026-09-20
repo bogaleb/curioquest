@@ -50,7 +50,12 @@ test("quests are deterministic, unique, balanced, and within duration budgets", 
     assert.deepEqual(plan,recommendQuest(p,"daily",new Date(day)));
     assert.equal(new Set(plan.questionIds).size,plan.questionIds.length);
     assert.ok(plan.estimatedMinutes<=duration);
-    assert.equal(new Set(plan.questionIds.map(id=>questions.find(q=>q.id===id).subject)).size,3);
+    // Every day covers the three core subjects; a longer session widens into the
+    // explore subjects rather than repeating the core ones.
+    const covered=new Set(plan.questionIds.map(id=>questions.find(q=>q.id===id).subject));
+    for(const core of ["reading","math","logic"]) assert.ok(covered.has(core),`missing core subject ${core}`);
+    assert.ok(covered.size>=3);
+    if(duration>=20) assert.ok(covered.size>3,"a long session should widen beyond the core");
   }
 });
 test("known weak prerequisites can cross a grade boundary", () => {

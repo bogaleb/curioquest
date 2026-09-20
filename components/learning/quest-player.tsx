@@ -12,7 +12,7 @@ import {celebrate} from '@/lib/audio';
 import type { PublicExplorer, QuestFeedback } from "@/lib/explorer-view";
 import type { PublicQuestion } from "@/lib/activity-types";
 
-const worldName=(id:string)=>({reading:"Word Forest",math:"Number City",logic:"Logic Mountain"}[id]??"Daily Quest");
+import {worldName} from "@/lib/subjects";
 export function activityNarration(question: PublicQuestion) {
   const story=question.passage?`${question.passage.title}. ${question.passage.text}. `:"";
   return story+question.prompt+(question.audioLabel?`. The word is ${question.audioLabel}.`:"")+(question.options.length?`. Your choices are: ${question.options.join(", ")}`:"");

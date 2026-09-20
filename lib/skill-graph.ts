@@ -1,4 +1,10 @@
-export type SkillSubject = "reading" | "math" | "logic";
+export type SkillSubject =
+  | "reading"
+  | "math"
+  | "logic"
+  | "science"
+  | "world"
+  | "wellbeing";
 export type GradeBand = "prek" | "grade1";
 export type LearningPhase = "discover" | "guided" | "independent" | "transfer";
 
@@ -104,6 +110,34 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("LOGIC.G1.ENGINEER.STABILITY_01", "logic", "engineering-reasoning", "Plan a stable structure", "Choose a structural feature that improves stability.", ["grade1"], 2.8, ["MATH.PK.GEO.SHAPE_01"], 5, true),
   skill("LOGIC.G1.ORDER.TRANSITIVE_01", "logic", "deduction", "Reason about relative order", "Combine two ordering clues to identify first or last.", ["grade1"], 3.1, ["LOGIC.G1.SEQUENCE.ROUTINE_01"], 5, true),
   skill("LOGIC.G1.ELIMINATE.CLUE_01", "logic", "deduction", "Eliminate using a clue", "Rule out an impossible choice and identify what remains.", ["grade1"], 3, ["LOGIC.G1.CLASSIFY.RULE_01"], 5, true),
+
+  // Science: observe, sort, predict, explain
+  skill("SCI.PK.LIFE.NEEDS_01", "science", "life-science", "Know what living things need", "Recognize that animals and plants need food, water, and air.", ["prek", "grade1"], 1.2, [], 5, true),
+  skill("SCI.PK.LIFE.HABITAT_01", "science", "life-science", "Match animals to homes", "Connect a familiar animal with the place it lives.", ["prek", "grade1"], 1.4, ["SCI.PK.LIFE.NEEDS_01"], 5, true),
+  skill("SCI.PK.EARTH.WEATHER_01", "science", "earth-science", "Describe the weather", "Name common weather and what it means for the day.", ["prek", "grade1"], 1.3, [], 5, true),
+  skill("SCI.PK.PHYS.SINK_FLOAT_01", "science", "physical-science", "Predict sink or float", "Make and check a prediction about whether an object floats.", ["prek", "grade1"], 1.6, [], 5, true),
+  skill("SCI.PK.SENSE.FIVE_01", "science", "human-body", "Use the five senses", "Match a sense to the body part that does the sensing.", ["prek", "grade1"], 1.3, [], 5, true),
+  skill("SCI.G1.LIFE.LIFECYCLE_01", "science", "life-science", "Order a life cycle", "Sequence the stages of a familiar plant or animal life cycle.", ["grade1"], 2.5, ["SCI.PK.LIFE.NEEDS_01"], 6, true),
+  skill("SCI.G1.PHYS.MATTER_01", "science", "physical-science", "Sort solids and liquids", "Classify familiar materials as solid or liquid.", ["grade1"], 2.3, ["SCI.PK.PHYS.SINK_FLOAT_01"], 6, true),
+  skill("SCI.G1.PHYS.FORCE_01", "science", "physical-science", "Explain push and pull", "Identify whether a force is a push or a pull.", ["grade1"], 2.4, [], 5, true),
+  skill("SCI.G1.EARTH.SPACE_01", "science", "earth-science", "Describe day and night", "Explain what the sun and moon tell us about time of day.", ["grade1"], 2.6, ["SCI.PK.EARTH.WEATHER_01"], 5, true),
+  skill("SCI.G1.EARTH.SEASONS_01", "science", "earth-science", "Recognize the seasons", "Link a season to the changes it brings.", ["grade1"], 2.4, ["SCI.PK.EARTH.WEATHER_01"], 5, true),
+
+  // Our world: community, geography, time, invention
+  skill("WORLD.PK.COMM.HELPERS_01", "world", "community", "Know community helpers", "Match a helper in the community with the work they do.", ["prek", "grade1"], 1.2, [], 5, true),
+  skill("WORLD.PK.TRANS.VEHICLES_01", "world", "transportation", "Sort how we travel", "Group vehicles by where they travel: land, water, or air.", ["prek", "grade1"], 1.4, [], 5, true),
+  skill("WORLD.PK.PLACE.HOME_01", "world", "geography", "Name places we go", "Recognize familiar places and what happens there.", ["prek", "grade1"], 1.3, [], 5, true),
+  skill("WORLD.G1.GEO.LAND_WATER_01", "world", "geography", "Tell land from water", "Identify land and water features on a simple map.", ["grade1"], 2.3, ["WORLD.PK.PLACE.HOME_01"], 5, true),
+  skill("WORLD.G1.TIME.THEN_NOW_01", "world", "history", "Compare then and now", "Notice how an everyday object has changed over time.", ["grade1"], 2.5, [], 5, true),
+  skill("WORLD.G1.INVENT.TOOLS_01", "world", "invention", "Match tools to jobs", "Choose the tool that solves a stated problem.", ["grade1"], 2.4, ["WORLD.PK.COMM.HELPERS_01"], 5, true),
+
+  // Feelings and friendship: naming, perspective, choices
+  skill("WELL.PK.EMOTION.NAME_01", "wellbeing", "emotions", "Name a feeling", "Match a face or situation to the feeling it shows.", ["prek", "grade1"], 1.2, [], 5, true),
+  skill("WELL.PK.HABIT.CARE_01", "wellbeing", "healthy-habits", "Choose healthy habits", "Recognize everyday routines that keep a body well.", ["prek", "grade1"], 1.3, [], 5, true),
+  skill("WELL.PK.SOCIAL.SHARE_01", "wellbeing", "cooperation", "Take turns and share", "Choose a cooperative response in a simple play situation.", ["prek", "grade1"], 1.5, ["WELL.PK.EMOTION.NAME_01"], 5, true),
+  skill("WELL.G1.EMPATHY.PERSPECTIVE_01", "wellbeing", "empathy", "Imagine how someone feels", "Infer another person's feeling from what happened to them.", ["grade1"], 2.5, ["WELL.PK.EMOTION.NAME_01"], 5, true),
+  skill("WELL.G1.REGULATE.CALM_01", "wellbeing", "self-regulation", "Find a way to calm down", "Choose a helpful strategy for a big feeling.", ["grade1"], 2.6, ["WELL.PK.EMOTION.NAME_01"], 5, true),
+  skill("WELL.G1.CHOICE.RESPONSIBLE_01", "wellbeing", "decision-making", "Make a responsible choice", "Select the considerate option in an everyday dilemma.", ["grade1"], 2.7, ["WELL.PK.SOCIAL.SHARE_01"], 5, true),
 ];
 
 export const skillById = new Map(skillGraph.map((node) => [node.id, node]));

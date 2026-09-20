@@ -2,6 +2,7 @@ import { questions, type ActivityType, type Question, type Subject } from "@/lib
 import type { ExplorerProfile } from "@/lib/explorers";
 import { skillById } from "@/lib/skill-graph";
 import { contentBandsFor, resolveBand } from "@/lib/learning-bands";
+import { allSubjects, coreSubjects } from "@/lib/subjects";
 import { questSizeForGoal } from "./quest-settings";
 export { questSizeForGoal } from "./quest-settings";
 
@@ -68,10 +69,16 @@ function subjectSequence(
   count: number,
 ): Subject[] {
   if (requestedSubject !== "daily") return Array.from({ length: count }, () => requestedSubject);
-  const base: Subject[] = ["reading", "math", "logic"];
+  // Core subjects anchor every day; explore subjects fill the remaining slots so a
+  // longer session widens rather than simply repeating.
+  const base: Subject[] = [...coreSubjects];
   const weakest = [...base].sort((left, right) => (subjectStrength(profile, left)-(profile.controls.priorities.includes(left)?35:0)) - (subjectStrength(profile, right)-(profile.controls.priorities.includes(right)?35:0)));
   const sequence = [...base];
-  while (sequence.length < count) sequence.push(weakest[(sequence.length - base.length) % weakest.length]);
+  const enrich = allSubjects.filter((subject) => !base.includes(subject));
+  while (sequence.length < count) {
+    const position = sequence.length - base.length;
+    sequence.push(position < enrich.length ? enrich[position] : weakest[position % weakest.length]);
+  }
   return rotate(sequence, profile.completed % sequence.length);
 }
 

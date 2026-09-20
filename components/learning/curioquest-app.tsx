@@ -24,6 +24,9 @@ import {ParentQuests} from '@/components/learning/parent-quests';
 import {CelebrationLayer} from '@/components/learning/celebration-layer';
 import {AppShell} from '@/components/shell/AppShell';
 import {learningBands,primaryContentBand,resolveBand} from '@/lib/learning-bands';
+import {subjectRegistry,worldName} from '@/lib/subjects';
+import {isDestination} from '@/lib/navigation';
+import type {SkillSubject} from '@/lib/skill-graph';
 import {configureAudio,unlockAudio,quietAudio} from '@/lib/audio';
 import {readAloud as speak} from '@/lib/speech';
 const DailyAdventure=lazy(()=>import('@/components/experience/DailyAdventure').then(m=>({default:m.DailyAdventure})));
@@ -34,16 +37,36 @@ const CreativeStudio=lazy(()=>import('@/components/learning/creative-studio').th
 const ScienceLab=lazy(()=>import('@/components/learning/science-lab').then(m=>({default:m.ScienceLab})));
 const StoryWorld=lazy(()=>import('@/components/learning/story-world').then(m=>({default:m.StoryWorld})));
 type QuestResponse={profile:PublicExplorer;profiles:PublicExplorer[];feedback:QuestFeedback;error?:string;deleted?:string};
-import { Compass, Map, Star, BookOpen, Shapes, Mountain, ArrowRight, Volume2, ChevronDown, Check, Flag, Lightbulb, X, ShieldCheck, Sparkles, Leaf, LoaderCircle, Trophy, Plus, Users } from 'lucide-react';
+import { Compass, Map, Star, BookOpen, Shapes, Mountain, FlaskConical, Globe, Heart, ArrowRight, Volume2, ChevronDown, Check, Flag, Lightbulb, X, ShieldCheck, Sparkles, Leaf, LoaderCircle, Trophy, Plus, Users } from 'lucide-react';
 import { AVATARS, INTERESTS, avatarEmoji } from '@/lib/explorers';
-const worlds = [{ id: 'reading', name: 'Word Forest', skill: 'Letters, sounds & stories', icon: BookOpen, color: 'green', line: 'Every word opens a new path.' }, { id: 'math', name: 'Number City', skill: 'Numbers, counting & math', icon: Shapes, color: 'yellow', line: 'Big ideas start with little numbers.' }, { id: 'logic', name: 'Logic Mountain', skill: 'Patterns, puzzles & thinking', icon: Mountain, color: 'purple', line: 'A little thinking. A big discovery.' }] as const;
-const worldName = (id: string) => worlds.find(w => w.id === id)?.name || 'Daily Quest';
+const worldIcons:Record<string,typeof BookOpen>={reading:BookOpen,math:Shapes,logic:Mountain,science:FlaskConical,world:Globe,wellbeing:Heart};
+type World={id:SkillSubject;name:string;skill:string;icon:typeof BookOpen;hue:string;line:string};
+const worlds:World[] = subjectRegistry.map(subject=>({id:subject.id,name:subject.world,skill:subject.label,icon:worldIcons[subject.id],hue:subject.hue,line:subject.older}));
 export default function HomePage() {
     const [profiles, setProfiles] = useState<PublicExplorer[]>([]), [pid, setPid] = useState(''), [view, setViewRaw] = useState('adventure'), [busy, setBusy] = useState(false), [error, setError] = useState(''), [play, setPlay] = useState(false), [current, setCurrent] = useState<PublicQuestion|null>(null), [feedback, setFeedback] = useState<QuestFeedback>(null), [selected, setSelected] = useState(''), [gate, setGate] = useState(false), [parentOpen, setParentOpen] = useState(false), [saved, setSaved] = useState(false), [adding, setAdding] = useState(false);
     const [studioDirty,setStudioDirty]=useState(false);
     const [loaded,setLoaded]=useState(false);
     const [experienceMode,setExperienceMode]=useState<RunMode>('daily');
-    const setView=useCallback((next:React.SetStateAction<string>)=>{if(studioDirty&&!window.confirm('Leave the studio without saving these changes?'))return;setStudioDirty(false);setViewRaw(next);window.scrollTo({top:0,behavior:'instant'});},[studioDirty]);
+    // The current screen lives in the URL as well as in state, so a view can be
+    // linked, bookmarked, and reached with the browser's Back button. Parent Corner is
+    // deliberately excluded: it sits behind a PIN and must not be link-shareable.
+    const writeUrl=useCallback((next:string,replace=false)=>{
+      const url=new URL(window.location.href);
+      if(next==='adventure'||next==='parent')url.searchParams.delete('view');
+      else url.searchParams.set('view',next);
+      window.history[replace?'replaceState':'pushState']({view:next},'',url);
+    },[]);
+    const setView=useCallback((next:React.SetStateAction<string>)=>{
+      if(studioDirty&&!window.confirm('Leave the studio without saving these changes?'))return;
+      setStudioDirty(false);
+      setViewRaw(current=>{const resolved=typeof next==='function'?next(current):next;if(resolved!==current)writeUrl(resolved);return resolved;});
+      window.scrollTo({top:0,behavior:'instant'});
+    },[studioDirty,writeUrl]);
+    useEffect(()=>{
+      const onPop=(event:PopStateEvent)=>{const target=(event.state as {view?:string}|null)?.view;setViewRaw(target&&isDestination(target)?target:'adventure');};
+      window.addEventListener('popstate',onPop);
+      return ()=>window.removeEventListener('popstate',onPop);
+    },[]);
     const p = profiles.find(x => x.id === pid);
     const session = p?.session;
     const today = p?.history.filter((h) => h.date.slice(0, 10) === new Date().toISOString().slice(0, 10)).length || 0;
@@ -61,7 +84,7 @@ export default function HomePage() {
     catch (e: unknown) {
         setError(e instanceof Error?e.message:'Please try again.');
     } }
-    useEffect(() => { const controller=new AbortController();fetch('/api/quest',{signal:controller.signal}).then(async r=>{const d=await r.json() as QuestResponse;if(!r.ok)throw Error(d.error);setProfiles(d.profiles);setLoaded(true);setPid(id=>{const selected=new URLSearchParams(window.location.search).get('child')??id;return d.profiles.some((profile:PublicExplorer)=>profile.id===selected)?selected:d.profiles[0]?.id??'';});}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return ()=>controller.abort(); }, []);
+    useEffect(() => { const controller=new AbortController();fetch('/api/quest',{signal:controller.signal}).then(async r=>{const d=await r.json() as QuestResponse;if(!r.ok)throw Error(d.error);setProfiles(d.profiles);setLoaded(true);const params=new URLSearchParams(window.location.search);const requested=params.get('view');if(requested&&requested!=='parent'&&isDestination(requested))setViewRaw(requested);setPid(id=>{const selected=params.get('child')??id;return d.profiles.some((profile:PublicExplorer)=>profile.id===selected)?selected:d.profiles[0]?.id??'';});}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return ()=>controller.abort(); }, []);
     const action=useCallback(async (body: Record<string,unknown>, explorerId = pid) => { if (requestLock.current)
         return null; requestLock.current = true; setBusy(true); setError(''); try {
         const r = await fetch('/api/quest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...body, profile: explorerId }) });
@@ -176,7 +199,7 @@ export default function HomePage() {
             {view === 'myworld' && <Suspense fallback={<p>Opening your world…</p>}><WorldMap onStars={stars=>setProfiles(ps=>ps.map(x=>x.id===p.id?{...x,stars}:x))} key={p.id} profileId={p.id} name={p.name} onNavigate={setView} onAdventure={()=>{setExperienceMode('daily');setView('daily-adventure');}}/></Suspense>}
             {view === 'worlds' && <><div className="page-heading"><div><div className="eyebrow">FOLLOW YOUR CURIOSITY</div><h1>A world of possibilities.</h1><p>Pick a path. Make a discovery. Grow at your own pace.</p></div><div className="level-pill"><Sparkles size={19}/><span>Level {Math.floor(p.completed / 3) + 1}<small>{p.completed < 3 ? 'Curious Explorer' : 'Brave Explorer'}</small></span></div></div>
             <StoryTrail progress={p.adventure} busy={busy || p.preferences.paused} onStart={startCampaign} onGarden={() => setView('garden')}/>
-            <div className="content-grid"><div><div className="section-heading"><h2>{view === 'worlds' ? 'Your learning worlds' : 'Where will you go today?'}</h2></div><div className="worlds-grid">{worlds.map(w => <button key={w.id} disabled={busy || p.preferences.paused} className={`world-card ${w.color}`} onClick={() => start(w.id)}><div className="world-top"><span className="world-symbol"><w.icon size={35} strokeWidth={1.6}/></span><span className="world-tag">{w.id === 'reading' ? 'READ' : w.id === 'math' ? 'COUNT' : 'THINK'}</span></div><h3>{w.name}</h3><p>{w.skill}</p><div className="world-progress"><span>Trail {p.skills[w.id].level} of 3</span><ArrowRight size={18}/></div><div className="progress-track"><span style={{ width: `${p.skills[w.id].seen ? Math.min(100, p.skills[w.id].seen / 15 * 100) : 0}%` }}/></div></button>)}</div>
+            <div className="content-grid"><div><div className="section-heading"><h2>{view === 'worlds' ? 'Your learning worlds' : 'Where will you go today?'}</h2></div><div className="worlds-grid">{worlds.map(w => <button key={w.id} disabled={busy || p.preferences.paused} className="world-card" data-world={w.id} onClick={() => start(w.id)}><div className="world-top"><span className="world-symbol"><w.icon size={35} strokeWidth={1.6}/></span><span className="world-tag">{subjectRegistry.find(subject=>subject.id===w.id)?.eyebrow}</span></div><h3>{w.name}</h3><p>{w.skill}</p><div className="world-progress"><span>Trail {p.skills[w.id].level} of 3</span><ArrowRight size={18}/></div><div className="progress-track"><span style={{ width: `${p.skills[w.id].seen ? Math.min(100, p.skills[w.id].seen / 15 * 100) : 0}%` }}/></div></button>)}</div>
             <section className="journey"><div className="section-heading"><h2>Your explorer journey</h2><span>{p.completed} quests complete</span></div><div className="journey-path">{[{ label: 'Get curious', n: 0, icon: Compass }, { label: 'Keep exploring', n: 3, icon: Leaf }, { label: 'Think bigger', n: 6, icon: Lightbulb }, { label: 'Shine bright', n: 9, icon: Star }].map((s, i) => <div className={`journey-stop ${p.completed >= s.n ? 'reached' : ''}`} key={s.label}><span><s.icon size={23}/></span><strong>{s.label}</strong><small>{i === 0 ? 'Your journey begins' : `${s.n} quests`}</small></div>)}</div></section>
             {view === 'worlds' && <div className="future-worlds"><strong>More worlds are on the horizon</strong><p>Design a garden in Build Lab, or follow Nova through the Missing Seeds story.</p></div>}</div>
             <aside className="right-column"><section className="today-card"><div className="section-heading"><h3>A little progress</h3><span className="sun-icon">☀</span></div><p>Small steps add up.</p><div className="daily-progress"><span className="ring"><Check size={24}/></span><div><strong>{today > 0 ? 'You explored today!' : 'A fresh start'}</strong><span>{today > 0 ? `${today} quest${today === 1 ? '' : 's'} completed` : 'Your first discovery awaits'}</span></div></div><div className="today-footer"><span><Star size={17}/>{p.stars} stars earned</span><span><Flag size={17}/>{p.completed} quests</span></div></section><section className="nova-card"><div className="nova-card-title"><span>🦊</span><div><strong>A note from Nova</strong><small>YOUR FRIENDLY GUIDE</small></div></div><p>“You don’t have to know the answer yet. Let’s figure it out together!”</p><button className="text-button" onClick={() => speak('You don’t have to know the answer yet. Let’s figure it out together!')}><Volume2 size={17}/> Listen to Nova</button></section><div className="gentle-note"><Leaf size={17}/><span>No rush. No races.<br />Just your kind of adventure.</span></div></aside></div></>}

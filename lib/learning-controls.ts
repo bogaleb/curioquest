@@ -2,7 +2,7 @@ import { z } from 'zod';
 export const controlsSchema = z.object({
   age: z.number().int().min(3).max(12).nullable().default(null),
   schoolGrade: z.enum(['prek','kindergarten','grade1','grade2']).default('prek'),
-  priorities: z.array(z.enum(['reading','math','logic'])).max(3).default([]),
+  priorities: z.array(z.enum(['reading','math','logic','science','world','wellbeing'])).max(3).default([]),
   challenge: z.enum(['adaptive','gentle','stretch']).default('adaptive'),
   questLength: z.number().int().min(3).max(15).nullable().default(null),
   allowedDays: z.array(z.number().int().min(0).max(6)).min(1).max(7).default([0,1,2,3,4,5,6]),

@@ -1,13 +1,13 @@
 'use client';
 import Image from 'next/image';
-import {ArrowRight,Play,Gamepad2,BookOpen,Palette,Blocks,Globe,Volume2,Star,Sparkles,Compass,Mountain,Shapes,Leaf,Check,RotateCcw} from 'lucide-react';
+import {ArrowRight,Play,Gamepad2,BookOpen,Palette,Blocks,Globe,Volume2,Star,Sparkles,Compass,Mountain,Shapes,Leaf,Check,RotateCcw,FlaskConical,Heart} from 'lucide-react';
 import type {PublicExplorer} from '@/lib/explorer-view';
 import type {SkillSubject} from '@/lib/skill-graph';
 import {homeWorlds,learningHome,offscreenInvitation} from '@/lib/learning-home';
 import {NovaCharacter,useNova} from '@/components/characters/NovaCharacter';
 import {useExperience,ExperienceError} from './use-experience';
 
-const worldIcons={reading:BookOpen,math:Shapes,logic:Mountain};
+const worldIcons:Record<string,typeof BookOpen>={reading:BookOpen,math:Shapes,logic:Mountain,science:FlaskConical,world:Globe,wellbeing:Heart};
 const destinations=[
  {id:'theater',name:'Story Theater',caption:'Watch, listen, join in',icon:Play},
  {id:'games',name:'Game Meadow',caption:'Play with a purpose',icon:Gamepad2},

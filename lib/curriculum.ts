@@ -8,6 +8,7 @@ import type { ActivityEngine } from "./activity-types";
 import { resolveBand, type LearningBandId } from "./learning-bands";
 import { gardenActivities } from "./garden-content";
 import { arcadeActivities } from "./arcade-content";
+import { wholeChildActivities } from "./content/whole-child";
 
 export type Subject = SkillSubject;
 export type ActivityType =
@@ -315,6 +316,7 @@ for (let index = 0; index < 18; index += 1) {
 
 questions.push(...gardenActivities);
 questions.push(...arcadeActivities);
+questions.push(...wholeChildActivities);
 
 export function validateCurriculum() {
   const ids = new Set<string>();

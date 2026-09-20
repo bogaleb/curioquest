@@ -1,13 +1,16 @@
 import { questions, type Question, type Subject } from "./curriculum";
 import type { ExplorerProfile, GradeTrack } from "./explorers";
+import { coreSubjects } from "./subjects";
 
 export type DiscoveryProgress = {
   grade: GradeTrack;
   completedAt: string;
-  subjects: Record<Subject, { independent: number; total: number; startingLevel: number }>;
+  subjects: Partial<Record<Subject, { independent: number; total: number; startingLevel: number }>>;
 };
 
-const subjects: Subject[] = ["reading", "math", "logic"];
+// Placement covers the core subjects only. A welcome check that asked about six
+// subjects would be twelve activities long before a child has played anything.
+const subjects: Subject[] = [...coreSubjects];
 
 function pick(grade: GradeTrack, subject: Subject, level: number, exclude: string[]) {
   const question = questions.find(q => q.grade === grade && q.subject === subject &&
@@ -26,7 +29,7 @@ export function startDiscovery(profile: ExplorerProfile, id: string) {
   profile.session = {
     id, subject: "daily", questions: selected.map(q => q.id), index: 0, misses: 0,
     hinted: false, first: 0, started: Date.now(), estimatedMinutes: 12,
-    discovery: { independent: { reading: 0, math: 0, logic: 0 } },
+    discovery: { independent: Object.fromEntries(subjects.map((subject) => [subject, 0])) as Record<Subject, number> },
     plan: selected.map(q => ({ questionId: q.id, skillId: q.skillId, reason: "welcome-discovery" })),
   };
 }

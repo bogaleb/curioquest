@@ -13,7 +13,13 @@ test('home counts recorded practice rather than scores, empty records or unknown
   'unreviewed-skill':{...emptyMastery(),attemptCount:20},
  };
  const before=JSON.stringify(profile);
- assert.deepEqual(learningHome(profile).practiced,{reading:1,math:0,logic:0});
+ // Every registered subject gets a counter, so a new subject cannot silently
+ // vanish from the home tally.
+ const {allSubjects}=loadTs('lib/subjects');
+ const practiced=learningHome(profile).practiced;
+ assert.deepEqual(Object.keys(practiced).sort(),[...allSubjects].sort());
+ assert.equal(practiced.reading,1);
+ for(const subject of allSubjects.filter(s=>s!=='reading')) assert.equal(practiced[subject],0);
  assert.equal(JSON.stringify(profile),before);
 });
 

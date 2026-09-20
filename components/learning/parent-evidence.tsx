@@ -32,9 +32,9 @@ export function ParentEvidence({profile,busy,onConfirm}:{
     </section>
     {profile.discovery&&<section className="panel discovery-summary"><div className="eyebrow">GETTING TO KNOW YOUR EXPLORER</div>
       <h2>Nova’s starting paths</h2><p>From six welcome discoveries on {new Date(profile.discovery.completedAt).toLocaleDateString()}. These are starting suggestions, not a grade or diagnosis. Future practice keeps adjusting the path.</p>
-      <div className="discovery-paths">{(["reading","math","logic"] as const).map(subject=><span key={subject}>
+      <div className="discovery-paths">{(["reading","math","logic"] as const).filter(subject=>profile.discovery!.subjects[subject]).map(subject=><span key={subject}>
         <strong>{subject==="reading"?"Word Forest":subject==="math"?"Number City":"Logic Mountain"}</strong><br/>
-        {profile.discovery!.subjects[subject].startingLevel===2?"Ready for a next step":"Begin with supported discoveries"}
+        {profile.discovery!.subjects[subject]!.startingLevel===2?"Ready for a next step":"Begin with supported discoveries"}
       </span>)}</div>
       {profile.discovery.grade!==profile.grade&&<p className="form-note">These observations came from the previous learning track. A new welcome adventure is available on your child’s home screen.</p>}
     </section>}

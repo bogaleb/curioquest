@@ -105,7 +105,9 @@ export type ExplorerProfile = {
   };
 };
 
-const subjects: Subject[] = ["reading", "math", "logic"];
+import { allSubjects } from "./subjects";
+
+const subjects: Subject[] = allSubjects;
 
 export function newExplorer(
   id: string,
