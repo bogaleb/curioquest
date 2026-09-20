@@ -73,6 +73,7 @@ export function BubblePop({
         delay: (index % 5) * 0.45,
         duration: 3.6 + (index % 4) * 0.7,
         offset: ((index * 37) % 60) - 30,
+        rise: ((index * 53) % 70) - 35,
       })),
     [engine.bubbles],
   );
@@ -86,7 +87,7 @@ export function BubblePop({
 
   return (
     <div className="cq-play cq-bubbles">
-      <Guide who="pip" line={engine.rule} autoSpeak />
+      <Guide who="pip" line="Tap every bubble that fits. Tap it again to put it back." autoSpeak />
       <div className="cq-bubble-field" role="group" aria-label={engine.rule}>
         {engine.bubbles.map((bubble, index) => {
           const isPopped = popped.includes(bubble.id);
@@ -99,6 +100,7 @@ export function BubblePop({
               style={{
                 animationDelay: `${style.delay}s`,
                 animationDuration: `${style.duration}s`,
+                marginTop: `${style.rise}px`,
                 ["--drift" as string]: `${style.offset}px`,
               }}
               aria-pressed={isPopped}
@@ -176,15 +178,7 @@ export function BalanceScale({
 
   return (
     <div className="cq-play cq-balance">
-      <Guide
-        who="nova"
-        line={
-          engine.question === "more"
-            ? "Which side has more? Look carefully, then choose."
-            : "Which side has fewer? Look carefully, then choose."
-        }
-        autoSpeak
-      />
+      <Guide who="nova" line="Count one side, then the other. Then choose." autoSpeak />
       <div
         className="cq-scale"
         data-settled={settled || undefined}
@@ -233,7 +227,7 @@ export function Constellation({
 
   return (
     <div className="cq-play cq-constellation">
-      <Guide who="nova" line={`Join the stars in order to find the ${engine.name}.`} autoSpeak />
+      <Guide who="nova" line="Start with the smallest, then find the next one each time." autoSpeak />
       <div className="cq-sky" data-complete={correct || undefined}>
         <svg viewBox="0 0 100 62" className="cq-sky-lines" aria-hidden="true">
           {points.length > 1 && (

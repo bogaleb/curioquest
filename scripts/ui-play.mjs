@@ -22,10 +22,9 @@ const PIN = "246810";
 
 /** Bands and subjects chosen because each surfaces a different engine early. */
 const RUNS = [
-  { band: "kindergarten", grade: "prek", subject: "reading" },
-  { band: "kindergarten", grade: "prek", subject: "math" },
-  { band: "grade2", grade: "grade1", subject: "math" },
-  { band: "prek", grade: "prek", subject: "math" },
+  { for: "constellation", band: "kindergarten", grade: "prek", subject: "reading", interests: ["space"] },
+  { for: "bubble-pop", band: "kindergarten", grade: "prek", subject: "math", interests: [] },
+  { for: "balance", band: "grade3", grade: "grade1", subject: "math", interests: ["puzzles"] },
 ];
 
 const CHROME = [
@@ -55,61 +54,47 @@ if (!gate.ok()) throw new Error("parent gate failed");
 
 const seen = new Set();
 
+/**
+ * Recommendation order depends on the profile's own id (a deterministic jitter keeps a
+ * child's quest stable between reloads), so which activity lands first cannot be
+ * predicted offline. Instead we create fresh profiles until the wanted engine comes up
+ * first, which is also a fair sample of what a real new child would be served.
+ */
+const ATTEMPTS = Number(arg("attempts", "18"));
+
 for (const run of RUNS) {
-  if (TARGETS.every((engine) => seen.has(engine))) break;
+  if (!TARGETS.includes(run.for) || seen.has(run.for)) continue;
 
-  // A fresh profile per run keeps each run's recommendation deterministic.
-  const created = await api("/api/quest", {
-    action: "create-profile", name: `P${Math.random().toString(36).slice(2, 6)}`,
-    band: run.band, grade: run.grade, avatar: "fox", interests: ["space"], dailyGoal: 10,
-  });
-  if (!created.ok()) { console.log(`profile limit reached; stopping`); break; }
-  const profile = (await created.json()).profile.id;
-
-  await api("/api/quest", { action: "start", subject: run.subject, profile });
-  await page.goto(`${BASE}/?child=${profile}`, { waitUntil: "networkidle" });
-  await page.waitForTimeout(1200);
-
-  // Open the in-progress session.
-  const open = page.locator("button").filter({ hasText: /Start my daily quest|Continue|Keep going/i }).first();
-  if (await open.count()) await open.click().catch(() => {});
-  await page.waitForTimeout(1200);
-
-  for (let step = 0; step < 8; step += 1) {
-    const state = await questState();
-    const session = state.profiles?.find((p) => p.id === profile)?.session;
-    const kind = session?.question?.engine?.kind;
-    if (!session?.question) break;
-
-    if (kind && TARGETS.includes(kind) && !seen.has(kind)) {
-      await page.waitForTimeout(900);
-      await page.screenshot({ path: `${OUT}/${kind}.png` });
-      seen.add(kind);
-      console.log(`captured ${kind} (${run.band}/${run.subject}, step ${step})`);
-      break;
+  for (let attempt = 0; attempt < ATTEMPTS && !seen.has(run.for); attempt += 1) {
+    // A family is capped at four explorers and the API refuses to delete the last.
+    const before = await questState();
+    for (const old of (before.profiles ?? []).slice(1)) {
+      await api("/api/quest", { action: "delete-profile", profile: old.id, confirm: old.name });
     }
 
-    // Advance by answering. Only plain multiple choice is solvable this way; any
-    // other engine ends this run and we move to the next band/subject combination.
-    const options = page.locator(".answers button:not([disabled])");
-    const count = await options.count();
-    if (!count) break;
-    let advanced = false;
-    for (let choice = 0; choice < count; choice += 1) {
-      const button = page.locator(".answers button:not([disabled])").nth(0);
-      if (!(await button.count())) break;
-      await button.click().catch(() => {});
-      await page.waitForTimeout(700);
-      const next = page.locator("button").filter({ hasText: /Next discovery|Finish my quest/i }).first();
-      if (await next.count()) {
-        await next.click().catch(() => {});
-        await page.waitForTimeout(900);
-        advanced = true;
-        break;
-      }
-    }
-    if (!advanced) break;
+    const name = `P${Math.random().toString(36).slice(2, 6)}`;
+    const created = await api("/api/quest", {
+      action: "create-profile", name,
+      band: run.band, grade: run.grade, avatar: "fox", interests: run.interests, dailyGoal: 10,
+    });
+    if (!created.ok()) { console.log(`create failed: ${await created.text()}`); break; }
+    const profile = (await created.json()).profile.id;
+
+    const started = await api("/api/quest", { action: "start", subject: run.subject, profile });
+    if (!started.ok()) continue;
+    const kind = (await started.json()).profile?.session?.question?.engine?.kind;
+    if (kind !== run.for) continue;
+
+    await page.goto(`${BASE}/?child=${profile}`, { waitUntil: "networkidle" });
+    await page.waitForTimeout(1000);
+    const open = page.locator("button").filter({ hasText: /Start my daily quest|Continue|Keep going/i }).first();
+    if (await open.count()) await open.click().catch(() => {});
+    await page.waitForTimeout(1600);
+    await page.screenshot({ path: `${OUT}/${run.for}.png` });
+    seen.add(run.for);
+    console.log(`captured ${run.for} (${run.band}/${run.subject}, attempt ${attempt + 1})`);
   }
+  if (!seen.has(run.for)) console.log(`${run.for}: not surfaced in ${ATTEMPTS} attempts`);
 }
 
 await browser.close();
