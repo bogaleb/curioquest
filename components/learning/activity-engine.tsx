@@ -6,6 +6,7 @@ import type { ActivityEngine, PublicQuestion } from "@/lib/activity-types";
 import { TenFrame, RobotRoute, Matching, Ordering } from "./arcade-engines";
 import { BubblePop, BalanceScale, Constellation } from "./play-engines";
 import { NumberLine, NumberBond, PlaceValue, ArrayBuilder } from "./math-engines";
+import { Investigation } from "./science-engines";
 import { readAloud } from "@/lib/speech";
 
 type Props = {
@@ -34,6 +35,7 @@ export function ActivityEngineView(props: Props) {
   if (engine?.kind === "number-bond") return <NumberBond {...props} engine={engine}/>;
   if (engine?.kind === "place-value") return <PlaceValue {...props} engine={engine}/>;
   if (engine?.kind === "array-builder") return <ArrayBuilder {...props} engine={engine}/>;
+  if (engine?.kind === "investigation") return <Investigation {...props} engine={engine}/>;
   return <div className="engine-stage">
     {engine?.kind === "pattern"
       ? <div className="pattern-stones" aria-label="Pattern to complete">{engine.sequence.map((item, i)=><span key={i}>{item}</span>)}<span className="missing-stone">?</span></div>

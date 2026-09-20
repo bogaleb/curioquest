@@ -64,7 +64,27 @@ export type ActivityEngine =
    * the count climb 3, 6, 9, 12 and meets skip counting without being taught it as a
    * rule to memorise.
    */
-  | { kind: "array-builder"; rows: number; columns: number; emoji: string; maxRows: number; maxColumns: number };
+  | { kind: "array-builder"; rows: number; columns: number; emoji: string; maxRows: number; maxColumns: number }
+  /**
+   * Observe, then predict. Wave 07's learning cycle, made structural.
+   *
+   * The outcomes stay locked until the child has examined every clue. That single rule
+   * is the difference between an investigation and a guess: a prediction made before
+   * looking is not a prediction, and science that lets you skip the observing is the
+   * quiz the wave is trying to stop being.
+   *
+   * A wrong prediction is still evidence, and the player says so rather than treating it
+   * as a failure — but it is scored, because "predict sink or float" is the skill being
+   * claimed and an unscored prediction cannot support that claim.
+   */
+  | {
+      kind: "investigation";
+      /** The thing being investigated, as an emoji scene the child can look at. */
+      scene: string;
+      /** Each must be opened before predicting. Detail is what looking closely shows. */
+      clues: { id: string; label: string; detail: string }[];
+      outcomes: { id: string; label: string; emoji: string }[];
+    };
 
 export type PublicQuestion = {
   id: string; subject: SkillSubject; grade: "prek" | "grade1";

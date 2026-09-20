@@ -28,8 +28,8 @@ The waves and the audit phases are two vocabularies for the same work:
 | 04 Adaptive learning | Pre-existing core + Phase 2 | Strongest area; struggle response added |
 | 05 Reading | Reading Section 94 slice | Vertical slice only |
 | 06 Math | — | Manipulatives landed; band depth open |
-| 07 Science | Phase 2 (subject added) | Discovery Lab exists, quiz-shaped |
-| 08 Logic | Phase 2 (subject added) | Skills exist, few formats |
+| 07 Science | Phase 2 (subject added) | Lab plus an investigation engine |
+| 08 Logic | Phase 2 (subject added) | 74% engine-backed already |
 | 09 Games | Phase 4 | ✅ engines, controls, metadata and the mission loop |
 | 10 Creative studio | Phase 1 (immersive) | Done to a good standard |
 | 11 Stories / video / discovery | — | Stories done, audio is prototype |
@@ -121,10 +121,19 @@ Feelings & Friendship have skills but no placement.
 
 ### Waves 05–08 — Curriculum
 
-The honest position, unchanged from `RELEASE_STATUS.md`: Reading has one genuine vertical
-slice (Section 94). Math, Science and Logic have authored activities and skill entries but
-lean on question-and-choices presentation. Wave 06 explicitly forbids "plain text question
-+ four-button design as the default", and that is still the default outside Reading.
+Position as of 2026-09-20, measured rather than inherited from `RELEASE_STATUS.md`, whose
+claim that all four subjects "lean on question-and-choices" is now out of date:
+
+| Subject | Activities | Engine-backed |
+|---|---|---|
+| Math | 183 | 145 (79%) |
+| Logic | 147 | 109 (74%) |
+| Science | 41 | 22 (54%) |
+| Reading | — | one genuine vertical slice (Section 94) |
+
+Wave 06 forbids "plain text question + four-button design as the default". It is no
+longer the default in math, logic or science. **Reading (05) is now the weakest of the
+four** and is the honest next target for curriculum work.
 
 **Wave 06 closed 2026-09-20 — math manipulatives.** All 36 math activities in the core
 curriculum were `number-choice`: a sentence with three numbers under it. Four engines
@@ -146,8 +155,28 @@ Two design properties worth keeping:
 **Still open for Wave 06:** the wave describes seven age bands from 3–4 through Grade 3,
 and the content pools are still only `prek` and `grade1`. Expanding `ContentBand` touches
 the skill graph, placement, the arcade and mastery, so it is its own wave rather than a
-loose end of this one. Reading (05), Science (07) and Logic (08) remain
-question-and-choices outside their own slices.
+loose end of this one.
+
+**Wave 07 closed 2026-09-20 — science investigations.** Science was the thinnest subject
+in the product: nineteen activities, all `reasoning-choice`, zero engines. The Discovery
+Lab already ran a real predict–try–observe–explain cycle, but on its own screen; the
+quest path, which is what the mastery model watches, was a quiz.
+
+A new `investigation` engine brings the first two steps of that cycle into the activity
+player. The outcomes stay locked until every clue has been opened, which is the only
+thing separating an investigation from a guess. 22 new activities in
+`lib/content/science-investigations.ts` use it alongside sorting for classification and
+ordering for life cycles — both already existed and did not need rebuilding. Science is
+now 41 activities, 22 interactive, investigation the largest single format. Three skills
+were added to the graph (living vs non-living, magnetism, light through materials),
+because the wave's topics had outrun it.
+
+The content is built so the evidence teaches: the two magnet activities deliberately
+disagree, breaking "shiny metal sticks to magnets" with a result rather than a
+correction, and a test asserts they still disagree so a later edit cannot flatten it.
+
+**Still open:** Reading (05) and Logic (08). Logic is already 74% engine-backed and is
+the least urgent of the two.
 
 ### Wave 09 — Games (partial)
 
@@ -259,8 +288,8 @@ Not in this pass: any curriculum content, any game engine work, Wave 02 onward.
    describe seven age bands; the content pools are two. The engines now exist to carry
    more granular content, so this is authoring plus a `ContentBand` widening, and it
    unlocks the age-adaptation criterion across four waves at once.
-2. **Waves 07 and 08 engines** — Science and Logic are still question-and-choices. The
-   math engines are the model to follow; several are subject-neutral already.
+2. **Wave 05 reading** — now the weakest subject by the measured table above, and the
+   only one still resting on a single vertical slice.
 3. **Wave 02 onboarding** — the account screens are done; the add-child sequence and
    profile selection are not.
 4. **Wave 14 remainder** — analytics events and flow tests.

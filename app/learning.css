@@ -377,3 +377,114 @@
   from { transform: scale(0.4); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+/* =====================================================================
+ * Wave 07 — investigation.
+ *
+ * Observe, then predict. The clues are the top half of this engine and the outcomes
+ * the bottom, and the gap between them is deliberate: the child should feel that they
+ * have finished one step before starting the next.
+ * ===================================================================== */
+
+.investigation-scene {
+  display: grid;
+  place-items: center;
+  margin: 0 auto var(--space-4);
+  padding: var(--space-5) var(--space-4);
+  max-width: 420px;
+  border-radius: var(--radius-2xl);
+  background: radial-gradient(circle at 30% 20%, var(--sun-100), transparent 60%), var(--green-100);
+  border: 1px solid var(--green-200);
+  font-size: clamp(48px, 12vw, 76px);
+  letter-spacing: 6px;
+  line-height: 1.1;
+}
+
+.clue-list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 560px;
+  text-align: left;
+  display: grid;
+  gap: var(--space-2);
+}
+.clue-list > li {
+  border: 1px solid var(--sand-200);
+  border-radius: var(--radius-lg);
+  background: var(--sand-100);
+  overflow: hidden;
+}
+/* An opened clue stays open and looks different from a closed one, so "which have I
+ * looked at?" is answered by the screen rather than by memory. */
+.clue-list > li.open {
+  background: #fffdf5;
+  border-color: var(--green-300);
+}
+.clue-list > li > button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: none;
+  text-align: left;
+  color: var(--green-800);
+  font-size: var(--text-base);
+}
+.clue-list > li > button svg { color: var(--green-600); flex: none; }
+.clue-list > li.open > button { color: var(--green-700); }
+.clue-list > li > p {
+  margin: 0;
+  padding: 0 var(--space-4) var(--space-3) calc(var(--space-4) + 18px + var(--space-3));
+  color: var(--sand-600);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+}
+
+/* The gate says what is missing. A row of dead buttons with no explanation reads as a
+ * broken screen, and a five-year-old will not work out that they need to look first. */
+.investigation-gate {
+  margin: var(--space-5) 0 var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--sand-600);
+}
+
+.investigation-outcomes {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.investigation-outcomes button {
+  flex: 1 1 160px;
+  max-width: 230px;
+  min-height: 108px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 2px solid var(--sand-300);
+  border-bottom-width: 5px;
+  border-radius: var(--radius-xl);
+  background: #fffdf5;
+  color: var(--green-800);
+  font-size: var(--text-base);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.investigation-outcomes button > span { font-size: 34px; line-height: 1; }
+.investigation-outcomes button:disabled { opacity: 0.45; }
+.investigation-outcomes button.chosen { border-color: var(--sun-400); background: var(--sun-100); }
+.investigation-outcomes button.correct { border-color: var(--green-500); background: var(--green-100); opacity: 1; }
+
+@media (max-width: 760px) {
+  .investigation-scene { padding: var(--space-4) var(--space-3); letter-spacing: 3px; }
+  .clue-list > li > button { padding: var(--space-2) var(--space-3); font-size: var(--text-sm); }
+  .clue-list > li > p { padding-left: calc(var(--space-3) + 18px + var(--space-2)); }
+  .investigation-outcomes button { flex-basis: 132px; min-height: 96px; font-size: var(--text-sm); }
+}

@@ -122,6 +122,11 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("SCI.G1.PHYS.FORCE_01", "science", "physical-science", "Explain push and pull", "Identify whether a force is a push or a pull.", ["grade1"], 2.4, [], 5, true),
   skill("SCI.G1.EARTH.SPACE_01", "science", "earth-science", "Describe day and night", "Explain what the sun and moon tell us about time of day.", ["grade1"], 2.6, ["SCI.PK.EARTH.WEATHER_01"], 5, true),
   skill("SCI.G1.EARTH.SEASONS_01", "science", "earth-science", "Recognize the seasons", "Link a season to the changes it brings.", ["grade1"], 2.4, ["SCI.PK.EARTH.WEATHER_01"], 5, true),
+  // Added with Wave 07. Living-vs-not is the first classification a child can defend
+  // with evidence rather than with familiarity, which is why it sits early and shallow.
+  skill("SCI.PK.LIFE.LIVING_01", "science", "life-science", "Tell living from non-living", "Decide whether something is alive using what it needs and does.", ["prek", "grade1"], 1.5, ["SCI.PK.LIFE.NEEDS_01"], 5, true),
+  skill("SCI.G1.PHYS.MAGNET_01", "science", "physical-science", "Predict what a magnet attracts", "Use evidence about materials to predict whether a magnet attracts an object.", ["grade1"], 2.5, ["SCI.PK.PHYS.SINK_FLOAT_01"], 5, true),
+  skill("SCI.G1.PHYS.LIGHT_01", "science", "physical-science", "Compare how light passes through", "Sort materials by whether light passes through them clearly, partly, or not at all.", ["grade1"], 2.6, [], 5, true),
 
   // Our world: community, geography, time, invention
   skill("WORLD.PK.COMM.HELPERS_01", "world", "community", "Know community helpers", "Match a helper in the community with the work they do.", ["prek", "grade1"], 1.2, [], 5, true),

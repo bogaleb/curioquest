@@ -12,6 +12,7 @@ import { wholeChildActivities } from "./content/whole-child";
 import { playGameActivities } from "./content/play-games";
 import { arcadePlayActivities } from "./content/arcade-play";
 import { mathModelActivities } from "./content/math-models";
+import { scienceInvestigationActivities } from "./content/science-investigations";
 
 export type Subject = SkillSubject;
 export type ActivityType =
@@ -23,7 +24,7 @@ export type ActivityType =
   | "reasoning-choice" | "counting" | "sorting" | "memory" | "word-builder" | "pattern"
   | "ten-frame" | "route" | "matching" | "ordering"
   | "bubble-pop" | "balance" | "constellation"
-  | "number-line" | "number-bond" | "place-value" | "array-builder";
+  | "number-line" | "number-bond" | "place-value" | "array-builder" | "investigation";
 export type ContextTag = "animals" | "stories" | "building" | "space" | "nature" | "puzzles";
 
 export type Question = {
@@ -325,6 +326,7 @@ questions.push(...wholeChildActivities);
 questions.push(...playGameActivities);
 questions.push(...arcadePlayActivities);
 questions.push(...mathModelActivities);
+questions.push(...scienceInvestigationActivities);
 
 /** Published count, for parent-facing copy that would otherwise drift. */
 export const activityCount = questions.length;

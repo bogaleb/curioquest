@@ -21,6 +21,13 @@ export function evaluateResponse(question: Question, response: unknown): { valid
     });
     return { valid, correct: valid && response === question.answer };
   }
+  if (engine.kind === "investigation") {
+    // The prediction is the answer. Whether the child examined the clues first is
+    // enforced in the engine, not here: the server cannot tell looking from waiting,
+    // and a rule that punished a fast reader would teach the wrong lesson anyway.
+    const valid = engine.outcomes.some((outcome) => outcome.id === response);
+    return { valid, correct: valid && response === question.answer };
+  }
   if (engine.kind === "number-line") {
     // Where the child's marker ended up. Anywhere on the line is a legal move — the
     // point of an open number line is that overshooting and walking back is allowed.

@@ -1,5 +1,34 @@
 # CurioQuest development log
 
+## Wave 07 science investigations — September 20, 2026
+
+- **Science was the thinnest subject in the product.** Nineteen activities, every one of
+  them `reasoning-choice`, not a single engine between them. The Discovery Lab already
+  ran a real predict–try–observe–explain cycle, but it lives on its own screen; the quest
+  path — the part the mastery model actually watches — was a quiz.
+- **A new `investigation` engine.** The child opens every clue before the outcomes
+  unlock. That one rule is the whole difference between an investigation and a guess: a
+  prediction made before looking is not a prediction. The gate says what is still
+  missing, because a row of dead buttons with no explanation reads as a broken screen to
+  a five-year-old rather than as an instruction.
+- **22 new activities** in `lib/content/science-investigations.ts`, using the new engine
+  plus sorting for classification and ordering for life cycles — both of which already
+  existed and did not need rebuilding. Science is now 41 activities, 22 of them
+  interactive, with investigation the single largest format.
+- Content designed so the evidence does the teaching. The two magnet activities
+  deliberately disagree: a steel clip is attracted and aluminium foil is not, which
+  breaks "shiny metal sticks to magnets" with evidence rather than with a correction.
+  A test asserts they still disagree, so a future content edit cannot quietly flatten
+  the point.
+- Three new skills — living vs non-living, magnetism, and how light passes through
+  materials — because the wave's topics had outrun the graph.
+- Verification: typecheck, lint 0 errors, 165 unit tests (151 before), production build,
+  bundle guard, and a screenshot of the locked and ready states. The 14 new tests pin
+  that every activity answers its own question, that no hint names its own outcome, that
+  every clue reveals something its label does not, that no sorting activity offers an
+  empty bin, and that clue detail still reaches the child — the inverse leak check,
+  since gating on stripped clues would leave the engine unopenable.
+
 ## Wave 06 math manipulatives — September 20, 2026
 
 - **Every math activity in the core curriculum was a sentence with three numbers under
