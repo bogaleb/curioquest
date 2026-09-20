@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 import { getSupabaseConfig } from './config';
 import type { Database } from './database.types';
 
-export const EXPECTED_DATABASE_VERSION = '202609180005';
+export const EXPECTED_DATABASE_VERSION = '202609200003';
 
 export async function checkConnectivity() {
   const { url, publishableKey } = getSupabaseConfig();

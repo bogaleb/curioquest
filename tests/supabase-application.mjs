@@ -36,6 +36,8 @@ export async function verifySupabaseApplication(sql) {
    let expression;
    if(name==='cq_read')expression='public.cq_read('+[body.p_parent,body.p_kind,body.p_child,body.p_id,body.p_filter,body.p_limit,body.p_offset].map(quote).join(',')+')';
    else if(name==='cq_commit')expression='public.cq_commit('+[body.p_parent,body.p_kind,JSON.stringify(body.p_data)].map(quote).join(',')+')';
+   else if(name==='cq_commit_events')expression='public.cq_commit_events('+[body.p_parent,body.p_kind,JSON.stringify(body.p_data),body.p_child,JSON.stringify(body.p_events)].map(quote).join(',')+')';
+   else if(name==='cq_events')expression='public.cq_events('+[body.p_parent,body.p_child,body.p_since,body.p_limit].map(quote).join(',')+')';
    else throw new Error('Unexpected RPC '+name);
    try{return Response.json(JSON.parse(sql('set role service_role; select '+expression+';').trim()||'null'));}
    catch(error){console.error('Database integration failure:',name,body.p_kind,error.message);return Response.json({code:'TEST_SQL',message:'Database test failed'},{status:500});}

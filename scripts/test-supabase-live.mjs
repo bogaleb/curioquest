@@ -43,7 +43,7 @@ try {
  for(const path of ['/','/account/children','/account/media'])await guest(path,undefined,307);
  for(const path of ['/api/quest','/api/reading','/api/experience','/api/parent','/api/parent/export','/api/workspace','/api/stories','/api/media'])await guest(path,undefined,401);
  const csrf=await fetch(base+'/auth/session',{method:'POST',headers:{Origin:'https://unrelated.example','Content-Type':'application/json'},body:JSON.stringify({action:'sign-in'})});assert.equal(csrf.status,403);
- if(!authOnly){const health=await guest('/api/supabase/health');assert.equal((await health.json()).databaseVersion,'202609180005');}
+ if(!authOnly){const health=await guest('/api/supabase/health');assert.equal((await health.json()).databaseVersion,'202609200003');}
  const a=await makeUser(),first=browser();
  await first('/auth/session',{action:'sign-in',email:a.email,password:a.password});
  assert.match(await(await first('/')).text(),/CurioQuest/);

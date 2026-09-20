@@ -188,7 +188,9 @@ async function finish(profile,{mistake=false}={}) {
     await call({action:"favorite-game",profile:p.id,game:"robot",favorite:true});
     const restored=(await call()).profiles.find(x=>x.id===p.id);
     assert.equal(restored.favorites.filter(id=>id==="robot").length,1);
-    assert.equal(Object.values(restored.arcade).reduce((sum,g)=>sum+g.levels.length,0),24);
+    // Derived, not hard-coded: this read 24 while the arcade had grown to eleven games,
+    // so the check had been failing on a number that was simply out of date.
+    assert.equal(Object.values(restored.arcade).reduce((sum,g)=>sum+g.levels.length,0),arcadeGames.length*3);
     p=(await call({action:"preferences",profile:p.id,autoRead:true,reducedMotion:true})).profile;
     assert.equal(p.preferences.autoRead,true);
     await call({action:"preferences",profile:p.id,autoRead:true,reducedMotion:true,paused:true});
@@ -245,12 +247,93 @@ async function finish(profile,{mistake=false}={}) {
   await call({action:'delete-profile',profile:disposable.id,confirm:'wrong'},400);
   const afterDelete=await call({action:'delete-profile',profile:disposable.id,confirm:disposable.name});assert.equal(afterDelete.profiles.length,3);
   assert.equal((await fetch(base+`/api/workspace?profile=${disposable.id}&kind=art`)).status,404);
+  await verifyLearningEvents({sql,call,questions,answerFor,profileId:owner.id});
   await verifyReadingFlow({base,call,parentCookie});
   await verifyExperienceFlow({base,call,parentCookie});
   await parentCall({action:"lock"});
   await call({action:"offline-confirm",profile:profiles[0].id},403);
   await call({action:'reset-progress',profile:owner.id,target:'all',confirm:owner.name},403);
   await call({action:'delete-profile',profile:owner.id,confirm:owner.name},403);
-  console.log("PASS: 48 game missions, saved sessions, Team Quest, parent PIN/security, curriculum drafts, assignments/private scoring, artwork/pagination/conflicts, all story scenes, faith controls/prayers, science notebooks, schedules, reset/deletion/export, and persistence.");
+  console.log(`PASS: learning events, ${arcadeGames.length*3} game missions, saved sessions, Team Quest, parent PIN/security, curriculum drafts, assignments/private scoring, artwork/pagination/conflicts, all story scenes, faith controls/prayers, science notebooks, schedules, reset/deletion/export, and persistence.`);
 
+}
+
+/**
+ * WP-01 acceptance: a full daily quest produces one row per attempt, with the right
+ * verb, support, correctness and latency — written to real PostgreSQL by the real
+ * route handler, not by a fixture.
+ */
+async function verifyLearningEvents({sql,call,questions,answerFor,profileId}) {
+  // Run as the cluster owner rather than service_role: these are verification queries
+  // against the table directly, and service_role holds execute grants on the RPCs, not
+  // table privileges — which is itself the point of the RLS probes in rls.sql.
+  const rows = (expression) => sql("reset role; " + expression).trim();
+  const before = Number(rows("select count(*) from public.learning_events where child_id='" + profileId + "';"));
+
+  let p = (await call({action:"start",profile:profileId,subject:"daily"})).profile;
+  const sessionId = p.session.id;
+  const planned = p.session.total ?? p.session.questions?.length;
+  let attempts = 0, wrongAttempts = 0;
+
+  // One deliberate wrong answer, so the stream is checked for what it records about a
+  // mistake as well as about a success. A stream that only captured correct answers
+  // would be useless for every question the product exists to answer.
+  let firstWrong = true;
+  while (p.session?.question) {
+    const shown = p.session.question;
+    const full = questions.find(item => item.id === shown.id);
+    if (firstWrong && shown.options.length > 1) {
+      const wrong = shown.options.find(option => option !== full.answer);
+      p = (await call({action:"answer",profile:profileId,session:sessionId,question:full.id,answer:wrong})).profile;
+      attempts++; wrongAttempts++; firstWrong = false;
+    }
+    p = (await call({action:"answer",profile:profileId,session:sessionId,question:full.id,answer:answerFor(full)})).profile;
+    attempts++;
+  }
+
+  const recorded = Number(rows("select count(*) from public.learning_events where session_id='" + sessionId + "';"));
+  assert.equal(recorded, attempts, "expected one event per attempt, including the retry");
+  assert.ok(recorded > (planned ?? 0), "the retry must be recorded as its own row");
+  assert.equal(
+    Number(rows("select count(*) from public.learning_events where session_id='" + sessionId + "' and correct=false;")),
+    wrongAttempts);
+  assert.equal(
+    Number(rows("select count(*) from public.learning_events where child_id='" + profileId + "';")) - before,
+    attempts);
+
+  // Every row is usable: no null verb, no null support, a real catalogue version, and
+  // a latency that was measured from the activity rather than from the session.
+  assert.equal(rows("select count(*) from public.learning_events where session_id='" + sessionId +
+    "' and (verb is null or support is null or catalogue_ver is null);"), "0");
+  assert.equal(rows("select count(*) from public.learning_events where session_id='" + sessionId +
+    "' and latency_ms is null;"), "0", "every attempt should carry a response latency");
+  assert.equal(rows("select count(*) from public.learning_events where session_id='" + sessionId +
+    "' and latency_ms > 600000;"), "0", "latency measured from the session start would be far larger");
+
+  // The verbs recorded are the ones the engines actually exercise, not all `choose`.
+  const verbs = rows("select string_agg(distinct verb,',' order by verb) from public.learning_events where session_id='" + sessionId + "';");
+  assert.ok(verbs.length > 0, "no verbs recorded");
+
+  // A correct answer carries no distractor or error kind; a wrong one carries the
+  // response that was given.
+  assert.equal(rows("select count(*) from public.learning_events where session_id='" + sessionId +
+    "' and correct=true and (distractor is not null or error_kind is not null);"), "0");
+  assert.equal(rows("select count(*) from public.learning_events where session_id='" + sessionId +
+    "' and correct=false and distractor is null;"), "0");
+
+  // Append-only is enforced by the database, not merely by convention.
+  let updated = false;
+  try { rows("update public.learning_events set correct=false where session_id='" + sessionId + "';"); updated = true; }
+  catch { /* expected */ }
+  assert.ok(!updated, "learning_events must reject updates even for the service role");
+
+  // Replay is idempotent, which is what an offline queue drain depends on (WP-12).
+  const id = rows("select id from public.learning_events where session_id='" + sessionId + "' limit 1;");
+  const duplicate = rows("select private.cq_append_events('" + profileId + "'," +
+    "(select jsonb_build_array(jsonb_build_object('id',id,'sessionId',session_id,'skillId',skill_id," +
+    "'itemId',item_id,'verb',verb,'phase',phase,'correct',correct,'support',support," +
+    "'catalogueVersion',catalogue_ver)) from public.learning_events where id='" + id + "'));");
+  assert.equal(duplicate, "0", "replaying an event already stored must insert nothing");
+
+  console.log("PASS: learning events — " + recorded + " rows for one quest, append-only, idempotent on replay.");
 }

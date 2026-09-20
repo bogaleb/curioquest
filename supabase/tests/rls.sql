@@ -29,6 +29,8 @@ insert into public.questions(id,activity_id,slug,prompt) values
 insert into private.question_answers(question_id,answer) values ('80000000-0000-4000-8000-000000000001','"m"');
 insert into public.activity_attempts(child_id,session_id,activity_id,question_id,mutation_id,response,correct,attempt_number)
 select child_id,id,'70000000-0000-4000-8000-000000000001','80000000-0000-4000-8000-000000000001',gen_random_uuid(),'"m"',true,1 from public.learning_sessions;
+insert into public.learning_events(child_id,session_id,skill_id,item_id,verb,phase,correct,support,catalogue_ver)
+select id,'seed-session','LIT.PK.PA.INITIAL_01','prek-reading-0','choose','guided',true,'none','code-1' from public.child_profiles;
 insert into public.achievements(id,slug,title,published) values ('90000000-0000-4000-8000-000000000001','first','First',true);
 insert into public.child_achievements(child_id,achievement_id) select id,'90000000-0000-4000-8000-000000000001' from public.child_profiles;
 insert into public.rewards(slug,title,kind,published) values ('star','Star','stars',true),('hidden','Hidden','stars',false);
@@ -43,7 +45,7 @@ do $$
 declare t text; n integer;
 begin
   foreach t in array array['parents','child_profiles','learning_sessions','activity_attempts','child_progress','child_achievements',
-    'subjects','units','lessons','activities','questions','achievements','rewards'] loop
+    'learning_events','subjects','units','lessons','activities','questions','achievements','rewards'] loop
     if t in ('subjects','units','lessons','activities','questions','achievements','rewards') then continue; end if;
     execute format('select count(*) from public.%I',t) into n;
     if n <> 1 then raise exception 'RLS failed on %, saw % rows',t,n; end if;
@@ -68,6 +70,25 @@ begin
     insert into public.child_progress(child_id,skill_slug,domain) values ('20000000-0000-4000-8000-000000000001','forged','reading');
     raise exception 'Direct progress forgery was allowed';
   exception when insufficient_privilege then null; end;
+  -- Evidence is the basis of every claim this product makes to a parent. A client
+  -- that could write it, edit it or erase it could manufacture mastery.
+  begin
+    insert into public.learning_events(child_id,session_id,skill_id,item_id,verb,phase,correct,support,catalogue_ver)
+      values ('20000000-0000-4000-8000-000000000001','forged','LIT.PK.PA.INITIAL_01','x','choose','guided',true,'none','code-1');
+    raise exception 'Direct evidence forgery was allowed';
+  exception when insufficient_privilege then null; end;
+  begin
+    update public.learning_events set correct = true;
+    raise exception 'Evidence was rewritable by a client';
+  exception when insufficient_privilege then null; end;
+  begin
+    delete from public.learning_events;
+    raise exception 'Evidence was erasable by a client';
+  exception when insufficient_privilege then null; end;
+  begin
+    perform public.cq_events('10000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000002');
+    raise exception 'Authenticated client invoked privileged evidence read';
+  exception when insufficient_privilege then null; end;
   begin
     perform * from private.question_answers;
     raise exception 'Private answers were exposed';
@@ -78,16 +99,18 @@ select set_config('request.jwt.claim.sub','10000000-0000-4000-8000-000000000002'
 do $$ begin
   if (select name from public.child_profiles) <> 'Child B' then raise exception 'Parent B isolation failed'; end if;
   if exists(select 1 from public.learning_sessions where child_id='20000000-0000-4000-8000-000000000001') then raise exception 'Other child session leaked'; end if;
+  if exists(select 1 from public.learning_events where child_id='20000000-0000-4000-8000-000000000001') then raise exception 'Other child evidence leaked'; end if;
 end $$;
 
 select set_config('request.jwt.claim.sub','',true);
 do $$ begin
   if exists(select 1 from public.child_profiles) then raise exception 'Null identity leaked children'; end if;
+  if exists(select 1 from public.learning_events) then raise exception 'Null identity leaked evidence'; end if;
 end $$;
 reset role;
 set local role anon;
 do $$ begin
-  if public.backend_version() <> '202609180005' then raise exception 'Probe failed'; end if;
+  if public.backend_version() <> '202609200003' then raise exception 'Probe failed'; end if;
   begin
     perform * from public.child_profiles;
     raise exception 'Anonymous access leaked children';

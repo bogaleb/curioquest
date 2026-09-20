@@ -7,6 +7,9 @@ import {requestJson,RequestBodyError} from '@/lib/request-json';
 import {readingCatalog,readingProfile,saveReading} from '@/lib/reading/store';
 import {buildReadingSession,advanceReadingSession,updateReadingMastery,classifyReadingError,getDecodableWords,newReadingProfile} from '@/lib/reading/engine';
 import type {ReadingAttempt,ReadingCatalog,ReadingProfile,ReadingView} from '@/lib/reading/types';
+import {supportFrom,verbForReadingActivity,type LearningEvent} from '@/lib/learning-events';
+import {errorKindForReading} from '@/lib/distractor-reasons';
+import {CODE_CATALOGUE_VERSION} from '@/lib/catalogue-version';
 const reply=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 function view(profile:ReadingProfile,revision:number,catalog:ReadingCatalog,stars:number):ReadingView{
   const {session,lastMutation,...safe}=profile;void lastMutation;
@@ -23,6 +26,8 @@ async function post(request:Request){try{
   const [catalog,state]=await Promise.all([readingCatalog(),readingProfile(child.id)]);if(!state)return reply({error:'Choose an explorer.'},404);
   if(input.revision!==state.revision)return reply({error:'Your reading place changed in another window. Refresh your saved place.'},409);
   let profile=state.profile;const now=new Date(),at=now.toISOString();let attempt:ReadingAttempt|null=null,feedback='',correct:boolean|undefined,stars=0;
+  // §A: every learning interaction writes a learning_event.
+  const events:LearningEvent[]=[];
   if(reset){profile=newReadingProfile();feedback='A fresh reading map is ready. Earlier attempts stay in the family export.';}
   else if(input.action==='start'){
     if(!profile.session||profile.session.completedAt){profile.session=buildReadingSession(profile,catalog,crypto.randomUUID(),now);profile.events.push({type:'reading_session_started',at});}
@@ -49,6 +54,16 @@ async function post(request:Request){try{
       const supported=activity.taught||activity.kind==='blend-train'||session.helpLevel>0;
       attempt={id:crypto.randomUUID(),childId:child.id,sessionId:session.id,activityId:activity.id,kind:activity.kind,skillId:activity.skillId,stimulus:target,response,correct,helpLevel:session.helpLevel,attemptNumber:session.misses+1,responseTimeMs:Math.min(20*60*1000,Math.max(0,now.getTime()-Date.parse(session.activityStartedAt))),errorType:correct?null:input.action==='skip'?'needed_support':classifyReadingError(target,response,activity.kind),evidence:activity.kind==='story'?'comprehension':supported?'supported-practice':'independent-choice',createdAt:at};
       if(input.action==='answer')updateReadingMastery(profile,attempt,catalog);profile.events.push({type:'reading_attempt',at,skillId:activity.skillId});
+      // A skip is a real thing a child did and the stream records it. It is not scored
+      // as a wrong answer anywhere else, and the `support: 'adult'` level says why:
+      // moving on was the grown-up's decision, not the child's failure.
+      events.push({id:attempt.id,sessionId:session.id,occurredAt:at,skillId:activity.skillId,itemId:activity.id,
+        lessonId:activity.kind,episodeId:null,verb:verbForReadingActivity(activity.kind),
+        phase:activity.taught?'guided':session.kind==='placement'?'discover':'independent',
+        correct,support:input.action==='skip'?'adult':supportFrom({hintLevel:session.helpLevel}),
+        distractor:correct?null:response||null,
+        errorKind:correct?null:errorKindForReading({errorType:attempt.errorType,kind:activity.kind,target,response}),
+        latencyMs:attempt.responseTimeMs,catalogueVersion:CODE_CATALOGUE_VERSION});
       if(correct){feedback=activity.kind==='letter-catch'?'You connected a sound and its letter!':activity.kind==='sound-boxes'?'You built the sounds into a word!':activity.kind==='story'?'You found a detail in the story!':'You joined the sounds. Tell your grown-up the word.';if(activity.kind==='blend-train')profile.recentWords=[...profile.recentWords.filter(w=>w!==activity.target),activity.target].slice(-8);if(activity.kind==='story'){profile.books=[...new Set([...profile.books,activity.target])];profile.events.push({type:'reading_story_completed',at});}}
       else {session.misses++;feedback='Let’s listen and try together. A little help is always welcome.';if(session.kind==='placement')session.placementMisses++;}
       if(correct||session.kind==='placement'||input.action==='skip'){
@@ -58,7 +73,7 @@ async function post(request:Request){try{
     }else return reply({error:'Choose a reading action.'},400);
   }
   profile.events=profile.events.slice(-100);
-  if(!await saveReading(child.id,profile,state.revision,attempt,stars))return reply({error:'Your reading place changed. Refresh your saved place.'},409);
+  if(!await saveReading(child.id,profile,state.revision,attempt,stars,events))return reply({error:'Your reading place changed. Refresh your saved place.'},409);
   const latest=await explorer(child.id);return reply({...view(profile,state.revision+1,catalog,latest?.stars??child.stars),feedback,correct});
 }catch(e){if(e instanceof RequestBodyError)return reply({error:e.message},e.status);console.error('Reading operation failed',e);return reply({error:'Your reading place could not be saved. Try again.'},503);}}
 

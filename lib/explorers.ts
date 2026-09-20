@@ -99,6 +99,13 @@ export type ExplorerProfile = {
     arc?: { points: number; clean: number; streak: number; bestStreak: number };
     first: number;
     started: number;
+    /**
+     * When the current activity was put in front of the child, as epoch milliseconds.
+     * Learning events carry response latency, and latency measured from the start of
+     * the whole session would say nothing about the item. Absent on sessions parked
+     * before the event stream existed; the event simply records no latency then.
+     */
+    activityStarted?: number;
     suspendedAt?: number;
     estimatedMinutes?: number;
     chapter?: number;

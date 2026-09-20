@@ -258,6 +258,65 @@ export type Database = {
           { foreignKeyName: "child_rewards_reward_id_fkey"; columns: ["reward_id"]; isOneToOne: false; referencedRelation: "rewards"; referencedColumns: ["id"] },
         ];
       };
+      learning_events: {
+        Row: {
+          id: string;
+          child_id: string;
+          session_id: string;
+          occurred_at: string;
+          skill_id: string;
+          item_id: string;
+          lesson_id: string | null;
+          episode_id: string | null;
+          verb: string;
+          phase: string;
+          correct: boolean;
+          support: string;
+          distractor: string | null;
+          error_kind: string | null;
+          latency_ms: number | null;
+          catalogue_ver: string;
+        };
+        Insert: {
+          id?: string;
+          child_id: string;
+          session_id: string;
+          occurred_at?: string;
+          skill_id: string;
+          item_id: string;
+          lesson_id?: string | null;
+          episode_id?: string | null;
+          verb: string;
+          phase: string;
+          correct: boolean;
+          support: string;
+          distractor?: string | null;
+          error_kind?: string | null;
+          latency_ms?: number | null;
+          catalogue_ver: string;
+        };
+        Update: {
+          id?: string;
+          child_id?: string;
+          session_id?: string;
+          occurred_at?: string;
+          skill_id?: string;
+          item_id?: string;
+          lesson_id?: string | null;
+          episode_id?: string | null;
+          verb?: string;
+          phase?: string;
+          correct?: boolean;
+          support?: string;
+          distractor?: string | null;
+          error_kind?: string | null;
+          latency_ms?: number | null;
+          catalogue_ver?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "learning_events_child_id_fkey"; columns: ["child_id"]; isOneToOne: false; referencedRelation: "child_profiles"; referencedColumns: ["id"] },
+        ];
+      };
       learning_sessions: {
         Row: {
           id: string;
@@ -577,6 +636,8 @@ export type Database = {
     Functions: {
       backend_version: { Args: { [_ in never]: never }; Returns: string };
       cq_commit: { Args: { p_parent: string; p_kind: string; p_data: Json }; Returns: Json };
+      cq_commit_events: { Args: { p_parent: string; p_kind: string; p_data: Json; p_child: string; p_events: Json }; Returns: Json };
+      cq_events: { Args: { p_parent: string; p_child: string; p_since?: string | null; p_limit?: number | null }; Returns: Json };
       cq_import: { Args: { p_parent: string; p_bundle: Json; p_hash: string }; Returns: Json };
       cq_read: { Args: { p_parent: string; p_kind: string; p_child?: string | null; p_id?: string | null; p_filter?: string | null; p_limit?: number | null; p_offset?: number | null }; Returns: Json };
     };

@@ -15,6 +15,9 @@ import { isLearningBandId, primaryContentBand, resolveBand, type LearningBandId 
 import { assistedIntro, nextScaffold } from "@/lib/scaffolding";
 import { missionStars, rampOrder, readArc, scoreAnswer } from "@/lib/game-loop";
 import { recordAttempt, recordHint } from "@/lib/mastery";
+import { eventForQuestion, latency, supportFrom, type LearningEvent } from "@/lib/learning-events";
+import { CODE_CATALOGUE_VERSION } from "@/lib/catalogue-version";
+import { errorKindFor } from "@/lib/distractor-reasons";
 import { recommendQuest, rememberActivityType } from "@/lib/recommendation";
 import { evaluateResponse } from "@/lib/activity-evaluation";
 import { campaignChapters, campaignQuestionIds } from "@/lib/campaign";
@@ -31,6 +34,27 @@ import {skillById} from '@/lib/skill-graph';
 
 const subjects: Subject[] = ["reading", "math", "logic"];
 const allowedGoals = [8, 10, 15, 20];
+
+/**
+ * Whether the child was asked this before they were taught what it rests on.
+ *
+ * A wrong answer here is the product's mistake rather than the child's, so §C3 marks it
+ * `not-yet-taught`: it must not lower a mastery score, and it routes backwards to the
+ * prerequisite instead of re-presenting the same idea with more help. The recommender
+ * respects prerequisites, but a resumed session, a game mission or a parent-assigned
+ * activity can all still land a child on a skill whose foundation is not there.
+ *
+ * Untouched is the test, not weak. A child part-way through a prerequisite is
+ * struggling with this skill, which is ordinary and worth recording as such.
+ */
+function missingPrerequisite(profile: ExplorerProfile, question: Question) {
+  const skill = skillById.get(question.skillId);
+  if (!skill?.prerequisites.length) return false;
+  return skill.prerequisites.some((id) => {
+    const record = profile.skillMastery[id];
+    return !record || record.attemptCount === 0;
+  });
+}
 const maxProfiles = 4;
 
 function clean(profile: ExplorerProfile, questions: Question[]) {
@@ -200,7 +224,16 @@ async function post(request: Request) {
       if(!await saveExplorers([{profile,revision:old.revision},{profile:partner,revision:partnerRow.revision}])) return Response.json({error:"Your team changed in another window. Reload and try again."},{status:409});
       return Response.json({profile:clean(profile, questions),profiles:[clean(profile, questions),clean(partner, questions)]});
     }
+    // Which activity the child was looking at before this request. Compared after the
+    // action so the clock that measures response latency restarts when, and only when,
+    // a different activity is actually put in front of them.
+    const activityBefore = profile.session
+      ? `${profile.session.id}:${profile.session.index}` : null;
     let attempt: Record<string,unknown> | null = null;
+    // §A: every learning interaction writes a learning_event. The batch is appended in
+    // the same transaction as the profile save, so an answer can never be banked
+    // without the evidence that produced it.
+    const events: LearningEvent[] = [];
     let feedback: { correct?: boolean; message?: string; hint?: string | null; assisted?: boolean } | null = null;
 
     if(input.action==='controls'){
@@ -407,6 +440,26 @@ async function post(request: Request) {
         // One evidence observation per question. Retries remain useful practice,
         // but cannot manufacture mastery or inflate confidence.
         if (session.misses === 0) recordAttempt(profile.skillMastery, question, session.id, correct, independent);
+        // The event stream takes every attempt, including the retries the blob
+        // deliberately ignores. That asymmetry is the point: the blob is a summary
+        // that must not be inflated, and the stream is the record that must be
+        // complete enough to ask why a child got it wrong the first time.
+        events.push(eventForQuestion({
+          question,
+          sessionId: session.id,
+          correct,
+          support: supportFrom({ hintLevel: session.hintLevel, hinted: session.hinted }),
+          response: String(input.answer),
+          errorKind: correct ? null : errorKindFor({
+            question,
+            response: String(input.answer),
+            latencyMs: latency(session.activityStarted),
+            prerequisiteMissing: missingPrerequisite(profile, question),
+          }),
+          latencyMs: latency(session.activityStarted),
+          catalogueVersion: CODE_CATALOGUE_VERSION,
+          episodeId: session.chapter !== undefined ? `campaign-${session.chapter}` : null,
+        }));
         feedback = {
           correct,
           message: correct ? question.explanation : "Good thinking. Let’s try another answer.",
@@ -508,9 +561,18 @@ async function post(request: Request) {
       return Response.json({ error: "Unknown action." }, { status: 400 });
     }
 
+    // Restart the per-activity clock whenever the child has moved to a new activity,
+    // including into a brand new session. Latency measured from the start of a ten
+    // minute quest would say nothing at all about the item just answered.
+    if (profile.session) {
+      const activityNow = `${profile.session.id}:${profile.session.index}`;
+      if (activityNow !== activityBefore || !profile.session.activityStarted) {
+        profile.session.activityStarted = Date.now();
+      }
+    }
     profile.events=[...profile.events,{type:String(input.action),at:new Date().toISOString(),
       ...(typeof input.question==="string"?{questionId:input.question}:{})}].slice(-100);
-    if (!await saveExplorers([{profile,revision:old.revision}], input.action==='reset-progress'&&input.target==='all', attempt)) {
+    if (!await saveExplorers([{profile,revision:old.revision}], input.action==='reset-progress'&&input.target==='all', attempt, events)) {
       return Response.json(
         { error: "Progress changed in another window. Please reload." },
         { status: 409 },

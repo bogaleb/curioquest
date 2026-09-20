@@ -2,6 +2,31 @@
 
 The blueprint remains the source of truth. This is a substantial private-beta expansion, **not completion of every blueprint requirement**. Preserve the existing project and family database.
 
+## Rebuild work packages (blueprint `REBUILD-BLUEPRINT.md`)
+
+Everything below this heading supersedes the expansion notes that follow it where the
+two disagree.
+
+- **WP-00 — Clear the ground. Shipped.** The Cloudflare half of the stack (Vinext,
+  Wrangler, the D1/Drizzle schema, `vite.config.ts`, `examples/`, the vendored Sites
+  vite plugin) is deleted, the package is renamed to `curioquest`, and `README.md`
+  describes the app that actually runs. Local D1 family progress was exported first
+  (`scripts/export-legacy-d1.mjs`). Still not true: `drizzle/` holds six dead migration
+  files that need deleting by hand.
+- **WP-01 — The event stream. Shipped.** `public.learning_events` is append-only,
+  RLS-protected, and written inside the same transaction as the profile save, so an
+  answer cannot be banked without its evidence. Both answer-checking paths — the daily
+  quest and the reading slice — record one row per attempt with verb, phase, support
+  level, distractor, error kind and response latency. `masteryFromEvents` projects the
+  same numbers the JSON blob holds, and a test pins the two together. Still not true:
+  the app still *reads* the blob; switching reads over is WP-06.
+
+  Two pre-existing faults were fixed on the way. Answering a question that existed in
+  code but not yet in the published catalogue raised `Activity catalog is missing` and
+  turned the save into a 503, losing the child's answer — 523 authored questions
+  against roughly 390 seeded rows, so it fired intermittently. And the `runtime-classic`
+  fallback lesson that the recovery path needed had never been seeded.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.
@@ -30,4 +55,4 @@ The blueprint remains the source of truth. This is a substantial private-beta ex
 
 ## Verification
 
-Type checking, lint, unit tests, production builds, isolated D1/API integration tests, and targeted Chromium UI checks are recorded in the development log. Browser-emulated responsive checks are not physical tablet testing. No user family data is used for automated destructive tests.
+Type checking, lint, unit tests, production builds, Supabase/PostgreSQL integration tests (migrations, RLS for a second family, and the real route handlers against a disposable cluster), and targeted Chromium UI checks are recorded in the development log. Browser-emulated responsive checks are not physical tablet testing. No user family data is used for automated destructive tests.
