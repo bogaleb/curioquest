@@ -26,7 +26,7 @@ The waves and the audit phases are two vocabularies for the same work:
 | 02 Entry experience | — | Screens and states done; onboarding open |
 | 03 Child home | Phase 1 (home) | Partly done |
 | 04 Adaptive learning | Pre-existing core + Phase 2 | Strongest area; struggle response added |
-| 05 Reading | Reading Section 94 slice | Vertical slice only |
+| 05 Reading | Reading Section 94 slice | Phonics program fed to 19 letters |
 | 06 Math | — | Manipulatives landed; band depth open |
 | 07 Science | Phase 2 (subject added) | Lab plus an investigation engine |
 | 08 Logic | Phase 2 (subject added) | 74% engine-backed already |
@@ -129,11 +129,35 @@ claim that all four subjects "lean on question-and-choices" is now out of date:
 | Math | 183 | 145 (79%) |
 | Logic | 147 | 109 (74%) |
 | Science | 41 | 22 (54%) |
-| Reading | — | one genuine vertical slice (Section 94) |
+| Reading | 128 | 61 (48%), plus the phonics program below |
 
 Wave 06 forbids "plain text question + four-button design as the default". It is no
-longer the default in math, logic or science. **Reading (05) is now the weakest of the
-four** and is the honest next target for curriculum work.
+longer the default in any of the four.
+
+**Wave 05 closed 2026-09-20 — the phonics scope and sequence.** Reading also has a
+separate systematic phonics program in `lib/reading/`, with its own placement, per-skill
+mastery, spaced review, error classification and strict decodability gating. The engine
+was never the problem — it reads everything from a catalogue and assumes nothing about
+its size. The catalogue held **seven letters, eighteen words and one two-page story**,
+which is what "vertical slice" actually meant.
+
+It now holds **19 letters, 145 words and 8 stories**, and no engine change was needed.
+Three things are worth knowing before editing it:
+
+- **The first seven letters must keep their order.** A child part-way through has their
+  position stored as mastery against `sound_<letter>` ids; reordering moves the ground
+  under them. Appending is safe, and the test pins only the first seven for this reason.
+- **Tricky words are `pattern: 'tricky'`.** Ten high-frequency words taught as wholes,
+  gated behind their own skills. They stay out of blending and building for free,
+  because the engine already filters those on `pattern === 'CVC'`.
+- **A story's `requiredSkills` are derived from its pages, never hand-written.** The
+  first draft declared "The Map" as m/a/p/s/t and then put "in" and "bag" on page two.
+  Under-declaring offers a child a story they cannot read. The derivation throws at load
+  time and caught two further errors immediately.
+
+**Still open for Wave 05:** the program covers single-letter graphemes only. Digraphs
+(sh, ch, th, ck), long vowels and two-syllable words are the next scope extension, and
+the catalogue is now demonstrably the place to do it.
 
 **Wave 06 closed 2026-09-20 — math manipulatives.** All 36 math activities in the core
 curriculum were `number-choice`: a sentence with three numbers under it. Four engines
@@ -288,8 +312,8 @@ Not in this pass: any curriculum content, any game engine work, Wave 02 onward.
    describe seven age bands; the content pools are two. The engines now exist to carry
    more granular content, so this is authoring plus a `ContentBand` widening, and it
    unlocks the age-adaptation criterion across four waves at once.
-2. **Wave 05 reading** — now the weakest subject by the measured table above, and the
-   only one still resting on a single vertical slice.
+2. **Reading digraphs and long vowels** — the phonics catalogue now carries 19
+   single-letter graphemes; sh/ch/th/ck and long vowels are the next scope extension.
 3. **Wave 02 onboarding** — the account screens are done; the add-child sequence and
    profile selection are not.
 4. **Wave 14 remainder** — analytics events and flow tests.

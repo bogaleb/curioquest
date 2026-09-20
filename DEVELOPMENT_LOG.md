@@ -1,5 +1,38 @@
 # CurioQuest development log
 
+## Wave 05 reading scope and sequence — September 20, 2026
+
+- **The phonics engine was never the problem; it was starved.** `lib/reading/engine.ts`
+  already does placement, per-skill mastery, spaced review, error classification and
+  strict decodability gating, and it reads everything out of a catalogue without assuming
+  how big it is. The catalogue held **seven letters, eighteen words and one two-page
+  story**. That is why the audit called reading "one vertical slice".
+- **Now 19 letters, 145 words and 8 stories**, with no engine change required — which is
+  the payoff of having built it catalogue-driven in the first place. The first seven
+  letters keep their order, because a child part-way through has their position stored as
+  mastery against `sound_<letter>` ids and reordering would move the ground under them.
+- **Tricky words.** Strictly decodable stories made only of CVC words cannot say much —
+  the original story is "Sam! Sam sat." and that is near the ceiling. Ten high-frequency
+  words are now taught as wholes behind their own two skills, which is what real phonics
+  programs do. They need no engine change either: `pattern: 'tricky'` keeps them out of
+  blending and building through the existing `pattern === 'CVC'` filters.
+- **A story's required skills are now derived from the words on its pages.** Hand-listing
+  them is a standing invitation to get it wrong, and the first draft proved it: "The Map"
+  declared m, a, p, s, t and then put "in" and "bag" on page two. Under-declaring hands a
+  child a story they cannot read, which is the single failure this program exists to
+  prevent. The derivation throws at load time and immediately caught two more — a story
+  using "do", and one using "egg" before it was a word.
+- **Distractors now come from a letter's neighbours in the sequence.** Slicing from the
+  front was harmless at seven letters and silly at nineteen: a child meeting `l` was
+  asked to choose between l, s and m, the first two sounds they ever learned. Now `b` is
+  offered against `f` and `h`, which are the letters actually worth telling apart.
+- Two test assertions were loosened from counts to properties — the letter sequence is
+  pinned only at its first seven, and story availability is asserted as "everything
+  offered is readable" rather than "there is exactly one". A catalogue built to grow
+  should not need its tests rewritten every time it does. Several new assertions were
+  added in exchange, and they caught fifteen definitions too thin to help a child.
+- Verification: typecheck, lint 0 errors, 165 tests, production build, bundle guard.
+
 ## Wave 07 science investigations — September 20, 2026
 
 - **Science was the thinnest subject in the product.** Nineteen activities, every one of

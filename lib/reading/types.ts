@@ -1,6 +1,8 @@
-export type ReadingLetter='m'|'s'|'a'|'t'|'p'|'i'|'n';
+/** Single-letter graphemes in the program's scope and sequence (lib/reading/content.ts). */
+export type ReadingLetter='m'|'s'|'a'|'t'|'p'|'i'|'n'|'d'|'g'|'o'|'c'|'k'|'e'|'u'|'r'|'h'|'b'|'f'|'l';
 export type ReadingSkill={id:string;name:string;domain:'letter-sound'|'decoding'|'encoding'|'comprehension';sequence:number;prerequisites:string[];letter?:ReadingLetter;phoneme?:string;cue?:string;example?:string;audioSrc?:string};
-export type ReadingWord={id:string;word:string;graphemes:string[];phonemes:string[];requiredSkills:string[];pattern:'VC'|'CVC'|'VCC';meaning:string;emoji:string;audioSrc?:string};
+export type ReadingWord={id:string;word:string;graphemes:string[];phonemes:string[];requiredSkills:string[];/** 'tricky' marks a high-frequency word learned by sight; the engine's CVC filters keep those out of blending and building practice. */
+  pattern:'VC'|'CVC'|'VCC'|'tricky';meaning:string;emoji:string;audioSrc?:string};
 export type ReadingStory={id:string;title:string;requiredSkills:string[];pages:string[];question:string;choices:string[];answer:string;emoji:string};
 export type ReadingSettings={sequence:ReadingLetter[];readyScore:number;masteredScore:number;reviewDays:number[]};
 export type ReadingCatalog={skills:ReadingSkill[];words:ReadingWord[];stories:ReadingStory[];settings:ReadingSettings};

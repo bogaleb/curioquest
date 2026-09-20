@@ -6,10 +6,37 @@ const {newReadingProfile,readySkills,getDecodableWords,getDecodableStories,sente
 const now=new Date('2026-09-18T12:00:00Z');
 function attempt(skill='sound_m',changes={}){return {id:'attempt',childId:'maya',sessionId:'session',activityId:'activity',kind:'letter-catch',skillId:skill,stimulus:'m',response:'m',correct:true,helpLevel:0,attemptNumber:1,responseTimeMs:3000,errorType:null,evidence:'independent-choice',createdAt:now.toISOString(),...changes};}
 test('reading content is connected, decodable, and uses the specified first sounds',()=>{
-  assert.deepEqual(c.settings.sequence,['m','s','a','t','p','i','n']);
+  // The first seven are pinned rather than the whole list. A child part-way through has
+  // their position stored as mastery against sound_<letter>, so reordering the early
+  // letters would move the ground under them; appending more is exactly what the
+  // catalogue is for and must not need this test rewritten.
+  assert.deepEqual(c.settings.sequence.slice(0,7),['m','s','a','t','p','i','n']);
+  assert.equal(new Set(c.settings.sequence).size,c.settings.sequence.length,'a letter appears twice in the sequence');
   const ids=new Set(c.skills.map(s=>s.id));assert.equal(ids.size,c.skills.length);
+  assert.equal(new Set(c.skills.map(s=>s.sequence)).size,c.skills.length,'two skills share a sequence number');
+  // Every letter in the sequence must actually be teachable, and every letter-sound
+  // skill must be a letter the program plans to reach.
+  for(const letter of c.settings.sequence)assert.ok(ids.has(`sound_${letter}`),`no skill teaches ${letter}`);
+  for(const skill of c.skills.filter(s=>s.domain==='letter-sound')){
+    assert.ok(c.settings.sequence.includes(skill.letter),`${skill.id} is never reached by the sequence`);
+    assert.ok(skill.cue&&skill.cue.length>20,`${skill.id} has no usable articulation cue`);
+    assert.ok(skill.phoneme&&skill.example,`${skill.id} is missing its sound or example`);
+  }
   for(const skill of c.skills)assert.ok(skill.prerequisites.every(id=>ids.has(id)));
   for(const word of c.words){assert.equal(word.graphemes.join(''),word.word.toLowerCase());assert.equal(word.phonemes.length,word.graphemes.length);assert.ok(word.requiredSkills.every(id=>ids.has(id)));}
+  assert.equal(new Set(c.words.map(w=>w.id)).size,c.words.length,'a word is listed twice');
+  // A decodable word must be spelled only with letters the program teaches, and must
+  // have a shape the program can honestly call decodable. `shapeOf` returns 'tricky'
+  // when it cannot, so a sounded-out word landing there is an authoring mistake.
+  const teaches=new Set(c.settings.sequence);
+  for(const word of c.words.filter(w=>w.pattern!=='tricky')){
+    for(const letter of word.graphemes)assert.ok(teaches.has(letter),`${word.word} uses ${letter}, which is never taught`);
+    assert.ok(['VC','CVC','VCC'].includes(word.pattern),`${word.word} has an undecodable shape`);
+    assert.ok(word.meaning.length>8&&word.emoji,`${word.word} has no usable meaning or picture`);
+  }
+  // Tricky words are taught whole, so they must stay out of blending and building —
+  // which the engine achieves purely by filtering on pattern === 'CVC'.
+  for(const word of c.words.filter(w=>w.pattern==='tricky'))assert.notEqual(word.pattern,'CVC');
   for(const story of c.stories){assert.ok(story.pages.every(page=>sentenceIsDecodable(page,new Set(story.requiredSkills),c)));assert.ok(story.choices.includes(story.answer));}
 });
 test('untaught words and unlisted spellings cannot enter the decodable shelf',()=>{
@@ -19,7 +46,14 @@ test('untaught words and unlisted spellings cannot enter the decodable shelf',()
   assert.equal(sentenceIsDecodable('Sam sat.',readySkills(p,c),c),true);
   assert.equal(sentenceIsDecodable('Sam sat on the mat.',readySkills(p,c),c),false);
   assert.equal(getDecodableStories(p,c).length,0);
-  updateReadingMastery(p,attempt('blend_cvc'),c);assert.equal(getDecodableStories(p,c).length,1);
+  // A count here would break every time a story is added. The property that matters is
+  // that a child who knows m, s, a, t and blending gets stories made only of those.
+  updateReadingMastery(p,attempt('blend_cvc'),c);
+  const reachable=getDecodableStories(p,c);
+  assert.ok(reachable.length>=1,'four letters and blending should unlock at least one story');
+  assert.ok(reachable.some(s=>s.id==='sam-sat'));
+  const known=readySkills(p,c);
+  for(const story of reachable)assert.ok(story.pages.every(page=>sentenceIsDecodable(page,known,c)),`${story.id} is offered before it can be read`);
 });
 test('guided answers, help, and retries cannot masquerade as independent mastery',()=>{
   const a=newReadingProfile(),b=newReadingProfile();

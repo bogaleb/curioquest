@@ -19,7 +19,22 @@ export function updateReadingMastery(profile:ReadingProfile,attempt:ReadingAttem
   profile.mastery[attempt.skillId]={score:Math.round(score*1000)/1000,attempts:old.attempts+1,correct:old.correct+(attempt.correct?1:0),independent:old.independent+(independent?1:0),helpUsed:old.helpUsed+attempt.helpLevel,days:[...new Set([...old.days,attempt.createdAt.slice(0,10)])].slice(-30),lastPracticed:attempt.createdAt,reviewAt:!due&&independent&&old.reviewAt?old.reviewAt:review.toISOString(),retained};
 }
 function activity(id:string,kind:ReadingActivity['kind'],skillId:string,target:string,choices:string[],reason:ReadingActivity['reason'],taught=false):ReadingActivity{return {id,kind,skillId,target,choices,reason,taught};}
-export function letterActivity(letter:string,index:number,reason:ReadingActivity['reason'],catalog:ReadingCatalog,taught=false){const choices=[letter,...catalog.settings.sequence.filter(l=>l!==letter).slice(index%2,index%2+2)];return activity(`letter-${letter}-${index}`,'letter-catch',`sound_${letter}`,letter,choices.slice(index%3).concat(choices.slice(0,index%3)),reason,taught);}
+/**
+ * Distractors for a letter, drawn from its neighbours in the sequence.
+ *
+ * This used to slice from the front of the sequence, which was harmless at seven letters
+ * and became silly at nineteen: a child meeting `l` was asked to choose between l, s and
+ * m — the first two sounds they ever learned, and nothing like it. The letters worth
+ * telling apart are the ones taught near each other, because those are the ones a child
+ * is currently holding in mind at the same time.
+ */
+function nearbyLetters(letter:string,index:number,catalog:ReadingCatalog){
+  const sequence=catalog.settings.sequence,position=sequence.indexOf(letter as typeof sequence[number]);
+  const near=sequence.filter((l,i)=>l!==letter&&position>=0&&Math.abs(i-position)<=3);
+  const pool=near.length>=2?near:sequence.filter(l=>l!==letter);
+  return [pool[index%pool.length],pool[(index+1)%pool.length]];
+}
+export function letterActivity(letter:string,index:number,reason:ReadingActivity['reason'],catalog:ReadingCatalog,taught=false){const choices=[letter,...nearbyLetters(letter,index,catalog)];return activity(`letter-${letter}-${index}`,'letter-catch',`sound_${letter}`,letter,choices.slice(index%3).concat(choices.slice(0,index%3)),reason,taught);}
 export function buildReadingSession(profile:ReadingProfile,catalog:ReadingCatalog,id:string,now=new Date()):ReadingSession{
   const at=now.toISOString();let activities:ReadingActivity[];
   if(!profile.placementDone)activities=[letterActivity('m',0,'placement',catalog),letterActivity('s',1,'placement',catalog),activity('placement-blend','blend-train','blend_cvc','mat',['sat','mat','map'],'placement')];
@@ -33,7 +48,7 @@ export function buildReadingSession(profile:ReadingProfile,catalog:ReadingCatalo
     const projected=new Set([...ready,...newLetters.map(l=>`sound_${l}`)]);
     const eligible=catalog.words.filter(w=>w.pattern==='CVC'&&w.requiredSkills.every(skill=>projected.has(skill)));
     const word=eligible.find(w=>w.id==='mat'&&!profile.recentWords.includes(w.id))??eligible.find(w=>!profile.recentWords.includes(w.id))??eligible[0];
-    if(word){activities.push(activity('blend','blend-train','blend_cvc',word.id,[word.id,...eligible.filter(w=>w.id!==word.id).slice(0,2).map(w=>w.id)],'practice'));activities.push(activity('build','sound-boxes','build_cvc',word.id,[...word.graphemes,...catalog.settings.sequence.filter(l=>!word.graphemes.includes(l)).slice(0,2)].reverse(),'practice'));}
+    if(word){activities.push(activity('blend','blend-train','blend_cvc',word.id,[word.id,...eligible.filter(w=>w.id!==word.id).slice(0,2).map(w=>w.id)],'practice'));activities.push(activity('build','sound-boxes','build_cvc',word.id,[...word.graphemes,...nearbyLetters(word.graphemes[0],activities.length,catalog).filter(l=>!word.graphemes.includes(l))].reverse(),'practice'));}
     const story=catalog.stories.find(s=>s.requiredSkills.filter(id=>id!=='blend_cvc').every(id=>projected.has(id)));
     if(story)activities.push(activity('story','story','story_detail',story.id,story.choices,'practice'));
   }
