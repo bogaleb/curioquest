@@ -1,0 +1,182 @@
+/*
+ * Immersive activity stage.
+ *
+ * Collapsed it is a normal block in the page. Active it owns the viewport, whether via
+ * the Fullscreen API or the fixed-position fallback used where that API is missing.
+ */
+
+.cq-immersive {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  padding: var(--space-3);
+  overflow: hidden;
+}
+
+.cq-immersive[data-active="true"] {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  gap: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--cream);
+  padding: var(--safe-top) max(var(--space-3), var(--safe-right))
+           max(var(--space-3), var(--safe-bottom)) max(var(--space-3), var(--safe-left));
+  /* The activity sizes itself to the stage; the page behind must not scroll. */
+  overscroll-behavior: contain;
+}
+
+/* ---- Stage bar ----------------------------------------------------------- */
+.cq-stage-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding: var(--space-1) var(--space-1) var(--space-2);
+}
+
+.cq-stage-title {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-lg);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.cq-stage-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
+/* The way out is never smaller than a child-sized target, and never scrolls away. */
+.cq-stage-exit,
+.cq-stage-fullscreen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid #bfcdb8;
+  border-radius: var(--radius-md);
+  background: var(--surface-sunk);
+  color: #386d55;
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+.cq-stage-exit {
+  flex: none;
+  min-width: var(--touch-child);
+  background: var(--leaf);
+  border-color: var(--leaf-deep);
+  border-bottom-width: var(--press-depth);
+  color: #fff;
+}
+.cq-stage-exit svg,
+.cq-stage-fullscreen svg { width: 20px; height: 20px; flex: none; }
+
+/* ---- Stage surface -------------------------------------------------------- */
+.cq-stage-surface {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+/* When an aspect ratio is set, the activity is letterboxed rather than distorted. */
+.cq-stage-surface > * {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.cq-immersive[data-active="true"] .cq-stage-surface {
+  /* Fill whatever the stage bar leaves, in real viewport units so a mobile browser's
+     collapsing address bar does not clip the activity. */
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ---- Compact -------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .cq-immersive { padding: var(--space-2); }
+  .cq-stage-title { flex-basis: 100%; order: -1; font-size: var(--text-base); }
+  .cq-stage-fullscreen span { display: none; }
+  .cq-stage-fullscreen { min-width: var(--touch-min); padding-inline: var(--space-3); }
+}
+
+/* Landscape phones: reclaim every pixel of height for the activity itself. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .cq-immersive[data-active="true"] .cq-stage-bar {
+    padding: 0;
+    gap: var(--space-2);
+  }
+  .cq-immersive[data-active="true"] .cq-stage-title { flex-basis: auto; order: 0; }
+  .cq-stage-exit,
+  .cq-stage-fullscreen { min-height: 40px; padding-block: var(--space-1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-immersive, .cq-stage-surface { transition: none; }
+}
+
+/* ==========================================================================
+   Creative Studio on the immersive stage.
+   Tools stay with the canvas in full screen — a drawing surface without its
+   tools is not a usable drawing surface.
+   ========================================================================== */
+.studio-stage {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+.studio-stage .studio-toolbox { flex: none; margin: 0; }
+
+.studio-stage .drawing-canvas {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  /* The backing store is 1000x700 scaled by DPR; the element letterboxes to match
+     so strokes land exactly where the child's finger is. */
+  aspect-ratio: 1000 / 700;
+  object-fit: contain;
+  margin-inline: auto;
+  touch-action: none;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.cq-immersive[data-active="true"] .studio-stage .drawing-canvas {
+  /* In full screen the canvas takes the height it is given rather than forcing the
+     page taller, so the toolbox never scrolls out of reach. */
+  height: auto;
+  max-height: 100%;
+  width: auto;
+  max-width: 100%;
+}
+
+.cq-immersive[data-active="true"] .cq-stage-surface > .studio-stage {
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Tool rows wrap rather than overflow once the stage narrows to a phone. */
+@media (max-width: 767px) {
+  .studio-stage .tool-row { flex-wrap: wrap; gap: var(--space-2); }
+  .studio-stage .tool-row button { min-height: var(--touch-min); }
+}

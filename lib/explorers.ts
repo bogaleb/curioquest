@@ -4,6 +4,7 @@ import type { DiscoveryProgress } from "./discovery";
 import { normalizeArcade, type ArcadeProgress } from "./arcade";
 import { normalizeMastery, type SkillMasteryMap } from "@/lib/mastery";
 import { emptyAdventure, normalizeAdventure, type AdventureProgress } from "./adventure";
+import { DEFAULT_BAND, isLearningBandId, primaryContentBand, type LearningBandId } from "./learning-bands";
 
 export const AVATARS = [
   { id: "fox", emoji: "🦊", label: "Clever fox" },
@@ -36,7 +37,13 @@ export type SkillTrail = {
 export type ExplorerProfile = {
   id: string;
   name: string;
+  /**
+   * Authored-content pool. Derived from `band`; retained as its own field so every
+   * profile written before learning bands existed keeps resolving to real content.
+   */
   grade: GradeTrack;
+  /** Developmental band that drives delivery, difficulty, and content selection. */
+  band: LearningBandId;
   avatar: AvatarId;
   interests: InterestId[];
   dailyGoal: number;
@@ -107,11 +114,13 @@ export function newExplorer(
   avatar: AvatarId,
   interests: InterestId[] = [],
   dailyGoal = 10,
+  band: LearningBandId = grade,
 ): ExplorerProfile {
   return {
     id,
     name,
     grade,
+    band,
     avatar,
     interests,
     dailyGoal,
@@ -141,18 +150,29 @@ export function newExplorer(
 export function normalizeExplorer(value: unknown): ExplorerProfile {
   const profile = value as Partial<ExplorerProfile> & { id?: string };
   const fallbackAvatar: AvatarId = profile.id === "lydia" ? "rabbit" : "fox";
-  const grade: GradeTrack = profile.grade === "prek" ? "prek" : "grade1";
+  // A profile written before bands existed carries only `grade`, and both legacy
+  // values are themselves valid band IDs, so it resolves without a migration.
+  const band: LearningBandId = isLearningBandId(profile.band)
+    ? profile.band
+    : isLearningBandId(profile.grade)
+      ? profile.grade
+      : DEFAULT_BAND;
+  const grade: GradeTrack = primaryContentBand(band);
   const fallback = newExplorer(
     String(profile.id ?? "explorer"),
     String(profile.name ?? "Explorer"),
     grade,
     fallbackAvatar,
+    [],
+    10,
+    band,
   );
 
   return {
     ...fallback,
     ...profile,
     grade,
+    band,
     avatar: AVATARS.some((avatar) => avatar.id === profile.avatar)
       ? (profile.avatar as AvatarId)
       : fallbackAvatar,

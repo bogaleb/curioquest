@@ -1,6 +1,7 @@
 import { questions, type ActivityType, type Question, type Subject } from "@/lib/curriculum";
 import type { ExplorerProfile } from "@/lib/explorers";
 import { skillById } from "@/lib/skill-graph";
+import { contentBandsFor, resolveBand } from "@/lib/learning-bands";
 import { questSizeForGoal } from "./quest-settings";
 export { questSizeForGoal } from "./quest-settings";
 
@@ -33,9 +34,10 @@ export function recommendQuest(
   const subjects = subjectSequence(profile, requestedSubject, count);
 
   for (const subject of subjects) {
+    const pools = contentBandsFor(profile.band);
     const candidates = questions.filter(
       (question) =>
-        (question.grade === profile.grade || isWeakPrerequisite(profile, question.skillId)) &&
+        (pools.includes(question.grade) || isWeakPrerequisite(profile, question.skillId)) &&
         !question.campaignOnly &&
         question.subject === subject &&
         !chosen.some((item) => item.id === question.id),
@@ -94,7 +96,14 @@ function rankQuestion(
   const interestMatch = question.contextTags.some((tag) => profile.interests.includes(tag));
   const recentFormat = profile.recentActivityTypes.slice(-3).includes(question.activityType);
   const repeatedSkill = chosen.filter((item) => item.skillId === question.skillId).length;
-  const expectedLevel = Math.max(1,Math.min(3,profile.skills[question.subject].level+(profile.controls.challenge==='gentle'?-1:profile.controls.challenge==='stretch'?1:0)));
+  // The band sets the developmental window; the trail level and the parent's challenge
+  // preference move the target within it.
+  const [bandLow, bandHigh] = resolveBand(profile.band).levelRange;
+  const challengeShift = profile.controls.challenge === "gentle" ? -1 : profile.controls.challenge === "stretch" ? 1 : 0;
+  const expectedLevel = Math.max(
+    bandLow,
+    Math.min(bandHigh, profile.skills[question.subject].level + challengeShift),
+  );
   const prerequisiteWeak = skill.prerequisites.some((id) => {
     const prerequisite = profile.skillMastery[id];
     return prerequisite && prerequisite.attemptCount >= 2 && prerequisite.score < 55;
@@ -119,7 +128,7 @@ function rankQuestion(
     score -= 100;
   } else if (skill.prerequisites.some((id) => (profile.skillMastery[id]?.score ?? 0) < 50)) {
     const activePrerequisiteAvailable = questions.some(
-      (item) => item.grade === profile.grade && skill.prerequisites.includes(item.skillId),
+      (item) => contentBandsFor(profile.band).includes(item.grade) && skill.prerequisites.includes(item.skillId),
     );
     if (activePrerequisiteAvailable) score -= 14;
   }
@@ -164,5 +173,8 @@ export function rememberActivityType(types: ActivityType[], activityType: Activi
 function isWeakPrerequisite(profile: ExplorerProfile, skillId: string) {
   const record = profile.skillMastery[skillId];
   if (!record || record.attemptCount < 2 || record.score >= 55) return false;
-  return [...skillById.values()].some(node => node.gradeBands.includes(profile.grade) && node.prerequisites.includes(skillId));
+  const pools = contentBandsFor(profile.band);
+  return [...skillById.values()].some(
+    (node) => node.gradeBands.some((gradeBand) => pools.includes(gradeBand)) && node.prerequisites.includes(skillId),
+  );
 }

@@ -6,7 +6,8 @@ import { campaignChapters } from "@/lib/campaign";
 import { gameById } from "@/lib/arcade";
 import { readAloud } from "@/lib/speech";
 import {skillById} from "@/lib/skill-graph";
-import {useEffect} from 'react';
+import {resolveBand} from "@/lib/learning-bands";
+import {useEffect,useState} from 'react';
 import {celebrate} from '@/lib/audio';
 import type { PublicExplorer, QuestFeedback } from "@/lib/explorer-view";
 import type { PublicQuestion } from "@/lib/activity-types";
@@ -22,7 +23,21 @@ export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack
   onReflect:(strategy:string)=>void;onFeeling:(value:string)=>void;onFinish:()=>void;
 }) {
   const session=profile.session;
+  const delivery=resolveBand(profile.band).delivery;
   useEffect(()=>{if(feedback?.correct)celebrate(session?.index===session?.total);},[feedback?.correct,session?.index,session?.total]);
+  // Nova offers help after a band-sized pause. She never takes the hint for the child:
+  // an unrequested hint would understate how independently they are working.
+  const questionId=current?.id;
+  const answered=!!feedback?.correct;
+  // Recording *which* question stalled means moving on clears the offer by itself,
+  // with no reset write on every question change.
+  const [stalledOn,setStalledOn]=useState<string|null>(null);
+  useEffect(()=>{
+    if(!questionId||answered||!delivery.hintAfterSeconds)return;
+    const timer=setTimeout(()=>setStalledOn(questionId),delivery.hintAfterSeconds*1000);
+    return ()=>clearTimeout(timer);
+  },[questionId,answered,delivery.hintAfterSeconds]);
+  const stalled=!answered&&!!questionId&&stalledOn===questionId;
   if(!session)return null;
   const game=gameById(session.gameId),chapter=session.chapter!==undefined?campaignChapters[session.chapter]:undefined;
   const practicedSkills=[...new Set(profile.history.find(item=>item.sessionId===session.id)?.skillIds??[])].map(id=>skillById.get(id)?.name).filter((name):name is string=>!!name).slice(0,4);
@@ -39,7 +54,7 @@ export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack
       <ActivityEngineView key={session.id+current.id} question={current} busy={busy} correct={!!feedback?.correct} selected={selected} onAnswer={onAnswer} onHint={onHint}/>
       <div className={`feedback ${feedback?.correct?"positive":""}`} aria-live="polite"><span className="fox">🦊</span><div><strong>{feedback?.correct?"You figured it out!":"Nova is here to help"}</strong><p>{feedback?.message||feedback?.hint||"Take your time. You can try, think, and try again."}</p>{feedback?.hint&&feedback.message&&<p>{feedback.hint}</p>}</div></div>
       {feedback?.correct&&<div className="reflection-prompt"><p>What helped you? <small>You can tell a grown-up, too.</small></p>{[["counted","I counted"],["clue","I found a clue"],["pattern","I saw a pattern"],["tried","I tried another way"]].map(([strategy,label])=><button key={strategy} disabled={busy} aria-pressed={profile.reflections.some(r=>r.sessionId===session.id&&r.questionId===current.id&&r.strategy===strategy)} onClick={()=>onReflect(strategy)}>{label}</button>)}</div>}
-      <div className="activity-actions">{feedback?.correct?<button className="primary" disabled={busy} onClick={onNext}>{session.index===session.total?"Finish my quest":"Next discovery"}<ArrowRight size={20}/></button>:<button className="text-button" disabled={busy} onClick={onHint}><Lightbulb size={19}/>Give me a hint</button>}</div>
+      <div className="activity-actions">{feedback?.correct?<button className="primary" disabled={busy} onClick={onNext}>{session.index===session.total?"Finish my quest":"Next discovery"}<ArrowRight size={20}/></button>:<button className={stalled?"secondary nova-offer":"text-button"} disabled={busy} onClick={onHint}><Lightbulb size={19}/>{stalled?"Nova can help with this one":"Give me a hint"}</button>}</div>
     </div>:<div className="completion"><span className="celebration">{game?<span className="game-completion-icon">{game.emoji}</span>:<Trophy size={65}/>}</span><div className="eyebrow">LOOK WHAT YOU DID</div><h1>{game?"Mission":"Quest"} complete, {profile.name}!</h1>
       <p>{game?`${game.missions[session.gameLevel??0]} is in your playground passport. You planned, practiced, and made a discovery.`:chapter?.ending??"You thought, tried, and kept exploring. That’s how your brain grows."}</p>
       {chapter&&<p className="chapter-unlock">🌱 Discovered: {chapter.unlock}</p>}
