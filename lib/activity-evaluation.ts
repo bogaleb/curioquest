@@ -21,6 +21,43 @@ export function evaluateResponse(question: Question, response: unknown): { valid
     });
     return { valid, correct: valid && response === question.answer };
   }
+  if (engine.kind === "number-line") {
+    // Where the child's marker ended up. Anywhere on the line is a legal move — the
+    // point of an open number line is that overshooting and walking back is allowed.
+    const value = Number(response);
+    const valid = /^-?\d{1,3}$/.test(response) && Number.isInteger(value) && value >= engine.min && value <= engine.max;
+    return { valid, correct: valid && response === question.answer };
+  }
+  if (engine.kind === "number-bond") {
+    // The completed bond decides, not an authored string: a bond is correct exactly
+    // when its parts make its whole. The authored answer is only used for the hint.
+    const value = Number(response);
+    if (!/^\d{1,3}$/.test(response) || !Number.isInteger(value)) return { valid: false, correct: false };
+    const [left, right] = engine.parts;
+    const filled = engine.whole === null ? { whole: value, left, right }
+      : left === null ? { whole: engine.whole, left: value, right }
+      : { whole: engine.whole, left, right: value };
+    if (filled.left === null || filled.right === null) return { valid: false, correct: false };
+    return { valid: true, correct: filled.left + filled.right === filled.whole };
+  }
+  if (engine.kind === "place-value") {
+    // "tens,ones". Ten or more loose ones is the one thing the mat will not accept:
+    // discovering why is the lesson, so it is scored as wrong rather than rejected.
+    const match = /^(\d{1,2}),(\d{1,2})$/.exec(response);
+    if (!match) return { valid: false, correct: false };
+    const tens = Number(match[1]), ones = Number(match[2]);
+    if (tens > engine.maxTens || ones > 20) return { valid: false, correct: false };
+    return { valid: true, correct: ones <= 9 && tens * 10 + ones === engine.target };
+  }
+  if (engine.kind === "array-builder") {
+    // "rows,columns". The array has to be the shape that was asked for; a child who
+    // builds twelve as 2 by 6 has built twelve, but not three rows of four.
+    const match = /^(\d{1,2}),(\d{1,2})$/.exec(response);
+    if (!match) return { valid: false, correct: false };
+    const rows = Number(match[1]), columns = Number(match[2]);
+    if (rows > engine.maxRows || columns > engine.maxColumns) return { valid: false, correct: false };
+    return { valid: true, correct: rows === engine.rows && columns === engine.columns };
+  }
   if (engine.kind === "balance") {
     // The scale itself decides; the authored answer only names the expected side.
     const heavier = engine.left.count === engine.right.count ? "equal" : engine.left.count > engine.right.count ? "left" : "right";

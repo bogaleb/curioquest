@@ -114,3 +114,266 @@
     order: 3;
   }
 }
+
+/* =====================================================================
+ * Wave 06 — math manipulatives.
+ *
+ * Four models a child moves: a number line to hop along, a bond to complete, a
+ * place-value mat to build on, an array to plant. The visual weight belongs to the
+ * model, not to the chrome around it, so the controls stay quiet and the thing being
+ * reasoned about is the largest object on screen.
+ * ===================================================================== */
+
+/* --- shared: a compact stepper for engines that need two or three of them --- */
+.number-controls.small {
+  gap: var(--space-3);
+  margin: var(--space-3) 0 0;
+}
+.number-controls.small button {
+  width: 46px;
+  height: 46px;
+  font-size: var(--text-xl);
+}
+.number-controls.small output {
+  font-size: var(--text-base);
+  min-width: 86px;
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------- number line --- */
+
+.number-line-frame {
+  padding: var(--space-4) var(--space-2) var(--space-2);
+  background: var(--sand-100);
+  border: 1px solid var(--sand-200);
+  border-radius: var(--radius-2xl);
+}
+.number-line-frame svg { display: block; width: 100%; height: auto; }
+
+.number-line-rule { stroke: var(--green-700); stroke-width: 5; stroke-linecap: round; }
+.number-line-tick { stroke: var(--green-400); stroke-width: 3; }
+.number-line-tick.major { stroke: var(--green-700); stroke-width: 5; }
+.number-line-label { fill: var(--green-800); font-size: 40px; font-weight: 700; }
+
+/* Each hop stays on screen, so "count your hops" is something a child can actually do
+ * rather than something they are asked to remember doing. */
+.number-line-hop {
+  fill: none;
+  stroke: var(--sun-500);
+  stroke-width: 7;
+  stroke-linecap: round;
+  opacity: 0.9;
+}
+.number-line-marker circle {
+  fill: var(--green-600);
+  stroke: #fffdf5;
+  stroke-width: 4;
+}
+.number-line-marker text { fill: #fffdf5; font-size: 30px; font-weight: 700; }
+
+.number-line-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  flex-wrap: wrap;
+}
+.number-line-controls button {
+  min-height: 52px;
+  padding: 0 var(--space-5);
+  border: 1px solid var(--green-300);
+  border-bottom: 4px solid var(--green-400);
+  border-radius: var(--radius-lg);
+  background: #fffdf5;
+  color: var(--green-800);
+  font-size: var(--text-base);
+  font-weight: 700;
+}
+.number-line-controls output {
+  min-width: 96px;
+  color: var(--sand-600);
+  font-size: var(--text-sm);
+}
+
+/* ---------------------------------------------------------- number bond --- */
+
+.bond-diagram {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  margin: var(--space-2) auto 0;
+  max-width: 460px;
+}
+.bond-links { width: 200px; height: 60px; margin: -6px 0; }
+.bond-links path { stroke: var(--green-400); stroke-width: 3; fill: none; stroke-linecap: round; }
+.bond-parts { display: flex; gap: var(--space-6); }
+
+.bond-cell {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: var(--space-1);
+  width: 132px;
+  height: 132px;
+  padding: var(--space-2);
+  border-radius: 50%;
+  background: var(--green-100);
+  border: 2px solid var(--green-200);
+}
+.bond-cell.whole { background: var(--sun-100); border-color: var(--sun-200); }
+/* The cell being filled is the only dashed one, so it reads as the open question. */
+.bond-cell.missing {
+  border-style: dashed;
+  border-color: var(--green-600);
+  background: #fffdf5;
+}
+.bond-cell strong { font-size: var(--text-3xl); color: var(--green-800); line-height: 1; }
+.bond-cell.whole strong { color: var(--sun-600); }
+
+.bond-counters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1px;
+  max-width: 96px;
+  font-size: 13px;
+  line-height: 1;
+}
+.bond-counters i { font-style: normal; }
+.bond-counters.too-many { font-size: var(--text-xs); color: var(--sand-600); }
+
+/* ---------------------------------------------------------- place value --- */
+
+.place-mat {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
+}
+.place-column {
+  padding: var(--space-3);
+  border: 1px solid var(--sand-200);
+  border-radius: var(--radius-xl);
+  background: var(--sand-100);
+}
+.place-column h3 {
+  font-size: var(--text-xs);
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--sand-600);
+  margin-bottom: var(--space-2);
+}
+
+/* A rod is visibly ten cubes, not a labelled block — the equivalence has to be
+ * something a child can see and count, or trading is just a rule they are told. */
+.place-rods, .place-cubes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 5px;
+  min-height: 168px;
+}
+.place-rod {
+  display: grid;
+  grid-auto-rows: 14px;
+  gap: 1px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--green-200);
+}
+.place-rod i { display: block; width: 18px; background: var(--green-600); border-radius: 3px; }
+
+.place-cubes { align-items: center; max-width: 100%; }
+.place-cube {
+  width: 18px;
+  height: 14px;
+  border-radius: var(--radius-sm);
+  background: var(--sun-400);
+  box-shadow: inset 0 -3px 0 #00000014;
+}
+/* Ten or more loose ones is the moment the trade becomes available. The mat says so
+ * before the child submits, rather than marking them wrong for exploring. */
+.place-cubes.crowded { outline: 2px dashed var(--sun-500); outline-offset: 6px; border-radius: var(--radius-md); }
+
+.trade-offer {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--sun-300);
+  border-bottom: 4px solid var(--sun-400);
+  border-radius: var(--radius-lg);
+  background: var(--sun-100);
+  color: var(--sun-600);
+  font-weight: 700;
+}
+
+.place-total { margin-top: var(--space-4); }
+.place-total strong { display: block; font-size: var(--text-4xl); color: var(--green-800); }
+.place-total span { font-size: var(--text-sm); color: var(--sand-600); }
+
+/* -------------------------------------------------------- array builder --- */
+
+.array-grid {
+  display: grid;
+  gap: var(--space-2);
+  justify-content: center;
+  margin: var(--space-2) auto 0;
+  padding: var(--space-4);
+  max-width: 420px;
+  border: 1px solid var(--green-200);
+  border-radius: var(--radius-2xl);
+  background: var(--green-100);
+}
+.array-grid span {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  min-width: 34px;
+  font-size: clamp(22px, 4vw, 34px);
+}
+.array-controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+/* The repeated-addition line is the whole point of an array at this age: the same fact
+ * written the way multiplication will be introduced next year. */
+.array-total { margin-top: var(--space-4); font-size: var(--text-lg); color: var(--sand-600); }
+.array-total strong { font-size: var(--text-3xl); color: var(--green-800); vertical-align: middle; }
+
+@media (max-width: 760px) {
+  .bond-cell { width: 104px; height: 104px; }
+  .bond-parts { gap: var(--space-4); }
+  .bond-cell strong { font-size: var(--text-2xl); }
+  .bond-counters { max-width: 74px; font-size: 11px; }
+  .place-mat { gap: var(--space-2); }
+  .place-column { padding: var(--space-2); }
+  .place-rod i { width: 14px; }
+  .place-cube { width: 14px; }
+  .place-rods, .place-cubes { min-height: 150px; }
+  .number-line-controls { gap: var(--space-2); }
+  .number-line-controls button { padding: 0 var(--space-3); font-size: var(--text-sm); }
+  .number-line-label { font-size: 56px; }
+  .number-line-rule, .number-line-tick.major { stroke-width: 7; }
+  .number-line-hop { stroke-width: 10; }
+  .number-line-marker text { font-size: 40px; }
+  .number-line-frame { padding: var(--space-3) 0 var(--space-1); }
+  .array-grid { padding: var(--space-3); gap: var(--space-1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  /* The marker slides to where it landed, so the hop is a movement rather than a jump
+   * cut. Anything that moves here is motion a child is meant to follow. */
+  .number-line-marker { transition: transform 0.28s ease-out; }
+  .place-cube, .array-grid span { animation: cq-counter-in 0.22s ease-out both; }
+}
+@keyframes cq-counter-in {
+  from { transform: scale(0.4); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

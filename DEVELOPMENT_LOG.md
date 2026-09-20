@@ -1,5 +1,42 @@
 # CurioQuest development log
 
+## Wave 06 math manipulatives — September 20, 2026
+
+- **Every math activity in the core curriculum was a sentence with three numbers under
+  it.** All 36 of them were `number-choice`. A child could answer "7 birds stay" by
+  elimination without ever modelling seven, and the mastery record could not tell the
+  difference between that and understanding. Wave 06 forbids exactly this as the default.
+- Four new engines, in `lib/activity-types.ts`, scored in `lib/activity-evaluation.ts`
+  and drawn in `components/learning/math-engines.tsx`:
+  - **Number line.** The child hops; nothing says how far. Overshooting and walking back
+    is a legal move, because a line that only accepts the right number of hops is a
+    button with extra steps. Every hop stays drawn on screen, so "count your hops" is
+    something a child can do rather than remember doing.
+  - **Number bond.** Part–part–whole with one cell missing. A missing whole is addition
+    and a missing part is subtraction, drawn as the same picture. Self-validating: the
+    bond is right exactly when the parts make the whole, so the authored answer cannot
+    drift — a test proves it by authoring a wrong one and watching the engine ignore it.
+  - **Place-value mat.** Tens rods and ones cubes, with the rule that makes the notation
+    mean something: no more than nine loose ones. A child who builds fourteen out of
+    fourteen cubes is offered a trade rather than an error, and watches ten ones become
+    one ten. The rod is drawn as ten stacked units the same width as a one, because the
+    equivalence has to be countable or trading is just a rule they were told.
+  - **Array builder.** Rows and columns with the total climbing as it grows, and the
+    repeated-addition line underneath. Skip counting is what a child notices when the
+    readout goes 4, 8, 12, not a rule to memorise.
+- **39 new activities** in `lib/content/math-models.ts`, across both bands, every one
+  with a hint that reveals a strategy and never the number. Math is now 145 of 183
+  activities modelled — the abstract minority that remains is deliberate fluency
+  practice, which the wave also asks for, rather than the default path.
+- Verified by screenshot at iPad and phone widths, not only by reasoning. That caught
+  two real defects: the number line was unreadable on a phone because a viewBox sized
+  for a laptop scales to about a third, and the tens rod was a different width from a
+  ones cube, which quietly broke the one thing the place-value mat exists to show.
+- Verification: typecheck, lint 0 errors, 151 unit tests (135 before), production build,
+  bundle guard. The 16 new tests check that every authored activity answers its own
+  question, that no hint contains its answer, and that what an engine ships to the
+  browser is only ever what the prompt already asked for.
+
 ## Wave 09 mission loop — September 20, 2026
 
 - **A game mission was four questions in authored order and a flat reward.** Eleven real

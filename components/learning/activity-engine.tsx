@@ -5,6 +5,7 @@ import { Check, RotateCcw, Volume2 } from "lucide-react";
 import type { ActivityEngine, PublicQuestion } from "@/lib/activity-types";
 import { TenFrame, RobotRoute, Matching, Ordering } from "./arcade-engines";
 import { BubblePop, BalanceScale, Constellation } from "./play-engines";
+import { NumberLine, NumberBond, PlaceValue, ArrayBuilder } from "./math-engines";
 import { readAloud } from "@/lib/speech";
 
 type Props = {
@@ -29,6 +30,10 @@ export function ActivityEngineView(props: Props) {
   if (engine?.kind === "bubble-pop") return <BubblePop {...props} engine={engine}/>;
   if (engine?.kind === "balance") return <BalanceScale {...props} engine={engine}/>;
   if (engine?.kind === "constellation") return <Constellation {...props} engine={engine}/>;
+  if (engine?.kind === "number-line") return <NumberLine {...props} engine={engine}/>;
+  if (engine?.kind === "number-bond") return <NumberBond {...props} engine={engine}/>;
+  if (engine?.kind === "place-value") return <PlaceValue {...props} engine={engine}/>;
+  if (engine?.kind === "array-builder") return <ArrayBuilder {...props} engine={engine}/>;
   return <div className="engine-stage">
     {engine?.kind === "pattern"
       ? <div className="pattern-stones" aria-label="Pattern to complete">{engine.sequence.map((item, i)=><span key={i}>{item}</span>)}<span className="missing-stone">?</span></div>

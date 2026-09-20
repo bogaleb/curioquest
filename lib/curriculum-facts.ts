@@ -18,4 +18,4 @@
  */
 
 /** Total authored activity configurations. Verified against `questions.length`. */
-export const activityCount = 462;
+export const activityCount = 501;

@@ -27,7 +27,7 @@ The waves and the audit phases are two vocabularies for the same work:
 | 03 Child home | Phase 1 (home) | Partly done |
 | 04 Adaptive learning | Pre-existing core + Phase 2 | Strongest area; struggle response added |
 | 05 Reading | Reading Section 94 slice | Vertical slice only |
-| 06 Math | — | Authored content, engines thin |
+| 06 Math | — | Manipulatives landed; band depth open |
 | 07 Science | Phase 2 (subject added) | Discovery Lab exists, quiz-shaped |
 | 08 Logic | Phase 2 (subject added) | Skills exist, few formats |
 | 09 Games | Phase 4 | ✅ engines, controls, metadata and the mission loop |
@@ -126,8 +126,28 @@ slice (Section 94). Math, Science and Logic have authored activities and skill e
 lean on question-and-choices presentation. Wave 06 explicitly forbids "plain text question
 + four-button design as the default", and that is still the default outside Reading.
 
-**Next step, in order of value:** Wave 06 math manipulatives (ten frames, number lines,
-counters) — the widest gap between what the wave asks for and what exists.
+**Wave 06 closed 2026-09-20 — math manipulatives.** All 36 math activities in the core
+curriculum were `number-choice`: a sentence with three numbers under it. Four engines
+replaced that as the default — an open number line the child hops along, a part–part–whole
+bond, a place-value mat, and an array builder — plus 39 authored activities in
+`lib/content/math-models.ts`. Math is now 145 of 183 activities modelled.
+
+Two design properties worth keeping:
+
+- **The bond and the mat validate themselves.** A bond is correct exactly when its parts
+  make its whole, and the mat refuses ten or more loose ones. Neither compares against an
+  authored string, so the content cannot drift away from the scoring. A test authors a
+  deliberately wrong answer and asserts the engine ignores it.
+- **Nothing is hidden that the prompt does not ask for.** `place-value` and
+  `array-builder` carry their target in the engine, because the child is asked to *build*
+  a stated number or shape rather than guess a hidden one. A test asserts the prompt
+  states it, so that stays true.
+
+**Still open for Wave 06:** the wave describes seven age bands from 3–4 through Grade 3,
+and the content pools are still only `prek` and `grade1`. Expanding `ContentBand` touches
+the skill graph, placement, the arcade and mastery, so it is its own wave rather than a
+loose end of this one. Reading (05), Science (07) and Logic (08) remain
+question-and-choices outside their own slices.
 
 ### Wave 09 — Games (partial)
 
@@ -235,15 +255,19 @@ Not in this pass: any curriculum content, any game engine work, Wave 02 onward.
 
 ## Recommended order from here
 
-1. **Wave 06 math manipulatives** — the wave explicitly forbids question-and-four-buttons
-   as the default, and outside Reading it still is. This is now the widest gap between
-   what a wave asks for and what exists.
-2. **Wave 02 onboarding** — the account screens are done; the add-child sequence and
+1. **Content bands** — the largest remaining gap in the whole plan. Waves 05–08 each
+   describe seven age bands; the content pools are two. The engines now exist to carry
+   more granular content, so this is authoring plus a `ContentBand` widening, and it
+   unlocks the age-adaptation criterion across four waves at once.
+2. **Waves 07 and 08 engines** — Science and Logic are still question-and-choices. The
+   math engines are the model to follow; several are subject-neutral already.
+3. **Wave 02 onboarding** — the account screens are done; the add-child sequence and
    profile selection are not.
-3. **Wave 14 remainder** — analytics events and flow tests.
-4. **Wave 15 import tooling** — only once content volume actually demands it.
+4. **Wave 14 remainder** — analytics events and flow tests.
+5. **Wave 15 import tooling** — only once content volume actually demands it.
 
-Done and no longer on this list: Wave 09's mission loop (2026-09-20).
+Done and no longer on this list: Wave 09's mission loop and Wave 06's math
+manipulatives (both 2026-09-20).
 
 ## Standing constraints (carried forward, do not relax)
 
