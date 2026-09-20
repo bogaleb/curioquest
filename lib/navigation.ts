@@ -20,7 +20,10 @@ import {
  * "More" sheet on phones. Adding a destination should never mean touching layout code.
  */
 export type Destination = {
+  /** Stable key, also the legacy view name. */
   id: string;
+  /** Route segment this destination lives at. The home screen is the index route. */
+  href: string;
   /** Used in the sidebar and the More sheet. */
   label: string;
   /** Used in the bottom tab bar and the icon rail, where space is tight. */
@@ -38,32 +41,47 @@ export type Destination = {
 };
 
 export const destinations: Destination[] = [
-  { id: "adventure", label: "My adventure", shortLabel: "Today", icon: Compass, title: "My adventure", group: "primary" },
-  { id: "reading", label: "Reading Adventure", shortLabel: "Read", icon: BookOpen, title: "Reading Adventure", group: "primary" },
-  { id: "games", label: "Game Zone", shortLabel: "Play", icon: Gamepad2, title: "Game Zone", group: "primary" },
-  { id: "studio", label: "Creative Studio", shortLabel: "Create", icon: Palette, title: "Creative Studio", group: "primary" },
-  { id: "myworld", label: "My World", shortLabel: "World", icon: Globe, title: "My World", group: "primary" },
+  { id: "adventure", href: "/", label: "My adventure", shortLabel: "Today", icon: Compass, title: "My adventure", group: "primary" },
+  { id: "reading", href: "/read", label: "Reading Adventure", shortLabel: "Read", icon: BookOpen, title: "Reading Adventure", group: "primary" },
+  { id: "games", href: "/play", label: "Game Zone", shortLabel: "Play", icon: Gamepad2, title: "Game Zone", group: "primary" },
+  { id: "studio", href: "/create", label: "Creative Studio", shortLabel: "Create", icon: Palette, title: "Creative Studio", group: "primary" },
+  { id: "myworld", href: "/world", label: "My World", shortLabel: "World", icon: Globe, title: "My World", group: "primary" },
 
-  { id: "science", label: "Discovery Lab", shortLabel: "Science", icon: FlaskConical, title: "Discovery Lab", group: "secondary" },
-  { id: "stories", label: "Story Harbor", shortLabel: "Stories", icon: BookOpen, title: "Story Harbor", group: "secondary" },
-  { id: "theater", label: "Theater", shortLabel: "Theater", icon: Clapperboard, title: "CurioQuest Theater", group: "secondary" },
-  { id: "worlds", label: "My worlds", shortLabel: "Worlds", icon: MapIcon, title: "My worlds", group: "secondary" },
-  { id: "garden", label: "Build Lab", shortLabel: "Build", icon: Leaf, title: "Build Lab", group: "secondary" },
-  { id: "team", label: "Team Quest", shortLabel: "Team", icon: Users, title: "Team Quest", group: "secondary" },
-  { id: "rewards", label: "Treasure chest", shortLabel: "Rewards", icon: Star, title: "Treasure chest", group: "secondary" },
-  { id: "faith", label: "Faith & Bible", shortLabel: "Faith", icon: Heart, title: "Faith & Bible", group: "secondary", requiresFaith: true },
+  { id: "science", href: "/science", label: "Discovery Lab", shortLabel: "Science", icon: FlaskConical, title: "Discovery Lab", group: "secondary" },
+  { id: "stories", href: "/stories", label: "Story Harbor", shortLabel: "Stories", icon: BookOpen, title: "Story Harbor", group: "secondary" },
+  { id: "theater", href: "/theater", label: "Theater", shortLabel: "Theater", icon: Clapperboard, title: "CurioQuest Theater", group: "secondary" },
+  { id: "worlds", href: "/worlds", label: "My worlds", shortLabel: "Worlds", icon: MapIcon, title: "My worlds", group: "secondary" },
+  { id: "garden", href: "/build", label: "Build Lab", shortLabel: "Build", icon: Leaf, title: "Build Lab", group: "secondary" },
+  { id: "team", href: "/team", label: "Team Quest", shortLabel: "Team", icon: Users, title: "Team Quest", group: "secondary" },
+  { id: "rewards", href: "/rewards", label: "Treasure chest", shortLabel: "Rewards", icon: Star, title: "Treasure chest", group: "secondary" },
+  { id: "faith", href: "/faith", label: "Faith & Bible", shortLabel: "Faith", icon: Heart, title: "Faith & Bible", group: "secondary", requiresFaith: true },
 ];
 
 const byId = new Map(destinations.map((destination) => [destination.id, destination]));
 
-/** Titles for destinations that are not in the navigation model (modes, not places). */
-const extraTitles: Record<string, string> = {
-  "daily-adventure": "Today’s Adventure",
-  parent: "Parent corner",
+/** Destinations that are modes or gated areas rather than navigation entries. */
+const extra: Record<string, { title: string; href: string }> = {
+  "daily-adventure": { title: "Today’s Adventure", href: "/today" },
+  parent: { title: "Parent corner", href: "/parent" },
 };
 
 export function destinationTitle(id: string) {
-  return byId.get(id)?.title ?? extraTitles[id] ?? "CurioQuest";
+  return byId.get(id)?.title ?? extra[id]?.title ?? "CurioQuest";
+}
+
+/** The route a destination id lives at. */
+export function destinationHref(id: string) {
+  return byId.get(id)?.href ?? extra[id]?.href ?? "/";
+}
+
+const byHref = new Map<string, string>([
+  ...destinations.map((destination) => [destination.href, destination.id] as const),
+  ...Object.entries(extra).map(([id, meta]) => [meta.href, id] as const),
+]);
+
+/** The destination id a pathname represents, for highlighting the active nav item. */
+export function destinationForPath(pathname: string) {
+  return byHref.get(pathname === "" ? "/" : pathname) ?? "adventure";
 }
 
 export function availableDestinations(options: { faith: boolean }) {

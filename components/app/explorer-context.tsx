@@ -274,6 +274,23 @@ export function ExplorerProvider({ children }: { children: ReactNode }) {
 
   const bumpAssignments = useCallback(() => setAssignmentVersion((value) => value + 1), []);
 
+  // The parent PIN session lives in an expiring server cookie, so a reload should not
+  // ask for the PIN again while that session is still valid. Client state alone would
+  // lose the unlock on every refresh.
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/parent", { signal: controller.signal })
+      .then((response) => (response.ok ? (response.json() as Promise<{ unlocked?: boolean }>) : null))
+      .then((status) => {
+        if (status?.unlocked) setParentOpen(true);
+      })
+      .catch(() => {
+        // No parent session, or the check is unavailable. Corner stays locked, which
+        // is the safe default.
+      });
+    return () => controller.abort();
+  }, []);
+
   // Parent Corner expires on its own so an unlocked session cannot be left open.
   useEffect(() => {
     if (!parentOpen) return;
