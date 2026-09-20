@@ -39,6 +39,9 @@ preserves all of it:
 | 9 | **Games are not engines.** Eight engine kinds, mostly one-shot question renderers. No shared loop, no pause/restart/exit, no in-game difficulty ramp. | Medium |
 | 10 | **Accessibility and performance debt.** No skip link, no viewport config, plain `<p>Opening…</p>` instead of skeletons, canvas without DPR scaling, `window.confirm` used for child-facing decisions. | Medium |
 
+Gap 10 is now largely closed: skip link, viewport config, DPR-scaled canvas and route
+skeletons are all in. `window.confirm` for child-facing decisions remains.
+
 ## Phases
 
 ### Phase 1 — Foundation ✅ delivered
@@ -85,12 +88,16 @@ across seven captured viewports (`pnpm ui:shots`).
 - **Delivery reaches the activity.** Choice count narrows server-side per band,
   narration defaults from the band, and Nova offers help after a band-sized pause.
 
-### Phase 3 — Routing (partial)
+### Phase 3 — Routing ✅ delivered
 
-- The current screen now lives in the URL with `pushState`, so views are linkable and
-  the Back button works. Parent Corner is excluded — it sits behind a PIN.
-- **Still to do:** real route segments (`/play/[world]`, `/studio`), which is what
-  unlocks per-route code splitting and content that does not ship in the first bundle.
+- The current screen lives in the URL, so views are linkable and the Back button works.
+  Parent Corner is excluded — it sits behind a PIN.
+- Real route segments landed under `app/(explorer)/`: fifteen of them, a server layout
+  doing the auth check once, and a client provider holding the shared explorer state so
+  navigation never tears down a running quest. Home dropped from 215 KB to 55 KB.
+- Loading and error boundaries per segment completed the wave on 2026-09-20. Until then
+  a slow route showed nothing at all and one throwing screen took the whole shell with
+  it — the route split had traded reliability for payload, and that debt is now paid.
 - **Still to do:** moving content from TypeScript modules into the Supabase curriculum
   tables, which already have the schema for it.
 

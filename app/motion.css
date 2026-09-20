@@ -382,6 +382,122 @@ textarea:focus-visible,
 
 .loading { color: var(--ink-faint); font-family: var(--font-display); }
 
+/*
+ * Screen-reader-only text. The route skeletons are decorative boxes; the message a
+ * screen reader should hear lives in one polite live region using this class.
+ */
+.cq-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Route-level skeletons ------------------------------------------------
+   Shapes that echo the screen arriving behind them, so the wait reads as this
+   page loading rather than as an unspecific spinner. */
+.cq-route-skeleton { display: block; }
+.cq-skeleton-shape { display: flex; flex-direction: column; gap: var(--space-5); }
+
+.cq-skeleton-heading { display: flex; flex-direction: column; gap: var(--space-2); }
+.cq-skeleton-heading .cq-skeleton-text { height: 20px; margin-bottom: 0; }
+
+/* Explicit column counts rather than auto-fill: six placeholders across an
+   auto-filled five-column desktop grid leaves one orphan on its own row, which
+   reads as a layout fault rather than as loading. */
+.cq-skeleton-row,
+.cq-skeleton-grid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 768px) {
+  /* The row holds three; give it three columns as soon as they fit, so it never
+     leaves one card stranded below the other two. */
+  .cq-skeleton-row { grid-template-columns: repeat(3, 1fr); }
+  .cq-skeleton-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1181px) {
+  .cq-skeleton-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.cq-skeleton-panel { height: 200px; }
+
+.cq-skeleton-canvas {
+  display: flex;
+  gap: var(--space-4);
+  min-height: min(60dvh, 520px);
+}
+.cq-skeleton-rail { flex: none; width: 88px; border-radius: var(--radius-xl); }
+.cq-skeleton-surface { flex: 1; border-radius: var(--radius-xl); }
+
+/* The tool rail sits above the surface on a phone, as it does in the studio itself. */
+@media (max-width: 767px) {
+  /* A skeleton taller than the viewport is just scrollbar. Three cards fills a
+     phone screen; the rest would never be seen before the real content lands. */
+  .cq-skeleton-grid > :nth-child(n + 4) { display: none; }
+  .cq-skeleton-canvas { flex-direction: column; }
+  .cq-skeleton-rail { width: 100%; height: 64px; }
+  .cq-skeleton-surface { min-height: 40dvh; }
+  .cq-skeleton-hero { height: 200px; }
+}
+
+/* ==========================================================================
+   Error and empty destinations
+   A screen that failed is still a screen a child is looking at. It gets the
+   same care as one that worked: large targets, no jargon, a way onward.
+   ========================================================================== */
+.cq-route-error,
+.cq-notfound {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-3);
+  max-width: 34rem;
+  margin-inline: auto;
+  padding: var(--space-8) var(--space-6);
+}
+.cq-route-error h1,
+.cq-notfound h1 { font-size: var(--text-2xl); margin: 0; }
+.cq-route-error p,
+.cq-notfound p { margin: 0; }
+
+.cq-route-error-mark,
+.cq-notfound > span[aria-hidden] { font-size: 48px; line-height: 1; }
+
+.cq-route-error-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+/* The second choice is a link, not a button, so it needs the alignment and the
+   child-sized target that .secondary assumes a <button> already has. */
+.cq-route-error-actions .primary,
+.cq-route-error-actions .secondary,
+.cq-notfound .primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding-inline: var(--space-5);
+  text-decoration: none;
+}
+
+.cq-notfound {
+  min-height: 60dvh;
+  justify-content: center;
+  padding-block: var(--space-10);
+}
+
 /* ==========================================================================
    Forms
    ========================================================================== */

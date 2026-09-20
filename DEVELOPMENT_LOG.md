@@ -1,5 +1,39 @@
 # CurioQuest development log
 
+## Wave 01 closed — September 20, 2026
+
+- Read the fifteen wave briefs and `COMMERCIAL-UPGRADE.md`, then reconciled them against
+  the code in `docs/product/WAVE-EXECUTION-PLAN.md`. Two earlier planning documents
+  described overlapping work under different names; that document is now the single map
+  of where each wave stands, checked against files rather than against prior claims.
+- Chose to finish Wave 01 before starting Wave 02, because every later wave renders
+  inside the shell Wave 01 owns, and because the route split had shipped without loading
+  or error boundaries — an improvement in payload that was a regression in reliability.
+- Added route-level loading skeletons to all fifteen explorer segments
+  (`components/shell/RouteSkeleton.tsx`), in four shapes matched to what each screen
+  draws. The `.cq-skeleton` classes had existed in `motion.css` since the design-system
+  commit and nothing had ever used them. The skeletons cover client-side navigation
+  between segments; a cold load still blocks on the layout's cookie-backed auth check,
+  which is recorded in the route plan so it is not reported as a fault.
+- Added error boundaries: a child-facing one for the explorer routes with no technical
+  vocabulary, a parent-facing one for Parent Corner carrying the error digest, a
+  `global-error` for failures above the shell, and a designed `not-found` replacing the
+  framework default. These use Next 16.3's `retry` prop, not the older `reset`.
+- Fixed two regressions introduced by the route split in 5f44b00, both from a `p.` →
+  `profile.` rename that went too far: `app/(explorer)/parent/page.tsx` shadowed the
+  selected explorer inside `profiles.map()`, so every child in the family list rendered
+  as the active one with a check mark; and child-facing copy in
+  `app/(explorer)/worlds/page.tsx` read "Small steps add uprofile."
+- Verification: typecheck clean, lint 0 errors (one pre-existing `no-img-element`
+  warning), 87 unit tests pass, production build succeeds across all 34 routes. The new
+  surfaces were rendered against the real stylesheets and screenshotted at 390, 768 and
+  1440 px: no page errors and no horizontal overflow. That harness does not touch
+  Supabase, so no family data was involved. It is a rendering check, not a check that
+  the boundaries catch a real thrown error in production, and not a physical device test.
+- Not touched in this pass: curriculum content, game engines, and Waves 02 onward. The
+  recommended order from here is in the execution plan, and Wave 09 (games are still
+  question renderers, not engines) remains the largest gap between promise and product.
+
 ## Reading Section 94 — September 18, 2026
 
 - Read the supplied reading blueprint completely and retained it in `docs/product/READING_BLUEPRINT.md`. Implemented only the requested first vertical slice; unrelated learning areas are preserved.

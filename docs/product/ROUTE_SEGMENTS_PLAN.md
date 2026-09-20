@@ -102,13 +102,23 @@ Recorded so they are not rediscovered:
 
 ## Still to do
 
-- **`loading.tsx` and `error.tsx` per segment**, replacing the `<p>Opening…</p>`
-  fallbacks with the skeletons already defined in `motion.css`. This is the remaining
-  easy win: a slow route currently shows nothing rather than a skeleton, and one broken
-  screen still takes the shell with it.
+- ~~**`loading.tsx` and `error.tsx` per segment**~~ — delivered 2026-09-20. Fifteen
+  segments have a `loading.tsx` rendering one of four skeleton shapes
+  (`components/shell/RouteSkeleton.tsx`), and `(explorer)/error.tsx` keeps a thrown
+  screen from taking the shell with it. See the note below on when a skeleton is
+  actually visible.
 - **Server components for the static parts** of each screen. Every page is currently
   `"use client"` because it reads the shared context; headings and copy could be split
   out and rendered on the server.
+
+### When the skeletons are visible
+
+Worth knowing before someone reports them as broken. `(explorer)/layout.tsx` awaits
+`authenticatedParent()`, which reads cookies, so on a **cold page load** Next blocks on
+the layout and the fallback never paints. The skeletons are for **client-side navigation
+between segments**, which is where the route split put the cost: moving to `/parent`
+fetches that segment's RSC payload and its 100 KB chunk, and that is the wait they cover.
+On a fast connection they will flash briefly or not at all, which is correct.
 
 ## Risks
 
