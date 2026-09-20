@@ -1,5 +1,33 @@
 # CurioQuest development log
 
+## Wave 02 account screens — September 20, 2026
+
+- The account screens were one unstyled panel with inline dimensions (`maxWidth:480`)
+  and a single error string. They were the least finished surface in the product and the
+  first one anybody sees.
+- **States.** `lib/auth-states.ts` resolves a response or a thrown error into one of
+  seven states as a pure function: submitting, confirm-your-email, reset-sent, invalid
+  credentials, offline or timed out, service unavailable, expired link. Previously all
+  failures read "Please try again.", which is correct advice for roughly one of them. An
+  offline or timed-out request now also says that nothing was submitted, which is the
+  thing a parent actually needs to know before retrying.
+- **"Account already exists" is still not distinguished, on purpose.** Wave 02 lists it
+  as a state. Implementing it would confirm to anyone who can type an email address that
+  a particular family uses this product. The route already refuses to make that
+  distinction; the resolver prefers the server's own wording so the protection cannot be
+  paraphrased away by a later edit, and a test asserts that.
+- **The screen.** Brand, a two-column layout that collapses to one on a phone with the
+  form first, show/hide password, live length feedback phrased as progress, focus moved
+  to any message so it is announced, and a resolved state that replaces the form instead
+  of inviting a second submission. A panel beside the form says what CurioQuest is:
+  adventures that fit the child, no child email addresses, Parent Corner behind a PIN.
+- Verification: typecheck, lint 0 errors, 106 unit tests (98 before), production build,
+  bundle guard. Six screen states rendered against the real stylesheets at 390/768/1440
+  with no page errors, no horizontal overflow, and every input and control at or above
+  44px. The render caught a duplicated "Back to sign in" on resolved screens.
+- Not delivered: the onboarding sequence the wave sketches, and the "Who's learning?"
+  profile selection upgrade.
+
 ## Wave 09 controls, and an answer-key leak — September 20, 2026
 
 - **Every activity answer was in the browser.** `lib/curriculum.ts` carries each question

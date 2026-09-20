@@ -1,0 +1,194 @@
+/*
+ * Account screens.
+ *
+ * The first surface anyone sees, and until now the only one still wearing inline
+ * dimensions on a bare panel. Two halves at tablet width and above — the form, and what
+ * this product is — collapsing to one column on a phone with the form first, because a
+ * returning parent should not scroll past a pitch to reach the password field.
+ */
+
+.auth-page {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: max(var(--space-6), var(--safe-top)) max(var(--space-5), var(--safe-right))
+           max(var(--space-6), var(--safe-bottom)) max(var(--space-5), var(--safe-left));
+  background:
+    radial-gradient(ellipse 70% 50% at 15% 0%, var(--green-50), transparent 70%),
+    radial-gradient(ellipse 60% 45% at 100% 100%, var(--sun-100), transparent 65%),
+    var(--cream);
+}
+
+.auth-layout {
+  display: grid;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 62rem;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  .auth-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+    gap: var(--space-10);
+  }
+}
+
+/* ---- The form ------------------------------------------------------------- */
+.auth-card {
+  padding: var(--space-8) var(--space-6);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+@media (min-width: 600px) {
+  .auth-card { padding: var(--space-10) var(--space-8); }
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  text-decoration: none;
+}
+
+.auth-card h1 { margin: 0 0 var(--space-2); font-size: var(--text-3xl); }
+.auth-card .lead { margin: 0 0 var(--space-6); color: var(--ink-faint); }
+
+.auth-card form { display: flex; flex-direction: column; gap: var(--space-4); }
+.auth-card label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+.auth-card input { padding: 0 var(--space-4); font-size: var(--text-base); font-weight: 400; }
+
+/* The reveal control sits inside the field, so it needs the field to be the
+   positioning context and needs room reserved for it in the padding. */
+.auth-password-field { position: relative; display: block; }
+.auth-password-field input { width: 100%; padding-right: calc(var(--touch-min) + var(--space-1)); }
+.auth-reveal {
+  position: absolute;
+  top: 50%;
+  right: var(--space-1);
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  color: var(--ink-faint);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.auth-reveal:hover { color: var(--green-600); }
+
+.auth-card label small {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+.auth-card label small.is-met { color: var(--green-600); }
+
+.auth-submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: calc(var(--touch-min) + 6px);
+  margin-top: var(--space-2);
+  font-size: var(--text-base);
+}
+.auth-submit .spin { animation: cq-spin 1s linear infinite; }
+@keyframes cq-spin { to { transform: rotate(360deg); } }
+
+.auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  margin: var(--space-6) 0 0;
+  font-size: var(--text-sm);
+}
+.auth-links span { color: var(--line); }
+
+.auth-resolved { margin-top: var(--space-4); }
+.auth-resolved .secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--touch-min);
+  padding-inline: var(--space-5);
+  text-decoration: none;
+}
+
+/* ---- States --------------------------------------------------------------- */
+.auth-message {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid;
+  animation: cq-rise var(--dur-base) var(--ease-out) both;
+}
+.auth-message:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.auth-message strong { display: block; margin-bottom: 2px; }
+.auth-message p { margin: 0; font-size: var(--text-sm); }
+.auth-message > span[aria-hidden] {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  font-weight: 800;
+  border-radius: var(--radius-pill);
+}
+
+.auth-message.is-error { color: var(--w-coral-ink); background: var(--w-coral-soft); border-color: var(--w-coral-line); }
+.auth-message.is-error > span[aria-hidden] { color: #fff; background: var(--w-coral-deep); }
+.auth-message.is-notice { color: var(--green-900); background: var(--green-50); border-color: var(--green-200); }
+.auth-message.is-notice > span[aria-hidden] { color: var(--green-700); }
+
+/* ---- What this is --------------------------------------------------------- */
+.auth-aside { padding: 0 var(--space-2); }
+.auth-aside h2 { margin: var(--space-2) 0 var(--space-5); font-size: var(--text-2xl); }
+.auth-aside ul { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-5); }
+.auth-aside li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  color: var(--ink-faint);
+}
+.auth-aside li strong { display: block; color: var(--ink); margin-bottom: 2px; }
+.auth-aside li > span[aria-hidden] {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--green-700);
+  background: var(--green-100);
+  border-radius: var(--radius-md);
+}
+.auth-note {
+  margin: var(--space-6) 0 0;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-submit .spin { animation-duration: 1.6s; }
+  .auth-message { animation: none; }
+}

@@ -18,6 +18,7 @@ import "./chest.css";
 import "./motion.css";
 import "./shell.css";
 import "./immersive.css";
+import "./auth.css";
 
 /**
  * `viewport-fit=cover` is what makes env(safe-area-inset-*) resolve to real values on

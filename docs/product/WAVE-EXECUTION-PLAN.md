@@ -23,7 +23,7 @@ The waves and the audit phases are two vocabularies for the same work:
 | Wave | Audit phase | Status |
 |---|---|---|
 | 01 Foundation | Phase 1 + 3 + parts of 4 | ✅ complete |
-| 02 Entry experience | — | Partly done, not audited |
+| 02 Entry experience | — | Screens and states done; onboarding open |
 | 03 Child home | Phase 1 (home) | Partly done |
 | 04 Adaptive learning | Pre-existing core + Phase 2 | Largely done, strongest area |
 | 05 Reading | Reading Section 94 slice | Vertical slice only |
@@ -57,13 +57,34 @@ Three items on its completion criteria were open, and are closed here:
 3. **No 404.** A mistyped or stale URL got the framework default, in a product whose
    every other surface is designed for a six-year-old.
 
-### Wave 02 — Entry experience
+### Wave 02 — Entry experience (partial)
 
-Auth routes exist (`app/auth/*`), profile selection exists
-(`components/auth/child-chooser.tsx`), the add-explorer dialog is polished. Not audited
-against the wave's state list: no evidence the eight authentication states
-(idle / submitting / success / invalid / exists / reset / verification / network) are all
-handled. **Next step:** enumerate the states, then fix.
+The audit found the account screens were a single unstyled panel carrying inline
+dimensions — the least finished surface in the product, and the first one anybody sees.
+
+**Delivered 2026-09-20:**
+
+- **States, resolved honestly** (`lib/auth-states.ts`). The form collapsed every failure
+  into "Please try again." A parent whose wifi had dropped, a parent who mistyped a
+  password, and a parent whose account service was down all read the same sentence, and
+  it was useful advice for one of them. Seven states are now told apart: submitting,
+  confirm-your-email, reset-sent, invalid credentials, offline or timed out, service
+  unavailable, and expired link. Pure functions, covered by `tests/auth-states.test.mjs`.
+- **"Account already exists" is deliberately still not distinguished.** Wave 02 lists it,
+  and implementing it would confirm to anyone who can type an email address that a
+  specific family uses this product. `app/auth/session/route.ts` already refuses to make
+  that distinction. The state resolver prefers the server's own wording precisely so
+  nobody paraphrases that protection away later.
+- **A designed screen.** Brand, two-column layout collapsing to one on a phone with the
+  form first, show/hide password, live length feedback, focus moved to any message so a
+  screen reader announces it, and a success state that replaces the form rather than
+  leaving it open to a second submission that cannot help.
+- **What this is, next to the form.** Adventures that fit the child, children never need
+  an email address, and Parent Corner behind a PIN — which is the wave's "parents are in
+  control" without a marketing page.
+
+**Still open:** the onboarding sequence itself (the wave sketches ten steps) and the
+"Who's learning?" profile selection upgrade.
 
 ### Wave 03 — Child home
 
@@ -179,7 +200,8 @@ Not in this pass: any curriculum content, any game engine work, Wave 02 onward.
    difficulty ramp, and a scoring arc, so a mission stops being four questions.
 2. **Wave 06 math manipulatives** — the wave explicitly forbids question-and-four-buttons
    as the default, and outside Reading it still is.
-3. **Wave 02 auth state audit** — small, cheap, and it is the first screen anyone sees.
+3. **Wave 02 onboarding** — the account screens are done; the add-child sequence and
+   profile selection are not.
 4. **Wave 14 remainder** — analytics events and flow tests.
 5. **Wave 15 import tooling** — only once content volume actually demands it.
 
