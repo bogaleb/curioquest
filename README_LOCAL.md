@@ -10,4 +10,8 @@ The active app uses native Next.js 16 and Supabase, preserving the existing lear
 
 Use `pnpm build` and `pnpm start` for the production server. Checks: `pnpm typecheck`, `pnpm test`, `pnpm test:integration` (requires PostgreSQL binaries; see the runbook).
 
-Never delete `.wrangler/state`: it contains legacy family data. Historical D1 tooling is retained for recovery and explicit transfer, but is no longer required for the active app. The runbook documents imports, Vercel configuration and remaining hosted verification gates.
+The Cloudflare/D1 half of the stack was removed in WP-00. If this checkout still has a `.wrangler/`
+directory, it holds legacy local family progress: export it with `node scripts/export-legacy-d1.mjs`
+and replay it into Supabase with `pnpm supabase:import -- --parent-id <uuid> --file work/d1-export.json`
+before deleting the directory. The runbook documents imports, Vercel configuration and remaining
+hosted verification gates.

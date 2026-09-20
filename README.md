@@ -1,138 +1,110 @@
 # CurioQuest
 
-An adventure-led family learning application now using native Next.js 16, React, TypeScript and Supabase. See [the current setup and release gates](docs/architecture/SUPABASE_SETUP.md). `PRODUCT_BLUEPRINT.md` is the primary specification; `docs/product/RELEASE_STATUS.md` records what is shipped and what is still unfinished.
+An early-reading app for children aged 4–7, built with Next.js 16, React 19, TypeScript, Tailwind v4
+and Supabase (PostgreSQL), deployed on Vercel.
 
-The app includes adaptive Pre-K/Grade 1 quests, eight game collections, sibling Team Quest, a garden Build Lab, Creative Studio with saved artwork, a parent activity builder and assignments, interactive stories, science notebooks, and an optional parent-enabled Faith & Bible area.
+> **A child opens CurioQuest, and the app already knows where they are in a story — it takes them
+> there, and something happens.**
 
-Start with `README_LOCAL.md` for local setup and migrations. Use `pnpm run typecheck`, `pnpm run lint`, `pnpm test`, `pnpm run build`, and `pnpm run test:integration` before publishing. Never delete `.wrangler/state` to fix a build error: it contains local family progress.
+That sentence is the product law. Every change is measured against it, and a change that adds a
+navigation decision for a five-year-old before learning starts is a regression, however good it looks.
 
-Hosting remains owner-private. This is an expanded private beta, not a completed public multi-family product or a validated assessment. The framework reference below documents the retained deployment foundation.
+## What ships today
 
-## Historical framework reference
+- An adaptive learning engine: a prerequisite skill graph, a mastery record that separates supported
+  from independent success, spaced review, and a recommender that can explain each choice.
+- A phonics slice — placement, Letter Catch, Blend Train, Sound Boxes, decodable text — which is the
+  strongest work in the repository and the spine the rest hangs from.
+- Manipulative engines for maths (ten-frame, number bond, number line, place value, array builder)
+  and an investigation loop for science (predict → test → explain).
+- A parent area behind a PIN gate: progress evidence, controls, a learning-record export, and
+  off-screen activity suggestions.
+- An append-only `learning_events` stream, from which mastery is projected.
 
-The following documents retained Sites tooling. Use README_LOCAL.md for active Next.js commands; hosted Supabase verification and production cutover remain pending.
+It is **owner-private**. There is no tenancy, public registration, subscription, or verifiable
+parental consent yet, so it is not a commercial product and must not be described as one.
+`docs/product/RELEASE_STATUS.md` records exactly what is and is not true.
 
-A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
+## Documentation map
 
-## Prerequisites
+| Read this | For |
+| --- | --- |
+| `docs/product/REBUILD-BLUEPRINT.md` | **The active implementation contract.** Read before planning any work. |
+| `docs/product/CurioQuest A Rethink.md` | The diagnosis and strategy the blueprint converts into work packages. |
+| `docs/product/RELEASE_STATUS.md` | What actually ships, and what is still not true. |
+| `docs/architecture/SUPABASE_SETUP.md` | Migrations, keys, RLS, and the deployment runbook. |
+| `README_LOCAL.md` | Local setup in five steps. |
+| `PRODUCT_BLUEPRINT.md`, `docs/product/WAVE-*.md` | Long-form history. A scope inventory, not a sequence — the blueprint supersedes them. |
 
-- Node.js `>=22.13.0`
-- Portable: Windows, macOS, or Linux; no Bash required
-- Managed Linux: managed Linux runtime with Bash, `flock`, `curl`, `sha256sum`, and GNU `timeout`
-- Git is required only for publishing
-
-## Sites Lifecycle
-
-The Sites initializer copies the shared starter and selects managed-linux only when `SITES_MANAGED_LINUX_CONTAINER=1`; otherwise it selects portable. It saves the selection only in ignored `.sites-runtime/execution-profile.json`. Both profiles copy/configure first, then use the plugin's separate `install-dependencies.mjs` step to measure installation independently. Edit source under `app/` and follow the Sites skill for installation, preview, builds, and publishing.
-
-Whenever reopening or moving a checkout, run `node <plugin-root>/scripts/configure-execution-profile.mjs` before project commands. Profile changes do not alter tracked source or require reinstalling otherwise-valid dependencies; restart an existing preview to use the new selection. Do not commit or upload `.sites-runtime/`.
-
-This starter does not use `wrangler.jsonc`.
-
-`install:ci` runs `npm ci` once against the shared lockfile, disables parent-workspace discovery, and includes required dev/optional dependencies despite production/omit settings. Sharp defaults to prebuilt binaries unless explicitly configured otherwise. Do not overlap installers.
-
-- **Portable:** Preserve host HOME, npm cache, registry, proxy, temporary paths, retry/concurrency settings, and lifecycle-script policy. Use `--prefer-offline --no-audit --no-fund`.
-- **Managed Linux:** Use the existing project-local HOME/cache/tmp setup and Linux install lock, tarball preflight, and timeout. Restore the image-seeded npm cache only when its lockfile hash matches; retain network fallback. Builds keep their existing timeout. These helpers are not invoked by the portable profile.
-
-`scripts/sites-env.mjs` preserves the caller's HOME, npm cache, proxy, XDG, and temporary-directory configuration while defaulting Wrangler and Miniflare state to the checkout. If npm reports an unwritable cache, select a writable path with `npm_config_cache` for that install. The `dev` and `start` scripts also keep Wrangler logs inside the checkout. Generated `.sites-runtime/` and `.wrangler/` directories are disposable and ignored by Git.
-
-On portable, `npm run dev` uses `vinext dev` with HMR, starting at port 5173. Vinext records the running server in ignored `.vinext/` state, rejects an ordinary duplicate launch, and recovers stale state after a stopped process; exactly simultaneous starts can race. Pass `--port <port>` or `--hostname <host>` after `npm run dev --` when needed; keep portable previews on loopback.
-
-For browser QA on managed Linux, use `sites-preview start`. The project's dev script runs Vite and accepts the supervisor's `--host 0.0.0.0 --port 4173 --strictPort` arguments. The internal browser uses `http://terminal.local:4173/`; it is not a user-facing URL. The supervisor owns the preview lifecycle. The ignored local profile survives the supervisor's cleared process environment.
-
-The portable profile simulates ChatGPT sign-in only for loopback development requests. Visit `/signin-with-chatgpt?return_to=/` to sign in as `local_seedy` (`seedy@sites.test`, display name `Seedy`) and `/signout-with-chatgpt?return_to=/` to sign out. The development cookie preserves that identity across server restarts. Mock auth is disabled in the managed-linux profile and is not included in production builds; hosted authentication remains dispatch-owned.
-
-The Worker uses `vinext/server/fetch-handler`, including Vinext's config-aware image handling. After building, `npm start` runs that Worker locally through Wrangler on `127.0.0.1`, sharing `.wrangler/state` with dev preview and local D1 migrations; it does not deploy the site or simulate sign-in. Use the URL printed by the server. Pass `npm start -- --port <port>` to select a different built-preview port.
-
-Local previews use Miniflare's placeholder `Request.cf` metadata without a network lookup. Set `CLOUDFLARE_CF_FETCH_ENABLED=true` to opt into fetching preview metadata; this setting does not change hosted request metadata.
-
-Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=true` to opt in.
-
-## Included Shape
-
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `@cloudflare/workers-types` provides Worker types; `cloudflare-env.d.ts` declares optional `DB`/`BUCKET` bindings—update these declarations if binding names change
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Use it as the durable user key; use email and name for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive `oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty `name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by `oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
-```
-
-## Optional Dispatch-Owned ChatGPT Sign-In
-
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs optional or required ChatGPT sign-in:
-
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use the returned `userId` as the stable user key for user-owned records; do not use email as a durable identifier.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send anonymous visitors through Sign in with ChatGPT.
-- In a Server Component, start sign-in with `<a href={chatGPTSignInPath(returnTo)} target="_top">`. The auth helper module is server-only; do not import it into a Client Component.
-- Do not use `fetch`, XHR, a client-side router, or a framework link that can prefetch the sign-in route. SIWC must start as a top-level navigation.
-- Never request the AuthAPI authorization endpoint directly. The dispatch-owned `/signin-with-chatgpt` route must start the SIWC flow.
-- Use `chatGPTSignOutPath(returnTo)` for browser sign-out links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because they depend on per-request identity headers.
-
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the OAuth cookies, and identity header injection. Do not implement app routes for those reserved paths. Routes that do not import and call the helper remain anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the Sites hosting platform's access policy controls for workspace-wide restrictions, or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Local D1 migrations
-
-For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
+## Local development
 
 ```sh
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_example.sql
+pnpm install --frozen-lockfile
+cp .env.example .env.local     # then fill in the three Supabase values
+pnpm dev                       # http://localhost:5173
 ```
 
-Replace the filename with the pending migration and `DB` with your D1 binding name if different. Use `.wrangler/state`, not `.wrangler/state/v3`; Wrangler adds the versioned directories. Do not replay migrations already applied locally. This updates only the preview database; publishing applies production migrations separately.
+Full steps, including applying migrations and creating the first parent account, are in
+`README_LOCAL.md`.
 
-## Diagnostic Commands
+## Architecture
 
-- `npm run install:ci`: perform the one locked dependency install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build the deployable Sites artifact
-- `npm run start`: preview the built Worker locally with D1/R2 support
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+```
+app/(explorer)/     Child routes, rendered inside KidShell — no sidebar, no breadcrumb
+app/(grownup)/      Parent routes, behind the PIN gate, where shadcn/Radix belongs
+app/api/            Route handlers; every answer is checked here, never in the browser
+components/kid/     The child component layer (tokens only, no shadcn)
+components/learning/  Activity engines — the good part; extend rather than replace
+components/reading/   The phonics slice
+components/ui/      shadcn primitives, for parent surfaces only
+lib/                Skill graph, mastery, bands, recommender, catalogue loaders
+supabase/migrations/  The real schema. Version-controlled, idempotent, RLS-checked
+```
 
-When using the Sites plugin, follow its skill instructions for installation, builds, and publishing. These npm commands remain available for standalone use.
+Two rules about data flow are absolute:
 
-The portable build runs Vinext directly without a host `timeout` command. The managed-linux build uses `scripts/build-verified.sh` and its existing `SITES_BUILD_TIMEOUT` setting.
+1. **Answers, scoring and reward grants are decided on the server.** The answer key never reaches the
+   browser. `pnpm check:bundle` fails the build if it does.
+2. **Every learning interaction writes a `learning_event`.** An interaction that records nothing did
+   not happen. Mastery is a projection over that table; the JSON blob is only a cache.
 
-## Learn More
+## Verification
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+```sh
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm build
+pnpm test:integration     # migrations + RLS in a disposable PostgreSQL cluster
+pnpm check:bundle         # no answer key in client chunks
+pnpm check:tokens         # no raw hex, px font sizes, or new !important
+pnpm check:child-surfaces # no emoji or Lucide icons on child screens
+pnpm check:images         # no raster over 500 KB
+pnpm ui:shots             # screenshots into outputs/
+```
+
+`pnpm test:integration` needs PostgreSQL 17 binaries on `PG_BIN`; the runbook explains why and how.
+
+Before calling any work done, check it by hand at iPad landscape (1180×820), iPad portrait, phone
+portrait (390×844) and desktop 1440, with narration off, reduced motion on, keyboard only, and as a
+second family for RLS.
+
+## Design constraints
+
+- **iPad landscape is the primary target**, phone portrait second. Desktop is a supported afterthought.
+- **Tokens only.** Colour, type, spacing, radius and motion are defined in `app/tokens.css` and
+  nowhere else. No raw hex, no px font sizes, no new `!important`.
+- **No emoji or Lucide icons on child surfaces.** Where art is missing, use a visible grey placeholder
+  so the gap stays obvious.
+- **Touch targets** are 64px for ages 4–5 and 56px for 6–7; contrast meets WCAG AA against the actually
+  painted background.
+- **No engagement-pressure mechanics:** no loss-bearing streaks, no daily-login rewards, no
+  variable-ratio surprise drops.
+- **No third-party analytics, advertising or experimentation SDK inside a child session.**
+
+## Privacy
+
+CurioQuest stores a child's nickname, avatar and learning band. It does not collect a birth date,
+surname, photograph, email address or location. Voice input, where enabled, runs on-device and stores
+a pass/fail judgement — never a recording, which the amended COPPA Rule treats as biometric data.
+See `docs/legal/PRIVACY.md` and `docs/legal/RETENTION.md`.

@@ -6,7 +6,7 @@ export class SupabaseConfigurationError extends Error {
 }
 
 export function getSupabaseConfig() {
-  // Literal property access is required for Next.js/Vinext browser substitution.
+  // Literal property access is required for Next.js browser-time substitution.
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim();
   if (!url || !publishableKey) {

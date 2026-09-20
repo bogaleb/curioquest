@@ -12,5 +12,5 @@ export async function proxy(request: NextRequest) {
   }
 }
 
-// Expand only as features migrate. The current D1 app does not use Supabase sessions yet.
+// Every route that reads a parent session refreshes it here. Expand as routes are added.
 export const config = { matcher: ['/', '/auth/:path*', '/account/:path*', '/api/quest', '/api/parent/:path*', '/api/reading', '/api/experience', '/api/stories', '/api/workspace', '/api/media'] };

@@ -12,6 +12,13 @@ The long-term product specification is located at:
 
 `docs/product/COMMERCIAL-UPGRADE.md`
 
+## Read this first
+
+`docs/product/REBUILD-BLUEPRINT.md` is the active implementation contract. Read it before planning any work.
+It takes precedence over `docs/product/WAVE-*.md` and `COMMERCIAL-UPGRADE.md`, which were written against the
+old product shape. Work one numbered package at a time, and use its Definition of done rather than a passing build.
+
+
 Do not read the entire specification on every task unless necessary. Read the specific implementation wave relevant to the current task.
 
 ## Core Rules
