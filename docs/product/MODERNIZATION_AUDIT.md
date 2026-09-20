@@ -68,31 +68,50 @@ preserves all of it:
 - **PWA manifest** (`app/manifest.ts`) — installable, standalone, deliberately no
   service worker yet.
 
-Verification: typecheck, lint, 58 tests, production build.
+Verification: typecheck, lint, tests, production build, and zero console errors
+across seven captured viewports (`pnpm ui:shots`).
 
-### Phase 2 — Adaptive learning, deepened
+### Phase 2 — Subjects and adaptive delivery ✅ delivered
 
-1. Extend the skill graph beyond three subjects: science, creativity, general
-   knowledge, memory/attention, social-emotional. The mastery model already generalises;
-   it needs nodes.
-2. Author native content per band rather than mapping new bands onto the two legacy
-   pools. `contentBands` is the seam — a band stops borrowing once it has its own.
-3. Use `maxPromptWords` to select between authored prompt variants, not just to measure.
-4. Surface mastery to parents in plain language, never labelling a child.
+- **Subject registry** (`lib/subjects.ts`). One place knowing each subject's world
+  name, label, colour family, and maturity-specific copy. Home worlds, world cards,
+  quest headers, parent priorities, and report tallies all read from it.
+- **Six subjects, not three.** Science, Our World, and Feelings & Friendship added as
+  first-class subjects: 24 new skills (50 → 74) and 45 authored activities across both
+  content pools and all three levels.
+- **Core vs explore.** Reading, math, and logic carry placement and anchor every day;
+  explore subjects fill remaining slots, so a longer session widens coverage rather
+  than repeating. Placement deliberately still covers only the core three.
+- **Delivery reaches the activity.** Choice count narrows server-side per band,
+  narration defaults from the band, and Nova offers help after a band-sized pause.
 
-### Phase 3 — Routing and content scale
+### Phase 3 — Routing (partial)
 
-1. Move the `view` string onto real routes (`/play/[world]`, `/studio`, `/stories/[id]`).
-   This is the prerequisite for deep links, back-button behaviour, per-route code
-   splitting, and content that does not ship in the initial bundle.
-2. Move content from TypeScript modules into the existing Supabase curriculum tables,
-   which already have the schema for it. Keep code-defined content as the seed path.
-3. Add the admin authoring surface behind a role check — the schema anticipates it.
+- The current screen now lives in the URL with `pushState`, so views are linkable and
+  the Back button works. Parent Corner is excluded — it sits behind a PIN.
+- **Still to do:** real route segments (`/play/[world]`, `/studio`), which is what
+  unlocks per-route code splitting and content that does not ship in the first bundle.
+- **Still to do:** moving content from TypeScript modules into the Supabase curriculum
+  tables, which already have the schema for it.
 
-### Phase 4 — Experience
+### Phase 4 — Experience (partial)
 
-Game engines with a shared loop (pause, restart, exit, difficulty ramp, progress save);
-immersive mode extended to games, stories, and simulations; story library as data.
+- Immersive mode adopted by the Creative Studio and the activity player, so games,
+  quests, and stories can take the whole display.
+- **Still to do:** shared game-loop engines with pause, restart, and in-game difficulty
+  ramp. The current engines are still largely one-shot question renderers.
+
+### Phase 5 — Motivation ✅ delivered
+
+- 17 achievements in five categories (`lib/achievements.ts`), every one a pure measure
+  over recorded evidence. Nothing is earned by attendance; persistence is measured by
+  recovery rather than by being right first time.
+
+### Phase 6 — Parent experience ✅ delivered
+
+- Today / this week / this month reports (`lib/reports.ts`), counted from real
+  activity, windowed to the family's local midnight, reporting emptiness honestly and
+  withholding focus advice unless an imbalance is real.
 
 ### Phase 5–7
 

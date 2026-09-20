@@ -7,6 +7,8 @@ import { gameById } from "@/lib/arcade";
 import { readAloud } from "@/lib/speech";
 import {skillById} from "@/lib/skill-graph";
 import {resolveBand} from "@/lib/learning-bands";
+import {useImmersive} from "@/hooks/use-immersive";
+import {Maximize2,Minimize2} from "lucide-react";
 import {useEffect,useState} from 'react';
 import {celebrate} from '@/lib/audio';
 import type { PublicExplorer, QuestFeedback } from "@/lib/explorer-view";
@@ -24,6 +26,9 @@ export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack
 }) {
   const session=profile.session;
   const delivery=resolveBand(profile.band).delivery;
+  // The player is already a fixed overlay; this additionally hands the activity the
+  // whole display where the browser allows it, hiding tabs and the address bar.
+  const {ref:stageRef,active:full,toggle:toggleFull}=useImmersive();
   useEffect(()=>{if(feedback?.correct)celebrate(session?.index===session?.total);},[feedback?.correct,session?.index,session?.total]);
   // Nova offers help after a band-sized pause. She never takes the hint for the child:
   // an unrequested hint would understate how independently they are working.
@@ -43,8 +48,8 @@ export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack
   const practicedSkills=[...new Set(profile.history.find(item=>item.sessionId===session.id)?.skillIds??[])].map(id=>skillById.get(id)?.name).filter((name):name is string=>!!name).slice(0,4);
   const purpose=current?skillById.get(current.skillId)?.name:null;
   const title=game?.title??(session.discovery?"Meet Nova":session.teamId?"Garden Rescue Team":chapter?.title??worldName(session.subject));
-  return <div className={`play-overlay ${game?`game-player game-${game.id}`:""}`} role="dialog" aria-modal="true" aria-label={title}>
-    <header className="play-header"><button className="text-button" disabled={busy} onClick={onBack}><ArrowLeft size={20}/>{game?'Back to games':'Save & take a break'}</button><span className="play-world">{game?.emoji} {title}</span><span className="star-pill"><Star size={16}/>{profile.stars} stars</span></header>
+  return <div ref={stageRef} className={`play-overlay ${game?`game-player game-${game.id}`:""}`} data-fullscreen={full} role="dialog" aria-modal="true" aria-label={title}>
+    <header className="play-header"><button className="text-button" disabled={busy} onClick={onBack}><ArrowLeft size={20}/>{game?'Back to games':'Save & take a break'}</button><span className="play-world">{game?.emoji} {title}</span><span className="play-header-tools"><button type="button" className="icon-button play-fullscreen" aria-pressed={full} aria-label={full?"Leave full screen":"Play in full screen"} onClick={toggleFull}>{full?<Minimize2 size={20}/>:<Maximize2 size={20}/>}</button><span className="star-pill"><Star size={16}/>{profile.stars} stars</span></span></header>
     {error&&<div className="error" role="alert">{error}<button disabled={busy} onClick={onBack}>Return to my adventure</button></div>}
     {current?<div className="activity"><div className="activity-progress"><span>Discovery {Math.min(session.index+(feedback?.correct?0:1),session.total)} of {session.total}</span><div>{Array.from({length:session.total},(_,i)=><span key={i} className={i<session.index?"done":""}/>)}</div></div>
       {game&&<div className="game-mission-label">{game.missions[session.gameLevel??0]}</div>}
