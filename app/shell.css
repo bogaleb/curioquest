@@ -1,0 +1,432 @@
+/*
+ * Responsive application shell.
+ *
+ * Owns every layout decision that depends on device class, so screens can be written
+ * once and trusted at any width. Loaded after the legacy sheets so it is authoritative
+ * for the shell; screen-level styles stay where they are.
+ *
+ *   compact   <  768px   phone: bottom tab bar, single column
+ *   medium    >= 768px   tablet: full-height icon rail (primary target: iPad)
+ *   expanded  >= 1181px  laptop/desktop: labelled sidebar
+ */
+
+.cq-shell {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--cream);
+}
+
+/* ---- Skip link ---------------------------------------------------------- */
+.cq-skip {
+  position: fixed;
+  top: calc(var(--safe-top) + var(--space-2));
+  left: var(--space-2);
+  z-index: 100;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-md);
+  background: var(--leaf);
+  color: #fff;
+  font-weight: 700;
+  transform: translateY(-200%);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+.cq-skip:focus-visible { transform: translateY(0); }
+
+/* ---- Rail / sidebar ------------------------------------------------------ */
+.cq-rail {
+  display: none;
+  flex: none;
+  flex-direction: column;
+  background: var(--surface);
+  border-right: 1px solid var(--line);
+  padding: calc(var(--safe-top) + var(--space-6)) var(--space-3)
+           calc(var(--safe-bottom) + var(--space-4));
+  padding-left: max(var(--space-3), var(--safe-left));
+}
+
+.cq-rail-head { display: grid; gap: var(--space-4); }
+
+.cq-rail-nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-6);
+  /* A long destination list must never push the grown-up controls off-screen. */
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+
+.cq-rail-divider {
+  border: 0;
+  border-top: 1px dashed var(--line);
+  margin: var(--space-3) var(--space-2);
+}
+
+.cq-rail-foot {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  display: grid;
+  gap: var(--space-1);
+}
+
+/* ---- Nav items ----------------------------------------------------------- */
+.cq-nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--touch-min);
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-align: left;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.cq-nav-item:hover:not(:disabled) { background: var(--surface-sunk); }
+.cq-nav-item.is-active { background: #e7efe1; color: #1b654b; }
+
+.cq-nav-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.cq-nav-icon svg { width: 22px; height: 22px; }
+
+.cq-nav-count {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  min-width: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--gold);
+  color: #fff;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.cq-nav-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- Main column --------------------------------------------------------- */
+.cq-column {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.cq-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 56px;
+  padding: var(--safe-top) max(var(--shell-gutter), var(--safe-right))
+           0 max(var(--shell-gutter), var(--safe-left));
+  background: #fffefaf2;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.cq-crumb {
+  min-width: 0;
+  font-size: var(--text-sm);
+  color: #7c887f;
+}
+.cq-crumb-current {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cq-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: none;
+}
+
+.cq-main {
+  flex: 1;
+  width: 100%;
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  /* The tab bar is fixed, so compact viewports reserve room for it here. */
+  padding: var(--space-6) max(var(--shell-gutter), var(--safe-right))
+           calc(var(--shell-tabbar) + var(--space-8) + var(--safe-bottom))
+           max(var(--shell-gutter), var(--safe-left));
+}
+
+.cq-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  max-width: var(--shell-max);
+  width: 100%;
+  margin-inline: auto;
+  padding: var(--space-5) max(var(--shell-gutter), var(--safe-left))
+           calc(var(--shell-tabbar) + var(--space-5) + var(--safe-bottom));
+  border-top: 1px solid var(--line);
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+}
+
+/* ---- Compact: bottom tab bar --------------------------------------------- */
+.cq-tabbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 30;
+  display: flex;
+  align-items: stretch;
+  background: #fffefaf7;
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  padding: var(--space-1) max(var(--space-1), var(--safe-left))
+           calc(var(--space-1) + var(--safe-bottom)) max(var(--space-1), var(--safe-right));
+}
+
+.cq-nav-tab {
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-1);
+  /* Child-facing: the band token decides how big a thumb target needs to be. */
+  min-height: max(var(--touch-child), 56px);
+  padding: var(--space-2) var(--space-1);
+  font-size: var(--text-2xs);
+  text-align: center;
+}
+.cq-nav-tab .cq-nav-label {
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+}
+.cq-nav-tab.is-active { background: transparent; color: var(--leaf); }
+.cq-nav-tab.is-active .cq-nav-icon::after {
+  content: "";
+  position: absolute;
+  inset: -8px -12px;
+  border-radius: var(--radius-pill);
+  background: #e7efe1;
+  z-index: -1;
+}
+
+/* ---- Compact: More sheet -------------------------------------------------- */
+.cq-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  background: #1c372866;
+  backdrop-filter: blur(4px);
+}
+
+.cq-sheet {
+  width: 100%;
+  max-height: 85dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--surface);
+  border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+  padding: var(--space-5) max(var(--space-5), var(--safe-left))
+           calc(var(--shell-tabbar) + var(--space-5) + var(--safe-bottom))
+           max(var(--space-5), var(--safe-right));
+  animation: cq-sheet-in var(--dur-slow) var(--ease-out);
+}
+
+@keyframes cq-sheet-in {
+  from { transform: translateY(14%); opacity: 0.6; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.cq-sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.cq-sheet-head h2 { font-size: var(--text-lg); }
+
+.cq-sheet-close {
+  display: grid;
+  place-items: center;
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  color: var(--ink-soft);
+}
+
+.cq-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-2);
+}
+
+.cq-nav-sheet {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--touch-child);
+  background: var(--surface-sunk);
+  font-size: var(--text-sm);
+}
+.cq-nav-sheet .cq-nav-label { white-space: normal; }
+
+.cq-sheet-utility {
+  display: grid;
+  gap: var(--space-1);
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
+/* ==========================================================================
+   Medium: tablets and small laptops. The primary child device.
+   ========================================================================== */
+@media (min-width: 768px) {
+  .cq-tabbar { display: none; }
+
+  .cq-rail {
+    display: flex;
+    width: var(--shell-rail);
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* Icon-over-label so a 96px rail still gives a generous, readable target. */
+  .cq-nav-rail {
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    min-height: var(--touch-child);
+    padding: var(--space-2) var(--space-1);
+    font-size: var(--text-2xs);
+    text-align: center;
+  }
+  .cq-nav-rail .cq-nav-label {
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+    line-height: var(--leading-tight);
+  }
+
+  .cq-topbar { min-height: 64px; }
+  .cq-main { padding-bottom: calc(var(--space-10) + var(--safe-bottom)); }
+  .cq-footer { padding-bottom: calc(var(--space-6) + var(--safe-bottom)); }
+
+  /* The rail already carries the brand and switcher; hide them where the legacy
+     markup would otherwise duplicate them in the header. */
+  .cq-rail-head .cq-brand-tagline { display: none; }
+}
+
+/* ==========================================================================
+   Expanded: laptop and desktop. Labels return.
+   ========================================================================== */
+@media (min-width: 1181px) {
+  .cq-rail {
+    width: var(--shell-sidebar);
+    padding-inline: var(--space-5);
+  }
+
+  .cq-nav-rail {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    min-height: var(--touch-min);
+    padding: var(--space-3);
+    font-size: var(--text-sm);
+    text-align: left;
+  }
+  .cq-nav-rail .cq-nav-label {
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  .cq-topbar { min-height: var(--shell-topbar); }
+  .cq-rail-head .cq-brand-tagline { display: block; }
+}
+
+@media (min-width: 1550px) {
+  .cq-main { padding-top: var(--space-10); }
+}
+
+/* ==========================================================================
+   Landscape phones: vertical space is the scarce resource.
+   ========================================================================== */
+@media (max-width: 926px) and (orientation: landscape) and (max-height: 500px) {
+  .cq-topbar { min-height: 44px; }
+  .cq-nav-tab { min-height: 46px; }
+  .cq-nav-tab .cq-nav-label { display: none; }
+  .cq-main { padding-block: var(--space-4) calc(var(--space-12) + var(--safe-bottom)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cq-sheet { animation: none; }
+  .cq-skip { transition: none; }
+}
+
+/* A screen that has taken over the viewport suppresses the shell chrome. */
+.cq-shell:has(.cq-immersive[data-active="true"]) .cq-tabbar { display: none; }
+
+/* ==========================================================================
+   Legacy content adopted into the new rail.
+   The brand lockup, explorer switcher, and grown-up controls keep their original
+   styling; these rules only re-fit them to the rail's narrower column.
+   ========================================================================== */
+.cq-rail-head .brand { font-size: var(--text-xl); }
+.cq-rail-head .explorer-switch { margin: 0; }
+.cq-rail-foot .nav-item { margin-bottom: 0; min-height: var(--touch-min); }
+.cq-rail-foot .nova-note { margin: 0 0 var(--space-3); }
+.cq-rail-foot .version { margin-top: var(--space-3); }
+
+/* Medium rail: only icons and short labels fit, so the decorative note and the
+   long-form brand tagline step aside rather than overflowing. */
+@media (max-width: 1180px) {
+  .cq-rail-head .brand { font-size: 0; justify-content: center; gap: 0; }
+  .cq-rail-head .brand small { display: none; }
+  .cq-rail-head .brand-icon { font-size: var(--text-base); }
+  .cq-rail-head .explorer-switch { padding: var(--space-2); flex-direction: column; gap: var(--space-1); }
+  .cq-rail-head .explorer-switch label > span { font-size: 0; }
+  .cq-rail-head .explorer-switch > svg { display: none; }
+  .cq-rail-head .explorer-switch select { font-size: var(--text-2xs); text-align: center; }
+  .cq-rail-foot .nova-note,
+  .cq-rail-foot .version { display: none; }
+  .cq-rail-foot .nav-item {
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-1);
+    font-size: var(--text-2xs);
+    text-align: center;
+  }
+}
+
+/* The rail is hidden on compact; its grown-up controls live in the More sheet. */
+@media (max-width: 767px) {
+  .cq-rail { display: none; }
+  .cq-sheet-utility .nova-note { display: none; }
+  .cq-sheet-utility .nav-item { min-height: var(--touch-min); }
+}

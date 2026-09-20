@@ -11,6 +11,7 @@ import {
   type GradeTrack,
   type InterestId,
 } from "@/lib/explorers";
+import { isLearningBandId, primaryContentBand, type LearningBandId } from "@/lib/learning-bands";
 import { recordAttempt, recordHint } from "@/lib/mastery";
 import { recommendQuest, rememberActivityType } from "@/lib/recommendation";
 import { evaluateResponse } from "@/lib/activity-evaluation";
@@ -62,6 +63,14 @@ function validName(value: unknown): value is string {
 
 function validGrade(value: unknown): value is GradeTrack {
   return value === "prek" || value === "grade1";
+}
+
+/**
+ * Clients may send a learning band; older clients send only the legacy track. Both
+ * legacy track values are valid band IDs, so an absent band falls back to the track.
+ */
+function requestedBand(input: Record<string, unknown>, grade: GradeTrack): LearningBandId {
+  return isLearningBandId(input.band) ? input.band : grade;
 }
 
 function validAvatar(value: unknown): value is AvatarId {
@@ -138,13 +147,15 @@ async function post(request: Request) {
       }
 
       const id = crypto.randomUUID();
+      const band = requestedBand(input, input.grade);
       const profile = newExplorer(
         id,
         input.name.trim(),
-        input.grade,
+        primaryContentBand(band),
         input.avatar,
         input.interests,
         Number(input.dailyGoal),
+        band,
       );
       if (!await createExplorer(profile)) return Response.json({error:"This family already has four explorers."},{status:409});
       return Response.json({ profile: clean(profile, questions) }, { status: 201 });
@@ -205,7 +216,7 @@ async function post(request: Request) {
         profile.savedSessions=profile.savedSessions.filter(s=>!matches(s));
       }else if(target==='rewards'){profile.stars=0;}
       else if(target==='skill'){if(typeof input.skill!=='string'||!skillById.has(input.skill))return Response.json({error:'Choose a known skill.'},{status:400});delete profile.skillMastery[input.skill];}
-      else if(target==='all'){const fresh=newExplorer(profile.id,profile.name,profile.grade,profile.avatar,profile.interests,profile.dailyGoal);Object.assign(profile,fresh,{controls:profile.controls,preferences:profile.preferences,createdAt:profile.createdAt});}
+      else if(target==='all'){const fresh=newExplorer(profile.id,profile.name,profile.grade,profile.avatar,profile.interests,profile.dailyGoal,profile.band);Object.assign(profile,fresh,{controls:profile.controls,preferences:profile.preferences,createdAt:profile.createdAt});}
       else return Response.json({error:'Choose what to reset.'},{status:400});
     } else if (input.action === "profile") {
       if (
@@ -221,15 +232,18 @@ async function post(request: Request) {
         );
       }
 
-      if (input.grade !== profile.grade) {
+      const nextBand = requestedBand(input, input.grade);
+      const nextGrade = primaryContentBand(nextBand);
+      if (nextBand !== profile.band) {
         if(profile.team&&!profile.team.completedAt)return Response.json({error:"Finish the shared Team Quest before changing learning tracks."},{status:409});
         const reset = newExplorer(
           profile.id,
           profile.name,
-          input.grade,
+          nextGrade,
           profile.avatar,
           profile.interests,
           profile.dailyGoal,
+          nextBand,
         );
         profile.skills = reset.skills;
         // Evidence describes the learner, so it survives a change in starting track.
@@ -239,7 +253,8 @@ async function post(request: Request) {
         profile.savedSessions = [];
       }
       profile.name = input.name.trim();
-      profile.grade = input.grade;
+      profile.band = nextBand;
+      profile.grade = nextGrade;
       profile.avatar = input.avatar;
       profile.interests = input.interests;
       profile.dailyGoal = Number(input.dailyGoal);

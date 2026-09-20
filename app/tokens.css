@@ -1,0 +1,133 @@
+/*
+ * CurioQuest design tokens.
+ *
+ * One source of truth for type, space, radius, elevation, motion, and device metrics.
+ * Existing stylesheets keep their literal values until each is migrated; new and
+ * reworked surfaces must use these tokens so the product reads as one system.
+ *
+ * Breakpoints (documented here, applied in shell.css and component sheets):
+ *   compact   <  768px   phones, portrait
+ *   medium    >= 768px   tablets, small laptops, phone landscape
+ *   expanded  >= 1181px  laptops and desktops
+ *   wide      >= 1550px  large desktop displays
+ */
+
+:root {
+  /* ---- Type scale -------------------------------------------------------- */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 21px;
+  --text-2xl: 25px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 44px;
+  --leading-tight: 1.2;
+  --leading-snug: 1.45;
+  --leading-normal: 1.65;
+  --leading-loose: 1.8;
+  --tracking-tight: -0.035em;
+  --tracking-wide: 1.2px;
+  --tracking-eyebrow: 1.7px;
+
+  /* ---- Space scale (4px base) -------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* ---- Radii ------------------------------------------------------------- */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 17px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+  --radius-pill: 999px;
+
+  /* ---- Elevation --------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px #233f370f;
+  --shadow-md: 0 4px 14px #233f3714;
+  --shadow-lg: 0 14px 38px #233f371f;
+  /* The "pressable" bottom border that gives child-facing controls their weight. */
+  --press-depth: 4px;
+
+  /* ---- Colour ------------------------------------------------------------ */
+  /* --ink, --green, --muted, --cream, --line are defined in globals.css and are
+     the established brand values; these extend rather than replace them. */
+  --surface: #fffefa;
+  --surface-sunk: #f3f5ed;
+  --surface-accent: #eff4e6;
+  --ink-soft: #6a796f;
+  --ink-faint: #8a9185;
+  --gold: #da971b;
+  --gold-soft: #fbf2d9;
+  --leaf: #17694e;
+  --leaf-deep: #10513d;
+  --berry: #b4524f;
+  --focus-ring: #da971b;
+
+  /* ---- Motion ------------------------------------------------------------ */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 340ms;
+  --ease-out: cubic-bezier(0.22, 0.8, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* ---- Touch targets ----------------------------------------------------- */
+  /* Adult/parent-facing minimum. */
+  --touch-min: 48px;
+  /* Child-facing minimum. Overridden per learning band below, so a three-year-old
+     physically gets larger targets than an eight-year-old on the same screen. */
+  --touch-child: 64px;
+
+  /* ---- Device safe areas ------------------------------------------------- */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* ---- Shell metrics ----------------------------------------------------- */
+  --shell-sidebar: 244px;
+  --shell-rail: 96px;
+  --shell-topbar: 82px;
+  --shell-tabbar: 0px;
+  --shell-gutter: var(--space-5);
+  --shell-max: 1530px;
+}
+
+/* Child-facing target sizes scale with the developmental band. */
+[data-band="early-preschool"] { --touch-child: 88px; }
+[data-band="prek"] { --touch-child: 80px; }
+[data-band="kindergarten"] { --touch-child: 72px; }
+[data-band="grade1"] { --touch-child: 64px; }
+[data-band="grade2"],
+[data-band="grade3"] { --touch-child: 56px; }
+
+@media (min-width: 768px) {
+  :root {
+    --shell-gutter: var(--space-6);
+  }
+}
+
+@media (min-width: 1181px) {
+  :root {
+    --shell-gutter: var(--space-8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 1ms;
+    --dur-base: 1ms;
+    --dur-slow: 1ms;
+  }
+}
