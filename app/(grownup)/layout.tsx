@@ -1,9 +1,6 @@
 import { redirect } from "next/navigation";
 import { authenticatedParent } from "@/lib/backend/context";
-import { AuroraBackdrop } from "@/components/visuals/AuroraBackdrop";
 import "./grownup.css";
-// After grownup.css: that file owns the layout, this one owns ground, material and light.
-import "./studio-aurora.css";
 
 /**
  * The grown-up route group.
@@ -19,10 +16,5 @@ import "./studio-aurora.css";
  */
 export default async function GrownupLayout({ children }: { children: React.ReactNode }) {
   if (!(await authenticatedParent())) redirect("/auth/sign-in");
-  return (
-    <div className="grownup-root">
-      <AuroraBackdrop variant="deep"/>
-      {children}
-    </div>
-  );
+  return <div className="grownup-root">{children}</div>;
 }

@@ -28,7 +28,7 @@ export default async function StudioPage() {
      * time it asks — and `parentId()` throwing is not a `ContentError`, so it fell
      * through `isCatalogueAuthor`'s catch and came back as "the catalogue is not
      * answering". Which is to say the studio refused everybody, including a real
-     * author, and said the database was down.
+     * author, and blamed the database.
      *
      * The layout above has already redirected anyone unauthenticated, so this resolves.
      */

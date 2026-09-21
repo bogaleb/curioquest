@@ -1,7 +1,6 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { AuroraBackdrop } from "@/components/visuals/AuroraBackdrop";
 import { DoorMark } from "@/components/kid/Placeholder";
 import { KidSurfaceProvider } from "@/components/kid/surface";
 import type { KidWorld } from "@/lib/kid-worlds";
@@ -51,9 +50,6 @@ export function KidShell({
         data-kid-world={world}
         data-reduced-motion={reducedMotion || undefined}
       >
-        {/* The luminous register: the same mesh, inverted, so the ground a child reads
-            off stays bright. No beam — nothing sweeps behind an activity. */}
-        <AuroraBackdrop variant="lux" grid={false}/>
         {/* Kept for keyboard and screen-reader users. It is the only text link a child
             surface carries, and it is invisible until focused. */}
         <a className="cq-skip" href="#kid-main">

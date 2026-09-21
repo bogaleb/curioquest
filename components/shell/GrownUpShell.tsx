@@ -1,6 +1,5 @@
 "use client";
 
-import { AuroraBackdrop } from "@/components/visuals/AuroraBackdrop";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { MoreHorizontal, X } from "lucide-react";
 import {
@@ -119,9 +118,6 @@ export function GrownUpShell({
 
   return (
     <div className="cq-shell" data-band={band} data-reduced-motion={reducedMotion || undefined}>
-      {/* The deep register's light. Fixed, decorative, and behind everything the shell
-          draws — see `components/visuals/aurora-backdrop.css`. */}
-      <AuroraBackdrop variant="deep"/>
       <a className="cq-skip" href="#cq-main">
         Skip to the adventure
       </a>
