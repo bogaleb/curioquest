@@ -32,16 +32,22 @@ type Props = {
 };
 
 /**
- * The responsive application shell.
+ * The grown-up application shell.
  *
- * One navigation model renders three ways:
+ * This is the familiar web layout — sidebar, breadcrumb, top bar — and as of WP-03 it is
+ * *only* for adults: Parent Corner and the account screens, behind the parent gate. A child
+ * never sees it. Their side of the product is `KidShell`, which has no chrome at all,
+ * because every pixel of navigation furniture is a decision a four-year-old has to make
+ * before learning starts.
+ *
+ * One navigation model still renders three ways for the adult:
  *   compact  (<768px)  bottom tab bar with five primary destinations + a More sheet
- *   medium   (>=768px) full-height icon rail, sized for thumbs on a tablet
+ *   medium   (>=768px) full-height icon rail
  *   expanded (>=1181px) labelled sidebar
  *
  * Layout lives here rather than in each screen, so no screen has to re-solve it.
  */
-export function AppShell({
+export function GrownUpShell({
   view,
   onNavigate,
   band,

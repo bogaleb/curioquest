@@ -14,13 +14,14 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import { AppShell } from "@/components/shell/AppShell";
+import { GrownUpShell } from "@/components/shell/GrownUpShell";
+import { KidShell } from "@/components/shell/KidShell";
 import { AccountActions } from "@/components/auth/account-actions";
 import { CelebrationLayer } from "@/components/learning/celebration-layer";
 import { ParentGate } from "@/components/learning/parent-gate";
 import { QuestPlayer } from "@/components/learning/quest-player";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
-import { destinationForPath, destinationHref } from "@/lib/navigation";
+import { destinationFor, destinationForPath, destinationHref } from "@/lib/navigation";
 import { AVATARS, INTERESTS, avatarEmoji } from "@/lib/explorers";
 import { learningBands, primaryContentBand, resolveBand } from "@/lib/learning-bands";
 import { configureAudio, quietAudio, unlockAudio } from "@/lib/audio";
@@ -30,9 +31,14 @@ import { ExplorerProvider, useExplorer } from "./explorer-context";
 /**
  * The persistent frame around every explorer route.
  *
- * Navigation, the quest player, the parent gate, and the add-explorer dialog live
- * here rather than in any one screen, so moving between routes never tears down an
- * in-flight quest or asks for the parent PIN again.
+ * The quest player, the parent gate and the add-explorer dialog live here rather than in
+ * any one screen, so moving between routes never tears down an in-flight quest or asks for
+ * the parent PIN again.
+ *
+ * As of WP-03 the frame itself is two frames. A child gets `KidShell`: no rail, no top bar,
+ * no breadcrumb, no star counter, no explorer dropdown — one drawn door back to the map, and
+ * the map is the navigation. An adult, behind the parent gate, gets `GrownUpShell`, which is
+ * the layout this file used to give everyone.
  */
 export function ExplorerShell({ children }: { children: ReactNode }) {
   return (
@@ -186,63 +192,88 @@ function ShellFrame({ children }: { children: ReactNode }) {
     </>
   );
 
+  const band = profile?.band ?? "prek";
+  const narration = profile?.controls.audio.narration ?? true;
+  const reducedMotion = profile?.preferences?.reducedMotion;
+  const world = destinationFor(view)?.place.world ?? "grove";
+
+  const errorBanner = error ? (
+    <div className="error" role="alert">
+      {error} <button onClick={reload}>Try again</button>
+    </div>
+  ) : null;
+
+  // Grown-up surfaces: Parent Corner, and the first-run setup before any explorer exists.
+  // Both are adult work, and both keep the familiar layout.
+  const grownUp = view === "parent" || !profile;
+
   return (
     <>
       <CelebrationLayer />
-      <AppShell
-        view={view}
-        onNavigate={navigate}
-        band={profile?.band ?? "prek"}
-        faith={profile?.controls.faith ?? false}
-        stars={profile?.stars ?? 0}
-        inert={blocking}
-        reducedMotion={profile?.preferences?.reducedMotion}
-        brand={brand}
-        switcher={switcher}
-        utility={utility}
-        topbarActions={topbarActions}
-        footer={
-          <>
-            <span className="footer-brand"><Compass size={15} /> A little curiosity goes a long way.</span>
-            <span>Learn. Think. Build. Explore.</span>
-          </>
-        }
-      >
-        {error && (
-          <div className="error" role="alert">
-            {error} <button onClick={reload}>Try again</button>
-          </div>
-        )}
-        {!profile ? (
-          loaded ? (
-            <section className="panel">
-              <h1>Your family&apos;s first adventure</h1>
-              <p>Set up your Parent Corner PIN, then create an explorer. Children do not need email addresses.</p>
-              <button className="primary" onClick={() => setGateOpen(true)}>Create your first explorer</button>
-            </section>
-          ) : (
-            <div className="loading"><LoaderCircle className="spin" /> Opening your adventure…</div>
-          )
-        ) : (
-          <>
-            {profile.preferences.paused && view !== "parent" && (
-              <section className="pause-card">
-                <span>🌿</span>
-                <h2>A little time away from the screen</h2>
-                <p>Your adventures and discoveries are safely saved.<br />A grown-up can resume play in Parent Corner.</p>
+      {grownUp ? (
+        <GrownUpShell
+          view={view}
+          onNavigate={navigate}
+          band={band}
+          faith={profile?.controls.faith ?? false}
+          stars={profile?.stars ?? 0}
+          inert={blocking}
+          reducedMotion={reducedMotion}
+          brand={brand}
+          switcher={switcher}
+          utility={utility}
+          topbarActions={topbarActions}
+          footer={
+            <>
+              <span className="footer-brand"><Compass size={15} /> A little curiosity goes a long way.</span>
+              <span>Learn. Think. Build. Explore.</span>
+            </>
+          }
+        >
+          {errorBanner}
+          {!profile ? (
+            loaded ? (
+              <section className="panel">
+                <h1>Your family&apos;s first adventure</h1>
+                <p>Set up your Parent Corner PIN, then create an explorer. Children do not need email addresses.</p>
+                <button className="primary" onClick={() => setGateOpen(true)}>Create your first explorer</button>
               </section>
-            )}
-            {view === "parent" && parentOpen && (
-              <div className="parent-lock-toolbar">
-                <button className="secondary" onClick={lockParent}>
-                  <ShieldCheck size={17} />Lock Parent Corner
-                </button>
-              </div>
-            )}
-            {children}
-          </>
-        )}
-      </AppShell>
+            ) : (
+              <div className="loading"><LoaderCircle className="spin" /> Opening your adventure…</div>
+            )
+          ) : (
+            <>
+              {parentOpen && (
+                <div className="parent-lock-toolbar">
+                  <button className="secondary" onClick={lockParent}>
+                    <ShieldCheck size={17} />Lock Parent Corner
+                  </button>
+                </div>
+              )}
+              {children}
+            </>
+          )}
+        </GrownUpShell>
+      ) : (
+        <KidShell
+          band={band}
+          world={world}
+          narration={narration}
+          reducedMotion={reducedMotion}
+          atMap={view === "adventure"}
+          inert={blocking}
+          onHome={() => navigate("adventure")}
+        >
+          {errorBanner}
+          {profile.preferences.paused && (
+            <section className="pause-card">
+              <h2>Time for a rest</h2>
+              <p>Everything you made is safe. A grown-up can start play again.</p>
+            </section>
+          )}
+          {children}
+        </KidShell>
+      )}
 
       {addingProfile && <AddExplorerDialog />}
       {gateOpen && (

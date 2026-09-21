@@ -19,23 +19,24 @@ import { join, resolve } from "node:path";
 const root = resolve(import.meta.dirname, "..");
 
 /**
- * Budgets, measured on 2026-09-20 at the end of WP-02. Lower these, never raise them.
+ * Budgets, measured on 2026-09-20 at the end of WP-03. Lower these, never raise them.
  *
  * `legacyCssBytes` counts every stylesheet in `app/` except the two files the rebuild is
  * moving towards: `tokens.css` (the definitions) and `kid.css` (the new layer). Those two
  * grow while the other sixteen shrink, and mixing them into one number would hide both
- * movements behind each other. It was 227,589B when WP-02 started.
+ * movements behind each other. It was 227,589B when WP-02 started, and 220,457B when
+ * WP-03 started; the child map retired app/wonder.css entirely.
  */
 export const BUDGETS = {
-  legacyCssBytes: 220_457,
-  important: 28,
+  legacyCssBytes: 209_082,
+  important: 25,
   /**
    * Raw colours and px font sizes still sitting in the sixteen legacy sheets. The blueprint
    * bans both in new CSS; in old CSS they are a debt with a number on it. A screen that moves
    * to the child layer takes its share of them with it.
    */
-  legacyRawHex: 1_031,
-  legacyFontPx: 566,
+  legacyRawHex: 948,
+  legacyFontPx: 520,
 };
 
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;
@@ -96,11 +97,18 @@ export function checkTokens() {
   }
 
   // ---- every --kid-* the layer uses is actually defined -------------------------
+  // Design values come from tokens.css. A component may also declare a property of its
+  // own for a value that belongs to the *data* rather than to the design — a place's
+  // coordinates on the map, say — and those are declared in kid.css itself. Anything
+  // referenced from neither is a typo.
   const tokens = readFileSync(join(root, "app/tokens.css"), "utf8");
-  const defined = new Set([...tokens.matchAll(/(--kid-[\w-]+)\s*:/g)].map((match) => match[1]));
   const kidCss = stripCssComments(readFileSync(join(root, "app/kid.css"), "utf8"));
+  const defined = new Set([
+    ...[...tokens.matchAll(/(--kid-[\w-]+)\s*:/g)].map((match) => match[1]),
+    ...[...kidCss.matchAll(/(--kid-[\w-]+)\s*:/g)].map((match) => match[1]),
+  ]);
   for (const [, name] of kidCss.matchAll(/var\((--kid-[\w-]+)/g)) {
-    if (!defined.has(name)) problems.push(`app/kid.css: ${name} is not defined in app/tokens.css`);
+    if (!defined.has(name)) problems.push(`app/kid.css: ${name} is defined nowhere`);
   }
 
   // ---- the ratchets --------------------------------------------------------------

@@ -94,3 +94,31 @@ export function NotYetMark() {
     </svg>
   );
 }
+
+/**
+ * The way back to the map: an arch with a path leading into it.
+ *
+ * Drawn rather than an arrow, because an arrow means "previous" to an adult and nothing in
+ * particular to a four-year-old, while a door is a place you can walk through.
+ */
+export function DoorMark() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path
+        d="M5 21V10a7 7 0 0 1 14 0v11"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <path
+        d="M9.5 21v-7a2.5 2.5 0 0 1 5 0v7"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path d="M3 21h18" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+  );
+}

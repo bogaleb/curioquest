@@ -488,3 +488,8 @@
   .clue-list > li > p { padding-left: calc(var(--space-3) + 18px + var(--space-2)); }
   .investigation-outcomes button { flex-basis: 132px; min-height: 96px; font-size: var(--text-sm); }
 }
+
+/* The two rules that outlived app/wonder.css, which the child map replaced. They style
+   the quest player's skill chips, so they live beside the rest of the player. */
+.skill-purpose{display:flex;justify-content:center;align-items:center;gap:8px;padding:10px 15px;background:#eef3df;border:1px solid #d3dfbd;border-radius:30px;color:#46643d;font-size:12px;max-width:max-content;margin:16px auto}.skill-purpose>span{font-weight:700}.completion-skills{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:18px auto;max-width:620px}.completion-skills>span{padding:8px 12px;border-radius:12px;background:#e9f0df;color:#45603e;font-size:12px}.completion-skills-label{font-size:13px;color:#526b48;margin-top:20px}
+@media(max-width:700px){.skill-purpose{font-size:11px;border-radius:15px;text-align:left}}

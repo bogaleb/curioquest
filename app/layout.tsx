@@ -11,7 +11,6 @@ import "./stories.css";
 import "./reading.css";
 import "./polish.css";
 import "./experience.css";
-import "./wonder.css";
 import "./cast.css";
 import "./play.css";
 import "./chest.css";

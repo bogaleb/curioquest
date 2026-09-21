@@ -21,11 +21,11 @@ const WORLDS: KidWorld[] = ["grove", "city", "harbor", "workshop", "treehouse", 
 export default async function KidPreviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ band?: string; world?: string }>;
+  searchParams: Promise<{ band?: string; world?: string; screen?: string }>;
 }) {
   if (process.env.NODE_ENV === "production") notFound();
   const params = await searchParams;
   const band: LearningBandId = isLearningBandId(params.band) ? params.band : DEFAULT_BAND;
   const world = WORLDS.find((name) => name === params.world) ?? "grove";
-  return <KidPreview band={band} world={world} />;
+  return <KidPreview band={band} world={world} screen={params.screen === "map" ? "map" : "parts"} />;
 }

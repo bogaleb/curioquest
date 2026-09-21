@@ -75,8 +75,19 @@ export function checkChildSurfaces() {
     if (/\son(MouseOver|MouseEnter)=/.test(code)) {
       problems.push(`${file}: hover handler — a finger cannot hover (§C6)`);
     }
-    if (/style=\{\{/.test(code)) {
-      problems.push(`${file}: inline style object — style belongs in app/kid.css`);
+    // Inline style is banned with one exception: passing a *value* the data owns, as a
+    // CSS custom property. A place's coordinates belong to the navigation data, not to the
+    // stylesheet; a colour or a size in the same position would be styling by hand.
+    for (const [, body] of code.matchAll(/style=\{\{([^}]*)\}/g)) {
+      const keys = [...body.matchAll(/(?:"([^"]+)"|'([^']+)'|([A-Za-z][\w]*))\s*:/g)]
+        .map((match) => match[1] ?? match[2] ?? match[3]);
+      const styled = keys.filter((key) => !key.startsWith("--"));
+      if (!keys.length || styled.length) {
+        problems.push(
+          `${file}: inline style (${styled.join(", ") || "unreadable"}) — style belongs in app/kid.css; ` +
+            "only CSS custom properties carrying data may be set inline",
+        );
+      }
     }
     if (/#[0-9a-fA-F]{3,8}\b/.test(code)) {
       problems.push(`${file}: raw colour — use a token from app/tokens.css`);

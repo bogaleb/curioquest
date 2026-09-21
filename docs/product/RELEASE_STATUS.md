@@ -60,6 +60,44 @@ two disagree.
   been rebuilt on the layer yet, and the drawn assets it is designed around do not exist —
   every picture is a placeholder until WP-11.
 
+- **WP-03 — The world shell. Shipped.** The dashboard is off the child's path. The shell
+  is split in two: `KidShell` for children — no rail, no tab bar, no breadcrumb, no star
+  counter, no explorer dropdown, one drawn door back to the map — and `GrownUpShell`
+  (the old `AppShell`) for Parent Corner and first-run setup, behind the PIN gate.
+
+  Arrival is now a drawn map. Twelve destinations are landmarks at fixed coordinates in
+  `lib/navigation.ts`, each with its own silhouette, its own world hue and a spoken child
+  name; the trail sits in the middle, is the largest thing on the screen, and is one touch
+  to carry on with. Every other place takes two touches: the first says the name aloud and
+  holds the place open, the second goes. The name is written under the picture as well as
+  spoken, so the narration-off path loses nothing, and the same two presses work on a
+  keyboard. Nothing reorders — position is how a child remembers where things are.
+
+  The map is a fixed-size world (68rem x 40rem) that pans rather than reflows. At iPad
+  landscape and desktop the whole map is visible; iPad portrait pans about 300px sideways;
+  a phone pans and arrives centred on the trail. `scripts/shot-child-map.mjs` measures the
+  painted page at four viewports across three bands and fails on any overlap, any touch
+  target under the band's floor, or any console error; `tests/child-map.test.mjs` checks the
+  data — separation, hue, spoken copy, one drawing per place, no reordering.
+
+  Profile switching moved to the arrival strip as drawn buddies (no emoji on a child
+  surface). The one adult control left on the child side is a small word-only "Grown-ups"
+  button that opens the PIN gate.
+
+  The map also retired the old child home component, and with it `app/wonder.css`: eighteen
+  stylesheets are now sixteen legacy ones plus the token and child layers. Legacy CSS
+  227,589B (WP-02 start) → 220,457B → **209,082B**; `!important` 42 → 28 → **25**; raw
+  colours 1,031 → 948; px font sizes 566 → 520. The byte count WP-02 could not move on its
+  own moves as soon as a screen migrates, which is what "attrition" was supposed to mean.
+
+  Still not true: `/today` still shows a welcome screen with a button rather than resuming
+  the episode straight away — that is WP-08. A quest a grown-up assigned, and the discovery
+  invitation, still render below the map instead of being places on it. The place drawings
+  and the buddies are provisional geometry, not art direction (WP-11). Legacy child screens
+  now render inside `KidShell` and lose the old `.cq-main` entrance animation; their own
+  layouts are unchanged, but they have not been walked through with a real family session on
+  this branch.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

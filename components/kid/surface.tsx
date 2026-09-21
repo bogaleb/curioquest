@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect } from "react";
 import { DEFAULT_BAND, type LearningBandId } from "@/lib/learning-bands";
 import { warnAboutCopy } from "@/lib/kid-copy";
+import type { KidWorld } from "@/lib/kid-worlds";
 
 /**
  * What every child component needs to know about the child in front of it.
@@ -23,14 +24,8 @@ export type KidSurface = {
   world: KidWorld;
 };
 
-/** One hue per world, held across the map, the episode and the reward (§C5 art rules). */
-export type KidWorld =
-  | "grove"
-  | "city"
-  | "harbor"
-  | "workshop"
-  | "treehouse"
-  | "lab";
+/** One hue per world (§C5). Declared in lib/ so navigation data can name it too. */
+export type { KidWorld };
 
 const fallback: KidSurface = { band: DEFAULT_BAND, narration: true, world: "grove" };
 

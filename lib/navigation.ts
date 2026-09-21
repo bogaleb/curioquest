@@ -13,12 +13,37 @@ import {
   Users,
   type LucideIcon,
 } from "lucide-react";
+import type { KidWorld } from "./kid-worlds";
 
 /**
- * Navigation described as data so one model can drive three presentations: the
- * labelled sidebar on desktop, the icon rail on tablet, and the bottom tab bar plus
- * "More" sheet on phones. Adding a destination should never mean touching layout code.
+ * Navigation described as data so one model can drive two very different surfaces.
+ *
+ * On Grown-ups it is a labelled sidebar, an icon rail or a tab bar — familiar web
+ * patterns for a reader. On a child surface it is a drawn map: the same destinations,
+ * placed at fixed coordinates and reached by touching a picture (WP-03). Adding a
+ * destination should never mean touching layout code on either surface.
  */
+
+/**
+ * Where a destination sits on the child's map.
+ *
+ * Position is memory. A four-year-old learns "the grove is over there on the left" long
+ * before they can read "Reading Adventure", so these coordinates never change and are
+ * never reordered by recency or recommendation. Primary places sit low, where hands rest
+ * on a tablet; secondary places sit higher up the picture, which reads as further away
+ * and keeps them out of the first thing a child touches.
+ */
+export type Place = {
+  /** Percentage across and down the map. Fixed. Not a layout hint — a landmark. */
+  x: number;
+  y: number;
+  /** The hue this destination keeps everywhere: map, episode, reward. */
+  world: KidWorld;
+  /** What Nova says on the first touch. Child words, never a product name. */
+  childName: string;
+  /** How near it feels. Primary destinations are drawn large and close. */
+  size: "large" | "small";
+};
 export type Destination = {
   /** Stable key, also the legacy view name. */
   id: string;
@@ -38,24 +63,40 @@ export type Destination = {
   group: "primary" | "secondary";
   /** Only shown when the family has opted in to faith content. */
   requiresFaith?: boolean;
+  /** Where this destination is drawn on the child's map. */
+  place: Place;
 };
 
 export const destinations: Destination[] = [
-  { id: "adventure", href: "/", label: "My adventure", shortLabel: "Today", icon: Compass, title: "My adventure", group: "primary" },
-  { id: "reading", href: "/read", label: "Reading Adventure", shortLabel: "Read", icon: BookOpen, title: "Reading Adventure", group: "primary" },
-  { id: "games", href: "/play", label: "Game Zone", shortLabel: "Play", icon: Gamepad2, title: "Game Zone", group: "primary" },
-  { id: "studio", href: "/create", label: "Creative Studio", shortLabel: "Create", icon: Palette, title: "Creative Studio", group: "primary" },
-  { id: "myworld", href: "/world", label: "My World", shortLabel: "World", icon: Globe, title: "My World", group: "primary" },
+  { id: "adventure", href: "/", label: "My adventure", shortLabel: "Today", icon: Compass, title: "My adventure", group: "primary",
+    place: { x: 50, y: 62, world: "grove", childName: "The trail", size: "large" } },
+  { id: "reading", href: "/read", label: "Reading Adventure", shortLabel: "Read", icon: BookOpen, title: "Reading Adventure", group: "primary",
+    place: { x: 10, y: 62, world: "grove", childName: "Reading grove", size: "large" } },
+  { id: "games", href: "/play", label: "Game Zone", shortLabel: "Play", icon: Gamepad2, title: "Game Zone", group: "primary",
+    place: { x: 90, y: 62, world: "city", childName: "Playing field", size: "large" } },
+  { id: "studio", href: "/create", label: "Creative Studio", shortLabel: "Create", icon: Palette, title: "Creative Studio", group: "primary",
+    place: { x: 30, y: 86, world: "workshop", childName: "Making place", size: "large" } },
+  { id: "myworld", href: "/world", label: "My World", shortLabel: "World", icon: Globe, title: "My World", group: "primary",
+    place: { x: 70, y: 86, world: "treehouse", childName: "My treehouse", size: "large" } },
 
-  { id: "science", href: "/science", label: "Discovery Lab", shortLabel: "Science", icon: FlaskConical, title: "Discovery Lab", group: "secondary" },
-  { id: "stories", href: "/stories", label: "Story Harbor", shortLabel: "Stories", icon: BookOpen, title: "Story Harbor", group: "secondary" },
-  { id: "theater", href: "/theater", label: "Theater", shortLabel: "Theater", icon: Clapperboard, title: "CurioQuest Theater", group: "secondary" },
-  { id: "worlds", href: "/worlds", label: "My worlds", shortLabel: "Worlds", icon: MapIcon, title: "My worlds", group: "secondary" },
-  { id: "garden", href: "/build", label: "Build Lab", shortLabel: "Build", icon: Leaf, title: "Build Lab", group: "secondary" },
-  { id: "team", href: "/team", label: "Team Quest", shortLabel: "Team", icon: Users, title: "Team Quest", group: "secondary" },
-  { id: "rewards", href: "/rewards", label: "Treasure chest", shortLabel: "Rewards", icon: Star, title: "Treasure chest", group: "secondary" },
-  { id: "faith", href: "/faith", label: "Faith & Bible", shortLabel: "Faith", icon: Heart, title: "Faith & Bible", group: "secondary", requiresFaith: true },
+  { id: "science", href: "/science", label: "Discovery Lab", shortLabel: "Science", icon: FlaskConical, title: "Discovery Lab", group: "secondary",
+    place: { x: 8, y: 34, world: "lab", childName: "Wonder lab", size: "small" } },
+  { id: "stories", href: "/stories", label: "Story Harbor", shortLabel: "Stories", icon: BookOpen, title: "Story Harbor", group: "secondary",
+    place: { x: 92, y: 36, world: "harbor", childName: "Story harbour", size: "small" } },
+  { id: "theater", href: "/theater", label: "Theater", shortLabel: "Theater", icon: Clapperboard, title: "CurioQuest Theater", group: "secondary",
+    place: { x: 72, y: 10, world: "harbor", childName: "The theatre", size: "small" } },
+  { id: "worlds", href: "/worlds", label: "My worlds", shortLabel: "Worlds", icon: MapIcon, title: "My worlds", group: "secondary",
+    place: { x: 44, y: 10, world: "grove", childName: "The far hills", size: "small" } },
+  { id: "garden", href: "/build", label: "Build Lab", shortLabel: "Build", icon: Leaf, title: "Build Lab", group: "secondary",
+    place: { x: 16, y: 10, world: "workshop", childName: "Build yard", size: "small" } },
+  { id: "team", href: "/team", label: "Team Quest", shortLabel: "Team", icon: Users, title: "Team Quest", group: "secondary",
+    place: { x: 70, y: 36, world: "city", childName: "Team camp", size: "small" } },
+  { id: "rewards", href: "/rewards", label: "Treasure chest", shortLabel: "Rewards", icon: Star, title: "Treasure chest", group: "secondary",
+    place: { x: 34, y: 34, world: "treehouse", childName: "My chest", size: "small" } },
+  { id: "faith", href: "/faith", label: "Faith & Bible", shortLabel: "Faith", icon: Heart, title: "Faith & Bible", group: "secondary", requiresFaith: true,
+    place: { x: 52, y: 34, world: "harbor", childName: "Quiet garden", size: "small" } },
 ];
+
 
 const byId = new Map(destinations.map((destination) => [destination.id, destination]));
 
@@ -98,4 +139,20 @@ export function secondaryDestinations(options: { faith: boolean }) {
 
 export function isDestination(id: string) {
   return byId.has(id);
+}
+
+export function destinationFor(id: string) {
+  return byId.get(id);
+}
+
+/**
+ * Every place drawn on the child's map, near ones first.
+ *
+ * Deliberately not sorted by recency, progress or recommendation: the map is a memory
+ * aid, and a landmark that moves is not a landmark.
+ */
+export function mapPlaces(options: { faith: boolean }) {
+  return availableDestinations(options)
+    .filter((destination) => destination.id !== "adventure")
+    .sort((a, b) => b.place.y - a.place.y);
 }

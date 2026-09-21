@@ -12,6 +12,8 @@ import {
   type KidWorld,
 } from "@/components/kid";
 import { learningBands, type LearningBandId } from "@/lib/learning-bands";
+import { ChildMap } from "@/components/experience/ChildMap";
+import { sampleExplorer } from "./sample";
 
 /**
  * Every primitive, in one scene, with the two switches that break child screens most often:
@@ -21,10 +23,38 @@ import { learningBands, type LearningBandId } from "@/lib/learning-bands";
  * The chrome around the scene is deliberately plain. It is a development tool for adults, so
  * it uses ordinary controls and ordinary labels — nothing here is an example of child copy.
  */
-export function KidPreview({ band, world }: { band: LearningBandId; world: KidWorld }) {
+export function KidPreview({
+  band,
+  world,
+  screen,
+}: {
+  band: LearningBandId;
+  world: KidWorld;
+  /** "parts" shows every primitive; "map" shows the arrival screen itself. */
+  screen: "parts" | "map";
+}) {
   const [narration, setNarration] = useState(true);
   const [chosen, setChosen] = useState<string | null>(null);
   const [placed, setPlaced] = useState(false);
+
+  if (screen === "map") {
+    // The real arrival screen, with a made-up child. Rendered on its own so the map can be
+    // measured at each viewport without a signed-in family.
+    const child = sampleExplorer(band);
+    const sibling = { ...sampleExplorer(band, "Sam"), id: "preview-sibling", avatar: "owl" as const };
+    return (
+      <ChildMap
+        profile={child}
+        profiles={[child, sibling]}
+        busy={false}
+        hasActiveTrail={false}
+        onSelectProfile={() => {}}
+        onGo={() => {}}
+        onTrail={() => {}}
+        onGrownUps={() => {}}
+      />
+    );
+  }
 
   return (
     <main style={{ padding: 16 }}>
@@ -32,7 +62,7 @@ export function KidPreview({ band, world }: { band: LearningBandId; world: KidWo
         {learningBands.map((option) => (
           <a
             key={option.id}
-            href={`/kid-preview?band=${option.id}&world=${world}`}
+            href={`/kid-preview?band=${option.id}&world=${world}&screen=${screen}`}
             aria-current={option.id === band ? "page" : undefined}
             style={{ textDecoration: option.id === band ? "underline" : "none" }}
           >

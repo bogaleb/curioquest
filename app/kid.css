@@ -560,3 +560,376 @@
   white-space: nowrap;
   border: 0;
 }
+
+/* --------------------------------------------------------------------------
+   KidShell — the child's frame (WP-03)
+
+   Almost nothing: a full-height surface and one drawn door. Every rule the old
+   shell needed for a rail, a top bar and a tab bar is simply absent, which is
+   why a child screen has no chrome to design around.
+   -------------------------------------------------------------------------- */
+.kid-shell {
+  color-scheme: light;
+  min-height: 100dvh;
+  background: var(--kid-world-50);
+  color: var(--kid-ink);
+  font-family: var(--font-body);
+}
+
+.kid-shell-main {
+  width: 100%;
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  /* The door sits in the bottom-start corner, so content keeps clear of it. */
+  padding:
+    calc(var(--safe-top) + var(--space-5))
+    max(var(--shell-gutter), var(--safe-right))
+    calc(var(--kid-touch-primary) + var(--space-8) + var(--safe-bottom))
+    max(var(--shell-gutter), var(--safe-left));
+}
+
+/* The map owns the whole viewport, so it takes the padding off again. */
+.kid-shell-main:has(> .kid-map) {
+  max-width: none;
+  padding: 0;
+}
+
+/* One way out, drawn, in the corner a child can reach without crossing the
+   work. It never moves between screens. */
+.kid-shell-door {
+  position: fixed;
+  inset-block-end: calc(var(--space-4) + var(--safe-bottom));
+  inset-inline-start: calc(var(--space-4) + var(--safe-left));
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  width: var(--kid-touch);
+  height: var(--kid-touch);
+  border: var(--kid-border) solid var(--kid-world-600);
+  border-bottom-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+  color: var(--kid-world-ink);
+  box-shadow: var(--kid-shadow);
+  cursor: pointer;
+}
+.kid-shell-door > svg { width: 55%; height: 55%; }
+.kid-shell-door:active {
+  translate: 0 var(--kid-press);
+  border-bottom-width: var(--kid-border);
+}
+.kid-shell-door:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+
+/* --------------------------------------------------------------------------
+   ChildMap — the map that replaced the menu
+   -------------------------------------------------------------------------- */
+/* The map is bigger than a phone on purpose. Shrinking it to fit would either push the
+   labels under the reading floor or pile the landmarks on top of each other, and a
+   landmark that moves is not a landmark — so the picture is panned instead.
+   The frame holds the panned ground and, under it, a strip that never moves. */
+.kid-map-frame {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  background: var(--kid-leaf-100);
+  padding-block-end: calc(var(--safe-bottom) + var(--space-3));
+  padding-inline: calc(var(--safe-left) + var(--space-4)) calc(var(--safe-right) + var(--space-4));
+}
+.kid-map-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.kid-map {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  /* The map has a size of its own. These two numbers and the coordinates in
+     lib/navigation.ts are one composition: changing either can put two landmarks on
+     top of each other, which `tests/child-map.test.mjs` checks for. */
+  min-width: 68rem;
+  min-height: 40rem;
+  background: linear-gradient(
+    180deg,
+    var(--kid-sky-100) 0%,
+    var(--kid-sky-50) 29%,
+    var(--kid-leaf-50) 30%,
+    var(--kid-leaf-100) 100%
+  );
+  border-radius: var(--kid-radius-lg);
+}
+
+/* Sky, sun and the ridge where the ground begins. Flat shapes, no animation:
+   the map is a place to read, not a thing to watch. */
+.kid-map-sky {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 30%;
+  pointer-events: none;
+}
+.kid-map-sun {
+  position: absolute;
+  inset-block-start: 12%;
+  inset-inline-end: 12%;
+  width: var(--kid-text-4xl);
+  height: var(--kid-text-4xl);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-sun-200);
+  border: var(--kid-border) solid var(--kid-sun-400);
+}
+/* A band of far hills rather than a line, so the landmarks standing on the horizon
+   look like they are standing on something. */
+.kid-map-ridge {
+  position: absolute;
+  inset: auto 0 calc(var(--space-8) * -1) 0;
+  height: var(--space-16);
+  background: var(--kid-leaf-200);
+  border-block-start: var(--kid-border) solid var(--kid-leaf-400);
+  border-start-start-radius: 50% 100%;
+  border-start-end-radius: 50% 100%;
+}
+
+/* The strip along the bottom, in the flow, so it takes room from the map rather than
+   covering part of it. Low enough that both controls in it are in reach. */
+.kid-map-strip {
+  flex: none;
+  z-index: 6;
+  background: var(--kid-leaf-100);
+  /* Room for the bubble's tail, which hangs below the bubble itself. */
+  padding-block-end: var(--space-3);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block-start: var(--space-3);
+}
+.kid-map-greeting { max-width: 30ch; }
+
+/* --------------------------------------------------------------------------
+   Places
+   -------------------------------------------------------------------------- */
+.kid-place,
+.kid-trailhead {
+  position: absolute;
+  z-index: 2;
+  /* The coordinates come from lib/navigation.ts and are the same on every device. */
+  inset-inline-start: var(--kid-place-x, 50%);
+  inset-block-start: var(--kid-place-y, 50%);
+  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: var(--kid-touch);
+  min-height: var(--kid-touch);
+  padding: var(--space-2);
+  border: var(--kid-border) solid transparent;
+  border-radius: var(--kid-radius);
+  background: transparent;
+  color: var(--kid-world-ink);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  font-weight: 700;
+  line-height: var(--kid-leading-tight);
+  text-align: center;
+  cursor: pointer;
+}
+
+.kid-place-mark {
+  display: grid;
+  place-items: center;
+  width: var(--kid-touch-primary);
+  height: var(--kid-touch-primary);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+  border: var(--kid-border) solid var(--kid-world-400);
+  box-shadow: var(--kid-shadow);
+  color: var(--kid-world-400);
+}
+.kid-place[data-size="small"] .kid-place-mark {
+  width: var(--kid-touch);
+  height: var(--kid-touch);
+}
+.kid-place-art { width: 62%; height: 62%; }
+.kid-place-fill { fill: var(--kid-world-300); }
+.kid-place-shade { fill: var(--kid-world-600); }
+.kid-place-accent { fill: var(--kid-world-500); }
+.kid-place-path {
+  fill: none;
+  stroke: var(--kid-world-600);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+/* The trail behind the stepping stones: a track, drawn as a track. */
+.kid-place-trail {
+  fill: none;
+  stroke: var(--kid-world-200);
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+
+/* The written name. A label under a picture, never the thing being touched. It stays
+   on one line: a name that wraps grows the landmark downwards into its neighbour, and
+   the composition below depends on every place being the same height. */
+.kid-place-label {
+  padding: 0 var(--space-2);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+  color: var(--kid-world-ink);
+  white-space: nowrap;
+}
+
+/* Open: touched once, waiting for the second touch. It grows and lifts, so the
+   place a child is about to enter is obvious without reading the prompt. */
+.kid-place[data-open] {
+  z-index: 4;
+  border-color: var(--kid-sun-500);
+  background: var(--kid-sun-50);
+}
+.kid-place[data-open] .kid-place-mark {
+  border-color: var(--kid-sun-500);
+  box-shadow: var(--kid-shadow-lift);
+  scale: 1.12;
+}
+.kid-place-again {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-sun-200);
+  color: var(--kid-sun-ink);
+  font-size: var(--kid-text-min);
+}
+
+.kid-place:focus-visible,
+.kid-trailhead:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+.kid-place:active .kid-place-mark,
+.kid-trailhead:active .kid-place-mark { translate: 0 var(--kid-press); }
+.kid-place:disabled,
+.kid-trailhead:disabled { cursor: default; opacity: 0.5; }
+
+/* The trail: the one thing to do, and therefore the largest thing drawn. */
+.kid-trailhead {
+  --kid-place-x: 50%;
+  --kid-place-y: 62%;
+  z-index: 3;
+  font-size: var(--kid-text-lg);
+}
+.kid-trailhead .kid-place-mark {
+  width: calc(var(--kid-touch-primary) * 1.35);
+  height: calc(var(--kid-touch-primary) * 1.35);
+  border-color: var(--kid-world-500);
+  border-width: calc(var(--kid-border) * 2);
+}
+.kid-trailhead .kid-place-label {
+  font-size: var(--kid-text-lg);
+  padding: var(--space-1) var(--space-4);
+}
+
+/* --------------------------------------------------------------------------
+   Who is playing — the whole of profile switching on a child surface
+   -------------------------------------------------------------------------- */
+/* The grown-up door. Small, quiet, and never in the child's path — it sits at the end
+   of the arrival strip and leads to a PIN. */
+.kid-map-adults { display: flex; align-items: center; }
+.kid-grownups {
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--kid-world-300);
+  border-radius: var(--kid-radius-pill);
+  background: transparent;
+  color: var(--kid-ink-soft);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.kid-grownups:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+
+/* Who is playing. Beside Nova, at the end of the strip. */
+.kid-map-who {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+}
+.kid-who {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: var(--kid-touch);
+  min-height: var(--kid-touch);
+  padding: var(--space-1);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  color: var(--kid-ink-soft);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  cursor: pointer;
+}
+.kid-who[aria-pressed="true"] {
+  border-color: var(--kid-sun-500);
+  background: var(--kid-sun-50);
+  color: var(--kid-sun-ink);
+}
+.kid-who:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+.kid-buddy-art { width: var(--kid-text-3xl); height: var(--kid-text-3xl); }
+.kid-buddy-face { fill: var(--kid-world-300); }
+.kid-buddy-mark { fill: var(--kid-world-600); }
+.kid-who-name { max-width: 9ch; overflow: hidden; text-overflow: ellipsis; }
+
+.kid-map-rest {
+  position: absolute;
+  z-index: 6;
+  inset-block-end: calc(var(--safe-bottom) + var(--space-5));
+  inset-inline: 0;
+  margin: 0 auto;
+  width: fit-content;
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-surface);
+  border: var(--kid-border) solid var(--kid-world-300);
+  font-size: var(--kid-text-body);
+}
+
+/* Phone portrait: the marks come down a size so twelve places still fit without
+   overlapping. The positions themselves are unchanged — a landmark that moves
+   between devices is not a landmark. */
+@media (max-width: 767px) {
+  .kid-place-mark {
+    width: var(--kid-touch);
+    height: var(--kid-touch);
+  }
+  .kid-place[data-size="small"] .kid-place-mark {
+    width: calc(var(--kid-touch) * 0.8);
+    height: calc(var(--kid-touch) * 0.8);
+  }
+  .kid-trailhead .kid-place-mark {
+    width: calc(var(--kid-touch-primary) * 1.1);
+    height: calc(var(--kid-touch-primary) * 1.1);
+  }
+  /* Phone portrait: Nova gets the full width and the buddies sit above her, because a
+     speech bubble squeezed into 180px becomes a column of single words. */
+  .kid-map-strip {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--space-2);
+  }
+  .kid-map-greeting { max-width: 100%; }
+  .kid-map-who { justify-content: flex-end; }
+}
