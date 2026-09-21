@@ -1,0 +1,276 @@
+/*
+ * Craft pass over the existing design.
+ *
+ * Colocated with the route group, so the sixteen legacy sheets stay on their shrinking
+ * budget (`scripts/check-tokens.mjs`), and loaded after them so it can adjust what they
+ * already draw without any markup changing.
+ *
+ * This is not a new visual language. The forest-and-cream identity, the world hues, the
+ * type scale and every layout decision are untouched. What it fixes is craft:
+ *
+ *   1. **Depth.** Almost everything sat at the same elevation — white cards on a
+ *      near-white ground with shadows too soft to register, so nothing read as
+ *      pressable and nothing read as grouped. Cards now have a considered lift.
+ *   2. **Press.** Child surfaces had no pressed state at all. On a tablet, a control
+ *      that does not move under a finger reads as broken rather than calm, and the
+ *      press is the only feedback that arrives before the network's.
+ *   3. **Arrival.** Nothing ever moved, so a screen of twelve cards appeared as a wall.
+ *
+ * It deliberately changes no size, no touch target and no reading order. Those come
+ * from the band (§D7) and from WP-02/WP-03, and they were already right.
+ */
+
+/* ======================================================================
+   DEPTH
+   ====================================================================== */
+
+/*
+ * One elevation ramp, warm rather than neutral.
+ *
+ * The existing `--shadow-*` tokens are tuned for a denser interface than this one; at
+ * card size they disappear. These are the same hue, given the spread a large rounded
+ * card needs before the eye reads it as sitting above the page.
+ */
+.cq-shell, .kid-shell {
+  /* Measured against the real screens rather than chosen on paper: at -12px spread and
+     0.22 alpha the shadow was mathematically present and visually absent, especially on
+     the tinted world cards. These extend far enough to read as height. */
+  --lift-rest: 0 1px 2px rgba(35, 63, 55, 0.07), 0 10px 22px -6px rgba(35, 63, 55, 0.16);
+  --lift-hover: 0 2px 5px rgba(35, 63, 55, 0.09), 0 20px 38px -10px rgba(35, 63, 55, 0.26);
+  --lift-press: 0 1px 3px rgba(35, 63, 55, 0.12);
+}
+
+.panel,
+.today-card,
+.nova-card,
+.badge-card,
+.world-card,
+.reward-total,
+.saved-adventure,
+.play-passport,
+.playground-guide,
+.experiment-bench,
+.reading-book,
+.reading-session,
+.cq-chest-head,
+.cq-chest-totals,
+.cq-chest-next,
+.cq-report {
+  box-shadow: var(--lift-rest);
+}
+
+/* A hairline that is actually visible against the ground it sits on. */
+.panel, .today-card { border-color: var(--line-soft); }
+
+/* ======================================================================
+   PRESS AND LIFT
+   ======================================================================
+   Every control a finger or pointer meets gets the same two states, so pressing
+   anything in the product feels like pressing the same product. */
+
+.world-card,
+.game-grid > *,
+.story-shelf > *,
+.reading-map > *,
+.notebook-grid > *,
+.creative-doors button,
+.template-grid button,
+.family-list button,
+.cq-trophy-grid > * {
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.world-card:hover:not(:disabled),
+.game-grid > *:hover,
+.story-shelf > *:hover,
+.reading-map > *:hover,
+.notebook-grid > *:hover,
+.creative-doors button:hover,
+.template-grid button:hover,
+.cq-trophy-grid > *:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--lift-hover);
+}
+
+.world-card:active:not(:disabled),
+.game-grid > *:active,
+.story-shelf > *:active,
+.creative-doors button:active,
+.template-grid button:active {
+  transform: translateY(1px);
+  box-shadow: var(--lift-press);
+}
+
+.family-list button:hover:not(:disabled) { transform: translateX(3px); box-shadow: var(--shadow-sm); }
+
+/* ---- buttons ---- */
+
+/*
+ * `.primary` already lifts on hover. What it never had was a *press*, so on a tablet
+ * the only acknowledgement of a tap was the screen changing a beat later.
+ */
+.primary {
+  box-shadow: 0 6px 16px -10px rgba(23, 105, 78, 0.7);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+.primary:hover:not(:disabled) { box-shadow: 0 12px 24px -12px rgba(23, 105, 78, 0.75); }
+.primary:active:not(:disabled) {
+  transform: translateY(2px);
+  border-bottom-width: 1px;
+  box-shadow: 0 2px 6px -4px rgba(23, 105, 78, 0.6);
+}
+
+.secondary {
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.secondary:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--green-400); }
+.secondary:active:not(:disabled) { transform: translateY(1px); }
+
+/*
+ * The child's answer buttons. These matter most: they are the largest targets in the
+ * product and the ones pressed most often, and they already carried a 5px bottom border
+ * that implied a physical key without ever behaving like one.
+ */
+.answers button {
+  box-shadow: var(--lift-rest);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.answers button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--lift-hover); }
+.answers button:active:not(:disabled) {
+  transform: translateY(3px);
+  border-bottom-width: 2px;
+  box-shadow: var(--lift-press);
+}
+
+/* Right. One settle, not a loop: the next question is a moment away, and something
+   still moving behind it would compete with it. */
+.answers button.correct { animation: answer-settle 480ms var(--ease-bounce); }
+@keyframes answer-settle {
+  0%   { transform: scale(1); }
+  45%  { transform: scale(1.035); }
+  100% { transform: scale(1); }
+}
+
+/* Engine controls get the same press, so a sorting board feels like the rest. */
+.counting-meadow button,
+.sort-tray button,
+.sorting-baskets button,
+.memory-choices button,
+.letter-slots button,
+.reading-word-shelf button,
+.scaffold-letters button,
+.lab-items button,
+.tool-row button {
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.counting-meadow button:active:not(:disabled),
+.sort-tray button:active:not(:disabled),
+.sorting-baskets button:active:not(:disabled),
+.memory-choices button:active:not(:disabled),
+.letter-slots button:active:not(:disabled),
+.reading-word-shelf button:active:not(:disabled),
+.scaffold-letters button:active:not(:disabled),
+.lab-items button:active:not(:disabled) { transform: translateY(2px); }
+
+/* ---- filter pills ---- */
+
+.game-filters button {
+  transition: transform var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.game-filters button:hover:not(:disabled) { transform: translateY(-1px); }
+.game-filters button:active:not(:disabled) { transform: translateY(1px); }
+
+/* ======================================================================
+   ARRIVAL
+   ====================================================================== */
+
+/*
+ * Content arrives rather than appearing. Capped delays, because the twelfth card on a
+ * long screen must not still be moving while the first is being read.
+ */
+.cq-main > *,
+.worlds-grid > *,
+.game-grid > *,
+.story-shelf > *,
+.notebook-grid > *,
+.badge-grid > *,
+.cq-trophy-grid > * {
+  animation: craft-rise 480ms var(--ease-out) both;
+}
+.worlds-grid > *:nth-child(2), .game-grid > *:nth-child(2),
+.story-shelf > *:nth-child(2), .notebook-grid > *:nth-child(2) { animation-delay: 50ms; }
+.worlds-grid > *:nth-child(3), .game-grid > *:nth-child(3),
+.story-shelf > *:nth-child(3), .notebook-grid > *:nth-child(3) { animation-delay: 100ms; }
+.worlds-grid > *:nth-child(n+4), .game-grid > *:nth-child(n+4),
+.story-shelf > *:nth-child(n+4), .notebook-grid > *:nth-child(n+4) { animation-delay: 150ms; }
+
+@keyframes craft-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Nova's reply and the reading feedback both appear mid-screen while a child is
+   looking somewhere else, so they arrive rather than blink into place. */
+.feedback, .reading-feedback, .reading-success {
+  animation: craft-rise 380ms var(--ease-out) both;
+}
+
+/* ======================================================================
+   PROGRESS
+   ======================================================================
+   A track at 0% was an invisible grey line, which is how a child's first visit
+   showed them nothing at all where their progress was about to be. */
+
+.progress-track, .cq-trophy-progress, .reading-progress {
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+.progress-track span, .cq-trophy-progress span {
+  border-radius: var(--radius-pill);
+  transition: width var(--dur-slow) var(--ease-out);
+}
+
+.activity-progress > div > span {
+  border-radius: var(--radius-pill);
+  transition: background var(--dur-base) var(--ease-out);
+}
+
+/* ======================================================================
+   MOTION
+   ====================================================================== */
+
+/*
+ * All of it is arrival or reaction; none of it carries meaning. Reduced motion removes
+ * every bit and leaves the screens identical in substance.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .cq-main > *, .worlds-grid > *, .game-grid > *, .story-shelf > *,
+  .notebook-grid > *, .badge-grid > *, .cq-trophy-grid > *,
+  .feedback, .reading-feedback, .reading-success,
+  .answers button.correct { animation: none; }
+
+  .world-card:hover:not(:disabled), .world-card:active:not(:disabled),
+  .game-grid > *:hover, .game-grid > *:active,
+  .story-shelf > *:hover, .story-shelf > *:active,
+  .reading-map > *:hover, .notebook-grid > *:hover,
+  .creative-doors button:hover, .creative-doors button:active,
+  .template-grid button:hover, .template-grid button:active,
+  .cq-trophy-grid > *:hover, .family-list button:hover:not(:disabled),
+  .primary:hover:not(:disabled), .primary:active:not(:disabled),
+  .secondary:hover:not(:disabled), .secondary:active:not(:disabled),
+  .answers button:hover:not(:disabled), .answers button:active:not(:disabled),
+  .game-filters button:hover:not(:disabled), .game-filters button:active:not(:disabled),
+  .counting-meadow button:active:not(:disabled),
+  .sort-tray button:active:not(:disabled),
+  .sorting-baskets button:active:not(:disabled),
+  .reading-word-shelf button:active:not(:disabled),
+  .scaffold-letters button:active:not(:disabled),
+  .lab-items button:active:not(:disabled) { transform: none; }
+}

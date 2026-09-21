@@ -1,0 +1,191 @@
+/*
+ * The welcome screen, refined.
+ *
+ * Colocated with the route rather than added to `app/auth.css`, which is one of the
+ * sixteen sheets on a shrinking budget (`scripts/check-tokens.mjs`). It loads after that
+ * sheet, so it adjusts the existing markup without a line of it changing — the form's
+ * structure, its focus order and its live regions are already right, and a redesign that
+ * rewrote them would risk working accessibility for a paint job.
+ *
+ * This is not a new look. It is the same forest-and-cream identity with four specific
+ * faults fixed:
+ *
+ *   1. the ground and the card were within a few percent of each other in value, so the
+ *      card had no edge and the page read as one flat sheet;
+ *   2. the right column had no structure at all — three loose text blocks against a
+ *      solid white slab, which is why the composition felt lopsided;
+ *   3. the layout capped at 62rem on a 1440px screen, so it sat in a narrow band with
+ *      the headline breaking to leave "run by you." alone on a line;
+ *   4. nothing moved, ever — including on press, which on a tablet reads as a dead
+ *      control rather than a calm one.
+ */
+
+.auth-page {
+  /* A warmer, deeper ground. Same two hues the screen already used, given enough
+     strength to actually sit behind something rather than beside it. */
+  background:
+    radial-gradient(ellipse 80% 60% at 12% -5%, var(--green-100), transparent 62%),
+    radial-gradient(ellipse 70% 55% at 100% 105%, var(--sun-200), transparent 60%),
+    radial-gradient(ellipse 90% 70% at 50% 50%, var(--sand-50), transparent 70%),
+    var(--sand-200);
+}
+
+.auth-layout {
+  /* auth.css caps this at 62rem. On anything laptop-sized that leaves the two columns
+     crowded together while the page has room to spare. */
+  max-width: 72rem;
+  gap: var(--space-10);
+  animation: welcome-in 640ms var(--ease-out) both;
+}
+
+@keyframes welcome-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---------------------------------------------------------------- the card */
+
+.auth-card {
+  border-radius: var(--radius-3xl);
+  border-color: var(--line-soft);
+  /* Two shadows: a tight one that draws the edge, and a wide soft one that lifts the
+     whole card off the ground. One shadow alone gives either an edge or a lift. */
+  box-shadow:
+    0 1px 2px rgba(35, 63, 55, 0.06),
+    0 18px 44px -18px rgba(35, 63, 55, 0.28);
+  padding-bottom: var(--space-8);
+}
+
+.auth-card h1 {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-tight);
+  font-size: clamp(2rem, 1.5rem + 1.8vw, 2.6rem);
+}
+
+.auth-card .lead { font-size: var(--text-lg); line-height: var(--leading-normal); }
+
+.auth-brand { margin-bottom: var(--space-8); }
+.auth-brand .brand-icon {
+  transition: transform var(--dur-base) var(--ease-bounce);
+}
+.auth-brand:hover .brand-icon { transform: rotate(-6deg); }
+
+/* ---------------------------------------------------------------- the form */
+
+.auth-card input {
+  border-radius: var(--radius-lg);
+  border-color: var(--line);
+  background: var(--sand-50);
+  min-height: var(--touch-min);
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.auth-card input:hover { border-color: var(--sand-400); }
+.auth-card input:focus {
+  background: #fff;
+  border-color: var(--green-400);
+  box-shadow: 0 0 0 3px var(--green-100);
+}
+
+.auth-reveal {
+  border-radius: var(--radius-md);
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.auth-reveal:hover { color: var(--green-600); background: var(--green-50); }
+
+/*
+ * The primary action. It has depth and it gives when pressed — the press is the only
+ * feedback that arrives before the network's, so it has to be immediate.
+ */
+.auth-submit {
+  border-radius: var(--radius-lg);
+  border-bottom-width: var(--press-depth);
+  box-shadow: 0 8px 20px -10px rgba(23, 105, 78, 0.65);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-base) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+.auth-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px -12px rgba(23, 105, 78, 0.7);
+}
+.auth-submit:active:not(:disabled) {
+  transform: translateY(1px);
+  border-bottom-width: 1px;
+  box-shadow: 0 4px 10px -6px rgba(23, 105, 78, 0.6);
+}
+
+.auth-links { margin-top: var(--space-6); }
+.auth-links a {
+  color: var(--green-600);
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+.auth-links a:hover { color: var(--green-700); text-decoration: underline; }
+
+.auth-message {
+  border-radius: var(--radius-lg);
+  animation: welcome-in var(--dur-base) var(--ease-out) both;
+}
+
+/* ---------------------------------------------------------------- the aside */
+
+.auth-aside h2 {
+  font-family: var(--font-display);
+  line-height: var(--leading-snug);
+  /* Stops the headline dropping two words onto a line of their own. */
+  text-wrap: balance;
+  max-width: 22ch;
+}
+
+.auth-aside ul { gap: var(--space-3); }
+
+/*
+ * Each promise gets a surface of its own.
+ *
+ * This is the fix for the lopsided composition: a solid white card on the left against
+ * three unbounded text blocks on the right had nothing to balance it. They are quieter
+ * than the form — no shadow until pointed at — because the form is what somebody came
+ * here to use.
+ */
+.auth-aside li {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-xl);
+  background: rgba(255, 255, 255, 0.62);
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out),
+    background var(--dur-base) var(--ease-out);
+  animation: welcome-in 560ms var(--ease-out) both;
+}
+.auth-aside li:nth-child(1) { animation-delay: 90ms; }
+.auth-aside li:nth-child(2) { animation-delay: 170ms; }
+.auth-aside li:nth-child(3) { animation-delay: 250ms; }
+.auth-aside li:hover {
+  transform: translateX(3px);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: var(--shadow-sm);
+}
+
+.auth-aside li > span[aria-hidden] {
+  border-radius: var(--radius-lg);
+  background: var(--green-100);
+  color: var(--green-700);
+}
+.auth-aside li:nth-child(2) > span[aria-hidden] { background: var(--sun-100); color: var(--sun-600); }
+.auth-aside li:nth-child(3) > span[aria-hidden] { background: var(--w-violet-soft); color: var(--w-violet-ink); }
+
+.auth-note { border-top: 1px solid var(--line-soft); }
+
+/* ---------------------------------------------------------------- motion */
+
+/*
+ * Every animation here either reveals something already in the document or responds to
+ * a pointer. None of it carries meaning, so reduced motion removes all of it and the
+ * screen is unchanged in substance.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .auth-layout, .auth-aside li, .auth-message { animation: none; }
+  .auth-aside li:hover, .auth-submit:hover:not(:disabled),
+  .auth-submit:active:not(:disabled), .auth-brand:hover .brand-icon { transform: none; }
+}

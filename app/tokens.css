@@ -62,8 +62,22 @@
   /* ---- Semantic roles --------------------------------------------------- */
   --ink: var(--sand-900);
   --ink-soft: var(--sand-700);
-  --ink-faint: var(--sand-500);
-  --muted: var(--sand-600);
+  /*
+   * The two quiet inks are values of their own rather than ramp steps.
+   *
+   * They used to be `--sand-500` and `--sand-600`, which measure 2.59:1 and 3.96:1 on
+   * `--surface`. Both fail WCAG AA for body text (4.5:1), and between them they carry
+   * almost every sentence in the product that is not a heading — leads, card
+   * descriptions, form notes, the small print under a parent report. The hue is
+   * unchanged; only the value is deepened, so nothing about the palette's character
+   * moves. Measured: 4.87:1 and 5.39:1 on `--surface`, 4.64:1 and 5.14:1 on `--cream`.
+   *
+   * The ramp steps they used to point at are still there and still correct for what a
+   * ramp is for — borders, fills, disabled states. They were simply never contrast-safe
+   * as text.
+   */
+  --ink-faint: #66755f;
+  --muted: #5f6e59;
   --cream: var(--sand-100);
   --line: var(--sand-300);
   --line-soft: var(--sand-200);
