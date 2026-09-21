@@ -21,6 +21,7 @@
     "supabase:seed-generate": "node scripts/seed-supabase-curriculum.mjs",
     "supabase:import": "node scripts/import-legacy.mjs",
     "supabase:bundle": "node scripts/bundle-supabase-upgrade.mjs",
+    "supabase:verify": "node scripts/verify-migrations.mjs",
     "mastery:rebuild": "node scripts/rebuild-mastery.mjs",
     "mastery:report": "node scripts/rebuild-mastery.mjs --report",
     "ui:shots": "node scripts/ui-shots.mjs",

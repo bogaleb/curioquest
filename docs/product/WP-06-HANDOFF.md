@@ -17,15 +17,29 @@ It adds three routines and no tables:
 | `public.cq_mastery_cache` | `service_role` | Writes a rebuilt projection into the blob. Deliberately does **not** bump `revision` — a cache refresh may never fail a family's save. |
 | `public.cq_insights` | `service_role` | `item-health` (gated on catalogue authorship, aggregates across families) and `retention` (gated on the parent, scoped to their children). |
 
-**It was desk-checked, not executed.** Docker was not running on this machine and I did
-not connect to your local Postgres, so no throwaway database validated it. Three real
-faults were found and fixed by reading it — `rows` and `row` used as column aliases where
-both are Postgres keywords, and a `days` variable shadowing `make_interval`'s `days`
-parameter — but plpgsql only parses the SQL inside a function body when that body first
-*runs*, so a `create function` succeeding proves less than it looks like it does. Run the
-smoke test below immediately afterwards; it executes every branch.
+**It is verified.** `npm run supabase:verify` applies all eleven migrations to a throwaway
+`postgres:17` container and then *executes* every routine branch — because `create
+function` proves almost nothing for plpgsql: the SQL inside a body is parsed when that
+body first runs, not when it is created. Three real faults were found this way that
+reading had missed and that `create function` accepted without complaint: `rows` and
+`row` used as column aliases where both are Postgres keywords, and a `days` variable
+shadowing `make_interval`'s parameter.
 
-## Smoke test — run this straight after the migration
+The container is disposable, and nothing in that command touches Supabase or any local
+database. It skips cleanly when Docker is not running.
+
+```
+npm run supabase:verify
+```
+
+The fixtures live in `supabase/verify/`: a minimal Supabase-shaped shim, a seeded family,
+and `02-exercise.sql`, which runs every branch and prints `BUG` on any that misbehaves.
+**A new branch in a routine belongs in that file the same day**, or the guard quietly
+stops covering it.
+
+## Smoke test against the real database
+
+`supabase:verify` proves the SQL runs. These three confirm it landed in *your* project.
 
 ```sql
 -- 1. Every child's events come back grouped by child. '{}' is fine on a young account.
@@ -42,8 +56,9 @@ select public.cq_insights(
   (select id from public.parents limit 1), 'item-health', null, 14, 5, 20);
 ```
 
-If any of the three raises a syntax or column error, paste it back and it is a one-line
-fix in the migration rather than anything structural.
+If any of the three raises an error here after `supabase:verify` passed, the difference
+is something production has that the shim does not — worth knowing, and worth adding to
+`supabase/verify/00-supabase-shim.sql` so the guard catches it next time.
 
 ## Then check the projection against the cache
 
