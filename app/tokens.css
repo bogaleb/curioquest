@@ -241,3 +241,261 @@
     --dur-celebrate: 1ms;
   }
 }
+
+/* ======================================================================
+   THE CHILD SURFACE                                             (WP-02)
+   ======================================================================
+
+   The sage-and-cream palette above is tasteful, calm, and a little tired. It
+   stays, as the *parent* palette: the Grown-ups surface is meant to read as a
+   familiar, quiet web application.
+
+   A four-year-old's world should not. Everything under this heading is brighter
+   and more saturated, and it is a separate ramp rather than a tweak to the one
+   above so the two surfaces cannot drift into each other.
+
+   Every `-ink` value below is a text colour, checked against the 50, 100 and 200
+   fills of its own family. `tests/tokens.test.mjs` re-checks them on every run,
+   because C6 asks for contrast verified against the actually painted background
+   rather than assumed.
+
+   Colour carries meaning here: one hue per world, held across the map, the
+   episode and the reward, so a child learns where they are before they can read
+   where they are.
+   ====================================================================== */
+
+:root {
+  /* ---- Sky: the world's ground, and the Discovery Lab ----------------- */
+  --kid-sky-50: #eef7ff;
+  --kid-sky-100: #d5eaff;
+  --kid-sky-200: #a8d4fb;
+  --kid-sky-300: #6bb4f2;
+  --kid-sky-400: #3492de;
+  --kid-sky-500: #1f74bb;
+  --kid-sky-600: #175a91;
+  --kid-sky-ink: #0c3a60;
+
+  /* ---- Sun: reward, warmth, the moment something is collected --------- */
+  --kid-sun-50: #fff8e5;
+  --kid-sun-100: #ffedbf;
+  --kid-sun-200: #ffd97d;
+  --kid-sun-300: #fbc02d;
+  --kid-sun-400: #d99b06;
+  /* Dark enough to carry white type: 4.9:1, checked in tests/tokens.test.mjs. Yellow
+     is the family where this is easy to get wrong. */
+  --kid-sun-500: #946903;
+  --kid-sun-600: #875f03;
+  --kid-sun-ink: #4d3600;
+
+  /* ---- Leaf: growth, the Reading Grove, "yes, that's it" -------------- */
+  --kid-leaf-50: #eefbef;
+  --kid-leaf-100: #d2f4d8;
+  --kid-leaf-200: #a0e6ad;
+  --kid-leaf-300: #5fcd79;
+  --kid-leaf-400: #2ba94e;
+  --kid-leaf-500: #1d873d;
+  --kid-leaf-600: #156a2f;
+  --kid-leaf-ink: #0a3f1c;
+
+  /* ---- Coral: Number City, and "not yet" — never alarm ---------------- */
+  --kid-coral-50: #fff1ee;
+  --kid-coral-100: #ffddd6;
+  --kid-coral-200: #ffb6a7;
+  --kid-coral-300: #fc8874;
+  --kid-coral-400: #e85c44;
+  --kid-coral-500: #c23f29;
+  --kid-coral-600: #98301f;
+  --kid-coral-ink: #5c1b11;
+
+  /* ---- Grape: Story Harbor, night, imagination ------------------------ */
+  --kid-grape-50: #f5f1ff;
+  --kid-grape-100: #e7dfff;
+  --kid-grape-200: #cbb9ff;
+  --kid-grape-300: #a98cf7;
+  --kid-grape-400: #8763e8;
+  --kid-grape-500: #6d46cd;
+  --kid-grape-600: #5636a2;
+  --kid-grape-ink: #341e66;
+
+  /* ---- Berry: Make, the Creative Studio ------------------------------- */
+  --kid-berry-50: #fff0f6;
+  --kid-berry-100: #ffd9e7;
+  --kid-berry-200: #ffadca;
+  --kid-berry-300: #fb7aa8;
+  --kid-berry-400: #e64e85;
+  --kid-berry-500: #c1306a;
+  --kid-berry-600: #992450;
+  --kid-berry-ink: #5e142f;
+
+  /* ---- Child semantic roles -------------------------------------------
+     A child screen sets these once and every primitive resolves against them,
+     so a world's hue is chosen in one place rather than per component. */
+  --kid-surface: #fffdf7;
+  --kid-surface-sunk: #f4efe2;
+  --kid-ink: #2a2118;
+  --kid-ink-soft: #57493a;
+  /* The one place grey is correct: a drawn asset that does not exist yet.
+     Anti-pattern list: use a placeholder shape, never an emoji, so the gap
+     stays visible to everyone looking at the product. */
+  --kid-placeholder: #cfc9bd;
+  --kid-placeholder-line: #8f887c;
+
+  /* Defaults, overridden per world by [data-kid-world] below. */
+  --kid-world-50: var(--kid-leaf-50);
+  --kid-world-100: var(--kid-leaf-100);
+  --kid-world-200: var(--kid-leaf-200);
+  --kid-world-300: var(--kid-leaf-300);
+  --kid-world-400: var(--kid-leaf-400);
+  --kid-world-500: var(--kid-leaf-500);
+  --kid-world-600: var(--kid-leaf-600);
+  --kid-world-ink: var(--kid-leaf-ink);
+
+  /* ======================================================================
+     CHILD TYPE SCALE
+
+     The floor is the point. `globals.css` hard-codes 12px labels and an appended
+     override block that sets 6px, which is not a size a six-year-old can read
+     and not a size anyone chose on purpose.
+
+     20px minimum for ages 4-5, 18px for 6-7, applied through `--kid-text-min`
+     so a component asks for "the smallest text allowed here" rather than
+     picking a number.
+     ====================================================================== */
+  --kid-text-min: 20px;
+  --kid-text-body: 22px;
+  --kid-text-lg: 26px;
+  --kid-text-xl: 32px;
+  --kid-text-2xl: 40px;
+  --kid-text-3xl: 52px;
+  --kid-text-4xl: 68px;
+  /* Letters and words a child is decoding, where size is a legibility decision
+     rather than a hierarchy one. */
+  --kid-text-grapheme: 80px;
+
+  --kid-leading-body: 1.55;
+  --kid-leading-tight: 1.2;
+  /* Early readers track a line more easily with a little extra letter spacing. */
+  --kid-tracking-reading: 0.01em;
+
+  /* ======================================================================
+     CHILD TOUCH + MOTION
+     ====================================================================== */
+  --kid-touch: 64px;          /* C6 floor for bands 4-5 */
+  --kid-touch-primary: 96px;  /* the one obvious thing to do */
+  --kid-gap: var(--space-4);
+  /* Primary actions sit in the lower two-thirds of a tablet, where small hands
+     rest. This is the top of the region they may occupy. */
+  --kid-reach-top: 33%;
+
+  --kid-dur-tap: 120ms;
+  --kid-dur-travel: 520ms;    /* the map panning to a place */
+  --kid-dur-celebrate: 900ms;
+  --kid-ease-travel: cubic-bezier(0.32, 0.72, 0.26, 1);
+
+  /* ======================================================================
+     CHILD SHAPE
+
+     Child controls are chunky and physical: a generous corner, a visible lip
+     underneath that compresses when pressed, and a shadow that says "this is a
+     thing you can pick up" rather than "this is a panel".
+     ====================================================================== */
+  --kid-radius: var(--radius-xl);
+  --kid-radius-lg: var(--radius-3xl);
+  --kid-radius-pill: var(--radius-pill);
+  --kid-border: 3px;
+  /* The lip under a button. Pressing spends it, which is why it is a token: the
+     press animation and the resting height have to agree. */
+  --kid-press: 6px;
+  --kid-shadow: 0 8px 20px rgba(42, 33, 24, 0.14);
+  --kid-shadow-lift: 0 16px 34px rgba(42, 33, 24, 0.18);
+
+  /* A focus ring that survives any backdrop: a white halo inside a dark one, so
+     it is visible on pale paper and on a saturated world fill alike. This is the
+     keyboard path C6 asks for, and it is never removed, only moved. */
+  --kid-focus-inner: #ffffff;
+  --kid-focus-outer: #2a2118;
+  --kid-focus-ring: 0 0 0 3px var(--kid-focus-inner), 0 0 0 7px var(--kid-focus-outer);
+}
+
+/* One hue per world, resolved once on a container. */
+[data-kid-world="grove"], [data-kid-world="reading"] {
+  --kid-world-50: var(--kid-leaf-50); --kid-world-100: var(--kid-leaf-100);
+  --kid-world-200: var(--kid-leaf-200); --kid-world-300: var(--kid-leaf-300);
+  --kid-world-400: var(--kid-leaf-400); --kid-world-500: var(--kid-leaf-500);
+  --kid-world-600: var(--kid-leaf-600); --kid-world-ink: var(--kid-leaf-ink);
+}
+[data-kid-world="city"], [data-kid-world="math"] {
+  --kid-world-50: var(--kid-coral-50); --kid-world-100: var(--kid-coral-100);
+  --kid-world-200: var(--kid-coral-200); --kid-world-300: var(--kid-coral-300);
+  --kid-world-400: var(--kid-coral-400); --kid-world-500: var(--kid-coral-500);
+  --kid-world-600: var(--kid-coral-600); --kid-world-ink: var(--kid-coral-ink);
+}
+[data-kid-world="harbor"], [data-kid-world="stories"] {
+  --kid-world-50: var(--kid-grape-50); --kid-world-100: var(--kid-grape-100);
+  --kid-world-200: var(--kid-grape-200); --kid-world-300: var(--kid-grape-300);
+  --kid-world-400: var(--kid-grape-400); --kid-world-500: var(--kid-grape-500);
+  --kid-world-600: var(--kid-grape-600); --kid-world-ink: var(--kid-grape-ink);
+}
+[data-kid-world="workshop"], [data-kid-world="make"] {
+  --kid-world-50: var(--kid-berry-50); --kid-world-100: var(--kid-berry-100);
+  --kid-world-200: var(--kid-berry-200); --kid-world-300: var(--kid-berry-300);
+  --kid-world-400: var(--kid-berry-400); --kid-world-500: var(--kid-berry-500);
+  --kid-world-600: var(--kid-berry-600); --kid-world-ink: var(--kid-berry-ink);
+}
+[data-kid-world="treehouse"], [data-kid-world="home"] {
+  --kid-world-50: var(--kid-sun-50); --kid-world-100: var(--kid-sun-100);
+  --kid-world-200: var(--kid-sun-200); --kid-world-300: var(--kid-sun-300);
+  --kid-world-400: var(--kid-sun-400); --kid-world-500: var(--kid-sun-500);
+  --kid-world-600: var(--kid-sun-600); --kid-world-ink: var(--kid-sun-ink);
+}
+[data-kid-world="lab"], [data-kid-world="science"] {
+  --kid-world-50: var(--kid-sky-50); --kid-world-100: var(--kid-sky-100);
+  --kid-world-200: var(--kid-sky-200); --kid-world-300: var(--kid-sky-300);
+  --kid-world-400: var(--kid-sky-400); --kid-world-500: var(--kid-sky-500);
+  --kid-world-600: var(--kid-sky-600); --kid-world-ink: var(--kid-sky-ink);
+}
+
+/* Type and target size step with the band. The youngest band gets the largest
+   of everything; the oldest still never drops below the C6 floor of 56px. */
+/* The numbers match `delivery.touchTargetPx` in lib/learning-bands.ts, so a component
+   that reads the token and a route that reads the profile agree about the same child. */
+[data-band="early-preschool"] {
+  --kid-text-min: 22px;
+  --kid-text-body: 26px;
+  --kid-touch: 88px;
+  --kid-touch-primary: 128px;
+}
+[data-band="prek"] {
+  --kid-text-min: 22px;
+  --kid-text-body: 26px;
+  --kid-touch: 80px;
+  --kid-touch-primary: 120px;
+}
+[data-band="kindergarten"] {
+  --kid-text-min: 20px;
+  --kid-text-body: 24px;
+  --kid-touch: 72px;
+  --kid-touch-primary: 108px;
+}
+[data-band="grade1"] {
+  --kid-text-min: 20px;
+  --kid-text-body: 22px;
+  --kid-touch: 64px;
+  --kid-touch-primary: 96px;
+}
+[data-band="grade2"], [data-band="grade3"] {
+  --kid-text-min: 18px;
+  --kid-text-body: 20px;
+  --kid-touch: 56px;
+  --kid-touch-primary: 84px;
+}
+
+/* Motion means travel and reaction, never decoration, so when it is switched
+   off the reduced path still has to feel finished rather than merely frozen. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --kid-dur-tap: 1ms;
+    --kid-dur-travel: 1ms;
+    --kid-dur-celebrate: 1ms;
+  }
+}

@@ -26,7 +26,12 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
+      - run: pnpm lint
       - run: pnpm test
+      # The child layer's house rules and the CSS ratchets (WP-02). `pnpm test` covers
+      # these too; running them alone makes a failure say which rule broke.
+      - run: pnpm check:tokens
+      - run: pnpm check:child-surfaces
       - name: Production build (no hosted credentials)
         run: pnpm build
         env:

@@ -27,6 +27,39 @@ two disagree.
   against roughly 390 seeded rows, so it fired intermittently. And the `runtime-classic`
   fallback lesson that the recovery path needed had never been seeded.
 
+- **WP-02 — Tokens and the child component layer. Shipped, with one acceptance
+  criterion not met; see below.** `app/tokens.css` now carries a separate child palette
+  (six hues, one per world, every ink pair contrast-checked in `tests/tokens.test.mjs`
+  rather than eyeballed), a type scale with a 20px floor that the band can raise, touch
+  tokens that match `delivery.touchTargetPx`, and motion tokens that collapse under
+  `prefers-reduced-motion`. `components/kid/` holds the six primitives the blueprint
+  names — `KidButton`, `KidCard`, `SceneLayer`, `SpeechBubble`, `ProgressTrail`,
+  `ObjectSlot` — plus the grey `Placeholder` that stands in for art nobody has drawn yet.
+  They use tokens only: no raw colour, no px type, no `!important`, no emoji, no Lucide,
+  no shadcn. `scripts/check-tokens.mjs` and `scripts/check-child-surfaces.mjs` enforce
+  that, run in CI and from `pnpm test`, and carry ratchets on the legacy stylesheets:
+  bytes, `!important`, raw colours and px font sizes may go down and never up.
+
+  One real migration went with it, so the attrition path is proven rather than described:
+  the speech bubble is now the child-layer component, and `.cq-bubble*` has left
+  `app/cast.css`. Verified dead rules and four duplicate copies of the reduced-motion
+  reset were deleted; there is now one reduced-motion contract, in `app/motion.css`.
+
+  Numbers: `!important` 42 → 28. Legacy stylesheets 227,589B → 220,457B. **Total CSS went
+  up**, because the token ramps and `app/kid.css` are additions (+27KB between them) and
+  only ~7KB of old CSS could honestly be deleted — there is no dead CSS left to speak of,
+  and rewriting the sixteen sheets in one pass is what WP-02 forbids. The byte count
+  falls when screens move, which is WP-03 onwards; the ratchet is what makes that
+  irreversible.
+
+  Verification: `/kid-preview` (development only, 404 in production) renders every
+  primitive; `scripts/shot-kid-layer.mjs` captures it at iPad landscape, iPad portrait,
+  phone portrait and desktop, each with and without reduced motion, and fails on a console
+  error or a touch target under the band's floor. Keyboard focus ring and the
+  narration-off path were checked on the painted page. Still not true: no child screen has
+  been rebuilt on the layer yet, and the drawn assets it is designed around do not exist —
+  every picture is a placeholder until WP-11.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

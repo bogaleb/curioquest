@@ -538,17 +538,24 @@ input:focus, form select:focus, textarea:focus {
   .nova-card-title > span { animation: none; }
   .badge-card.earned::after { display: none; }
   .cq-skeleton { animation: none; }
+  .celebration-layer { display: none; }
   .primary:active:not(:disabled) { transform: none; border-bottom-width: var(--press-depth); margin-bottom: 0; }
 }
 
-/* A child who has asked for calm gets the same treatment as the OS setting. */
+/* A child who has asked for calm gets the same treatment as the OS setting.
+   This block and the media query above it are the *only* reduced-motion resets in
+   the application. Four more copies used to live in globals, games, studio and
+   polish, each with its own durations; a screen that needs calm now gets one
+   answer instead of whichever sheet loaded last. */
 [data-reduced-motion] *,
 [data-reduced-motion] *::before,
 [data-reduced-motion] *::after {
   animation-duration: 1ms !important;
   animation-iteration-count: 1 !important;
   transition-duration: 1ms !important;
+  scroll-behavior: auto;
 }
+[data-reduced-motion] .celebration-layer { display: none; }
 
 /* ==========================================================================
    World cards take their palette from the shared world tokens, so a seventh

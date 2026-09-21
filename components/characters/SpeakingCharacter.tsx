@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Volume2 } from "lucide-react";
 import { speak, type SpeechHandle } from "@/lib/speech";
 import type { NovaState } from "@/lib/experience/types";
 import { NovaCharacter } from "./NovaCharacter";
@@ -108,28 +107,10 @@ export function Cast({
 }
 
 /**
- * The words a character is saying. Rendered as a live region so assistive technology
- * announces the line at the same moment the voice does.
+ * The words a character is saying.
+ *
+ * The bubble itself now comes from the child component layer (`components/kid/`), which is
+ * token-driven, band-aware and sized for a four-year-old's finger. This re-export keeps the
+ * existing call sites working while the old `.cq-bubble` rules leave `app/cast.css`.
  */
-export function SpeechBubble({
-  line,
-  onReplay,
-}: {
-  line: { who: CastMember; text: string } | null;
-  onReplay?: () => void;
-}) {
-  return (
-    <div className="cq-bubble-slot" aria-live="polite" aria-atomic="true">
-      {line && (
-        <p className={`cq-bubble cq-bubble-${line.who}`}>
-          <span>{line.text}</span>
-          {onReplay && (
-            <button type="button" className="cq-bubble-replay" onClick={onReplay} aria-label="Say that again">
-              <Volume2 aria-hidden="true" />
-            </button>
-          )}
-        </p>
-      )}
-    </div>
-  );
-}
+export { SpeechBubble } from "@/components/kid/SpeechBubble";

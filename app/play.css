@@ -31,7 +31,7 @@
   max-width: 620px;
   text-align: left;
 }
-.cq-guide .cq-bubble-slot { flex: 1; min-width: 0; }
+.cq-guide .kid-bubble-slot { flex: 1; min-width: 0; }
 .cq-guide .nova-character { --nova-size: 92px; }
 .cq-guide .pip-character { --pip-size: 92px; }
 

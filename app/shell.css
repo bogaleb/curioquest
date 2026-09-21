@@ -282,17 +282,6 @@
   gap: var(--space-2);
 }
 
-.cq-nav-sheet {
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-  gap: var(--space-2);
-  min-height: var(--touch-child);
-  background: var(--surface-sunk);
-  font-size: var(--text-sm);
-}
-.cq-nav-sheet .cq-nav-label { white-space: normal; }
-
 .cq-sheet-utility {
   display: grid;
   gap: var(--space-1);
@@ -336,10 +325,6 @@
   .cq-topbar { min-height: 64px; }
   .cq-main { padding-bottom: calc(var(--space-10) + var(--safe-bottom)); }
   .cq-footer { padding-bottom: calc(var(--space-6) + var(--safe-bottom)); }
-
-  /* The rail already carries the brand and switcher; hide them where the legacy
-     markup would otherwise duplicate them in the header. */
-  .cq-rail-head .cq-brand-tagline { display: none; }
 }
 
 /* ==========================================================================
@@ -366,7 +351,6 @@
   }
 
   .cq-topbar { min-height: var(--shell-topbar); }
-  .cq-rail-head .cq-brand-tagline { display: block; }
 }
 
 @media (min-width: 1550px) {

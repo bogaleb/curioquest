@@ -1,0 +1,562 @@
+/* ==========================================================================
+   The child component layer                                          (WP-02)
+
+   Every rule here belongs to a component in `components/kid/`. Nothing else may
+   use these classes, and these components use nothing else — that is what makes
+   the eighteen legacy stylesheets shrinkable: a migrated screen deletes its old
+   rules and gains no new ones.
+
+   House rules, enforced by `scripts/check-tokens.mjs` on every run:
+     - no raw hex colours, no px font sizes, no forced overrides, ever;
+     - every colour, size, duration and radius comes from `app/tokens.css`;
+     - nothing depends on hover, because a finger cannot hover.
+
+   Design target is iPad landscape first, phone portrait second (D8).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   SceneLayer — the Stage: one thing happening, full bleed, no chrome
+   -------------------------------------------------------------------------- */
+.kid-scene {
+  /* The child world is painted, not themed. Pinning the scheme stops a device in
+     dark mode from inverting a drawn scene into something nobody designed. */
+  color-scheme: light;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  overflow: hidden;
+  background: var(--kid-world-50);
+  color: var(--kid-ink);
+  font-family: var(--font-body);
+  padding:
+    calc(var(--safe-top) + var(--space-4))
+    calc(var(--safe-right) + var(--space-5))
+    calc(var(--safe-bottom) + var(--space-5))
+    calc(var(--safe-left) + var(--space-5));
+}
+
+/* A scene inside an existing page — a preview, or a screen mid-migration that
+   still has a shell around it. Same paint, no viewport claim. */
+.kid-scene[data-inset="true"] {
+  min-height: 0;
+  border-radius: var(--kid-radius-lg);
+}
+
+/* The far layer. Drawn art goes here; until it exists this is a plain wash of
+   the world's own hue, which reads as unfinished rather than as decoration. */
+.kid-scene-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 70% at 50% 0%, var(--kid-world-100) 0%, var(--kid-world-50) 62%),
+    var(--kid-world-50);
+}
+.kid-scene-sky > * {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The one obvious door out. Top-start, away from the reach zone, so a child
+   cannot leave by accident with the hand that is answering. */
+.kid-scene-exit {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-start;
+  min-height: 0;
+}
+
+/* What is happening. Centred, and never taller than it has to be, so the reach
+   zone below it stays in the bottom two-thirds where small hands rest. */
+.kid-scene-stage {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--kid-gap);
+  min-height: 0;
+  padding-block: var(--space-4);
+  text-align: center;
+}
+
+/* Primary controls. `--kid-reach-top` is the highest this band may occupy; the
+   auto margin pins it to the bottom of whatever is left. */
+.kid-scene-reach {
+  position: relative;
+  z-index: 2;
+  margin-block-start: auto;
+  padding-block-start: var(--space-3);
+  max-height: calc(100% - var(--kid-reach-top));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--kid-gap);
+}
+
+@media (max-width: 767px) {
+  /* Phone portrait: stacked, full-width controls. A row of chunky buttons does
+     not fit beside itself at 390px, and shrinking them below the touch floor is
+     not an option. */
+  .kid-scene-reach {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   KidButton — the only thing a child taps to act
+   -------------------------------------------------------------------------- */
+.kid-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: var(--kid-touch);
+  min-width: var(--kid-touch);
+  padding: var(--space-3) var(--space-5);
+  border: var(--kid-border) solid var(--kid-world-600);
+  border-radius: var(--kid-radius);
+  /* The lip. It is a border, not a shadow, so it survives forced-colours mode. */
+  border-bottom-width: calc(var(--kid-border) + var(--kid-press));
+  background: var(--kid-world-200);
+  color: var(--kid-world-ink);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-body);
+  font-weight: 700;
+  line-height: var(--kid-leading-tight);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    translate var(--kid-dur-tap) var(--ease-out),
+    border-bottom-width var(--kid-dur-tap) var(--ease-out),
+    background-color var(--kid-dur-tap) var(--ease-out);
+}
+
+.kid-button[data-size="primary"] {
+  min-height: var(--kid-touch-primary);
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--kid-text-lg);
+  border-radius: var(--kid-radius-lg);
+}
+
+/* Tones. Three, and no more: the thing to do, the thing that is a reward, and
+   the quiet thing. A fourth tone would be a fourth decision on screen. */
+.kid-button[data-tone="sun"] {
+  background: var(--kid-sun-200);
+  border-color: var(--kid-sun-500);
+  color: var(--kid-sun-ink);
+}
+.kid-button[data-tone="quiet"] {
+  background: var(--kid-surface);
+  border-color: var(--kid-world-300);
+  color: var(--kid-ink);
+}
+
+/* Pressing spends the lip: the button travels down by exactly the depth it had.
+   Under reduced motion `--kid-dur-tap` is 1ms, so the same thing happens without
+   a visible slide — the feedback stays, the movement goes. */
+.kid-button:active:not(:disabled) {
+  translate: 0 var(--kid-press);
+  border-bottom-width: var(--kid-border);
+}
+
+.kid-button:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+
+.kid-button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+/* Answer states. Colour is never the only signal — `KidButton` also renders a
+   drawn mark — because a colour-blind child gets the same information. */
+.kid-button[data-state="right"] {
+  background: var(--kid-leaf-200);
+  border-color: var(--kid-leaf-500);
+  color: var(--kid-leaf-ink);
+}
+.kid-button[data-state="not-yet"] {
+  background: var(--kid-coral-100);
+  border-color: var(--kid-coral-400);
+  color: var(--kid-coral-ink);
+}
+
+.kid-button-art {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--kid-text-xl);
+  height: var(--kid-text-xl);
+}
+.kid-button[data-size="primary"] .kid-button-art {
+  width: var(--kid-text-3xl);
+  height: var(--kid-text-3xl);
+}
+.kid-button-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--kid-text-lg);
+  height: var(--kid-text-lg);
+}
+
+/* A button whose whole body is a picture — a letter tile, a drawn object. */
+.kid-button[data-shape="tile"] {
+  flex-direction: column;
+  min-height: var(--kid-touch-primary);
+  min-width: var(--kid-touch-primary);
+  padding: var(--space-3);
+  font-family: var(--font-reading);
+  font-size: var(--kid-text-2xl);
+  letter-spacing: var(--kid-tracking-reading);
+}
+.kid-button[data-shape="tile"] .kid-button-art {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1;
+}
+
+/* --------------------------------------------------------------------------
+   KidCard — a place, a choice, a thing to look at
+   -------------------------------------------------------------------------- */
+.kid-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  box-shadow: var(--kid-shadow);
+  text-align: center;
+}
+
+/* An interactive card is a real button: keyboard reaches it, the lip tells a
+   finger it can be pressed, and nothing about it depends on hover. */
+.kid-card[data-pressable="true"] {
+  min-height: var(--kid-touch-primary);
+  border-bottom-width: calc(var(--kid-border) + var(--kid-press));
+  border-color: var(--kid-world-300);
+  cursor: pointer;
+  transition:
+    translate var(--kid-dur-tap) var(--ease-out),
+    border-bottom-width var(--kid-dur-tap) var(--ease-out);
+}
+.kid-card[data-pressable="true"]:active:not(:disabled) {
+  translate: 0 var(--kid-press);
+  border-bottom-width: var(--kid-border);
+}
+.kid-card[data-pressable="true"]:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+.kid-card[aria-pressed="true"] {
+  background: var(--kid-world-100);
+  border-color: var(--kid-world-500);
+}
+
+.kid-card-art {
+  width: 100%;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--kid-radius);
+  overflow: hidden;
+  background: var(--kid-world-50);
+}
+.kid-card-art > img,
+.kid-card-art > svg {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The word under a picture is a label, not the control (blueprint §C5). It is
+   allowed to be small-ish, but never below the band's reading floor. */
+.kid-card-title {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  font-weight: 700;
+  line-height: var(--kid-leading-tight);
+  color: var(--kid-world-ink);
+}
+.kid-card-caption {
+  font-size: var(--kid-text-min);
+  line-height: var(--kid-leading-body);
+  color: var(--kid-ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   SpeechBubble — what Nova is saying, always also written down
+   -------------------------------------------------------------------------- */
+.kid-bubble-slot {
+  display: block;
+  min-height: 0;
+}
+
+.kid-bubble {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  max-width: 34ch;
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border: var(--kid-border) solid var(--kid-world-300);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  box-shadow: var(--kid-shadow);
+  font-size: var(--kid-text-body);
+  line-height: var(--kid-leading-body);
+  text-align: start;
+  animation: kid-bubble-in var(--kid-dur-tap) var(--ease-spring) both;
+}
+.kid-bubble-text {
+  flex: 1;
+  min-width: 0;
+}
+
+@keyframes kid-bubble-in {
+  from { opacity: 0; translate: 0 var(--space-2); }
+  to { opacity: 1; translate: 0 0; }
+}
+
+/* The tail points back at whoever is speaking, so two characters on one screen
+   are told apart by geometry rather than by reading their names. */
+.kid-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: calc(var(--space-3) * -1);
+  width: var(--space-4);
+  height: var(--space-4);
+  rotate: 45deg;
+  background: inherit;
+  border-right: var(--kid-border) solid var(--kid-world-300);
+  border-bottom: var(--kid-border) solid var(--kid-world-300);
+  border-end-end-radius: var(--radius-sm);
+}
+.kid-bubble[data-tail="start"]::after { left: var(--space-8); }
+.kid-bubble[data-tail="end"]::after { right: var(--space-8); }
+.kid-bubble[data-tail="none"]::after { content: none; }
+
+.kid-bubble[data-who="nova"] {
+  border-color: var(--kid-sun-300);
+  background: var(--kid-sun-50);
+}
+.kid-bubble[data-who="nova"]::after {
+  border-right-color: var(--kid-sun-300);
+  border-bottom-color: var(--kid-sun-300);
+}
+.kid-bubble[data-who="pip"] {
+  border-color: var(--kid-sky-300);
+  background: var(--kid-sky-50);
+}
+.kid-bubble[data-who="pip"]::after {
+  border-right-color: var(--kid-sky-300);
+  border-bottom-color: var(--kid-sky-300);
+}
+
+/* "Say it again". A child who missed a word asks for it back — the one control
+   that has to be reachable while the voice is still talking. */
+.kid-bubble-replay {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: var(--kid-touch);
+  height: var(--kid-touch);
+  border: var(--kid-border) solid var(--kid-world-300);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+  color: var(--kid-world-ink);
+  cursor: pointer;
+}
+.kid-bubble-replay:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+.kid-bubble-replay:active {
+  background: var(--kid-world-100);
+}
+.kid-bubble-replay > svg {
+  width: 55%;
+  height: 55%;
+}
+
+@media (max-width: 767px) {
+  .kid-bubble { max-width: 100%; }
+}
+
+/* --------------------------------------------------------------------------
+   ProgressTrail — how far along the story we are, with no numbers
+   -------------------------------------------------------------------------- */
+.kid-trail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* The gap is the length of the path between two stones, so the two agree. */
+  gap: var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.kid-trail-stop {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--kid-text-xl);
+  height: var(--kid-text-xl);
+  border: var(--kid-border) solid var(--kid-world-300);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+}
+
+/* Done: filled in. Not a tick, not a percentage — a stone you have stepped on. */
+.kid-trail-stop[data-done="true"] {
+  background: var(--kid-world-400);
+  border-color: var(--kid-world-600);
+}
+
+/* Here. Larger as well as darker, so the current stop is findable without
+   relying on colour vision. */
+.kid-trail-stop[data-here="true"] {
+  width: var(--kid-text-2xl);
+  height: var(--kid-text-2xl);
+  background: var(--kid-sun-300);
+  border-color: var(--kid-sun-600);
+  box-shadow: var(--kid-shadow);
+}
+
+/* The path between stones: drawn in the gap, so the trail reads as a journey
+   rather than a row of dots — dashed ahead of the child, solid behind. It lives
+   inside its stop and reaches across to the next one, which keeps the list valid
+   HTML without a wrapper element per stone. */
+.kid-trail-link {
+  position: absolute;
+  inset-inline-start: 100%;
+  top: 50%;
+  width: var(--space-6);
+  height: 0;
+  border-block-start: var(--kid-border) dashed var(--kid-world-300);
+}
+.kid-trail-link[data-done="true"] {
+  border-block-start-style: solid;
+  border-block-start-color: var(--kid-world-500);
+}
+
+@media (max-width: 767px) {
+  .kid-trail { gap: var(--space-4); }
+  .kid-trail-link { width: var(--space-4); }
+}
+
+/* --------------------------------------------------------------------------
+   ObjectSlot — where a reward object lives, and where one is missing
+   -------------------------------------------------------------------------- */
+.kid-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: var(--kid-touch-primary);
+  min-height: var(--kid-touch-primary);
+  padding: var(--space-3);
+  border: var(--kid-border) dashed var(--kid-world-300);
+  border-radius: var(--kid-radius);
+  background: var(--kid-world-50);
+  color: var(--kid-ink-soft);
+  text-align: center;
+}
+
+/* Filled: the dashes go away, because the space is no longer an invitation. */
+.kid-slot[data-filled="true"] {
+  border-style: solid;
+  border-color: var(--kid-world-400);
+  background: var(--kid-surface);
+  box-shadow: var(--kid-shadow);
+}
+
+.kid-slot[data-pressable="true"] {
+  cursor: pointer;
+  transition: translate var(--kid-dur-tap) var(--ease-out);
+}
+.kid-slot[data-pressable="true"]:active {
+  translate: 0 calc(var(--kid-press) / 2);
+}
+.kid-slot[data-pressable="true"]:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+.kid-slot[data-ready="true"] {
+  border-color: var(--kid-sun-500);
+  background: var(--kid-sun-50);
+}
+
+.kid-slot-object {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+}
+.kid-slot-object > img,
+.kid-slot-object > svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+.kid-slot-caption {
+  margin: 0;
+  font-size: var(--kid-text-min);
+  line-height: var(--kid-leading-tight);
+  color: var(--kid-ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   Placeholder — the shape that stands in for art nobody has drawn yet
+
+   Deliberately grey and deliberately ugly. An emoji here would let the product
+   look finished while it is not, which is the thing the anti-pattern list (§G)
+   is about.
+   -------------------------------------------------------------------------- */
+.kid-placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: var(--kid-placeholder-line);
+}
+.kid-placeholder-fill { fill: var(--kid-placeholder); }
+.kid-placeholder-line {
+  fill: none;
+  stroke: var(--kid-placeholder-line);
+  stroke-width: 2;
+}
+
+/* --------------------------------------------------------------------------
+   Words that only a screen reader hears. Every narrated instruction has a
+   written equivalent (§C6, audio-off path), and some of it is written here.
+   -------------------------------------------------------------------------- */
+.kid-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
