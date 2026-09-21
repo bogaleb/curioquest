@@ -29,7 +29,9 @@
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:tokens": "node scripts/check-tokens.mjs",
     "check:child-surfaces": "node scripts/check-child-surfaces.mjs",
-    "check:images": "node scripts/check-images.mjs"
+    "check:images": "node scripts/check-images.mjs",
+    "check:audio": "node scripts/check-audio.mjs",
+    "audio:coverage": "node scripts/audio-coverage.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

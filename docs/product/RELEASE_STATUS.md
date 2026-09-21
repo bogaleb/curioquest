@@ -221,6 +221,47 @@ two disagree.
   per-version breakdown, so an item rewritten in a later catalogue version still shows its
   old wrong answers mixed in.
 
+- **WP-07 — Authored audio. Partly shipped; the recordings are outstanding.** The
+  package's step 1 is "record or licence the phase-one phoneme set", which is a studio
+  session rather than a code change. Steps 2 and 3 are built, and the acceptance — *no
+  phoneme is ever produced by `speechSynthesis`* — is enforced today, before a single
+  clip exists.
+
+  The reason it is enforced early: a synthesiser cannot say an isolated consonant. Ask
+  one for /m/ and it says "muh". That added schwa is the most common reason a child
+  cannot blend — they have been taught three sounds that do not join, and "muh-a-tuh"
+  never becomes "mat". The product's own parent notes already admitted this and
+  synthesised anyway.
+
+  `lib/audio-policy.ts` decides how anything is said, and a missing recording degrades to
+  *teaching* rather than to a worse sound: play the clip, speak the word or sentence, or —
+  for a phoneme with no recording — say nothing and show the mouth cue so a grown-up can
+  make the sound. Prose with notation embedded in it is spoken with the notation removed
+  rather than read out as "slash em slash". Audio is addressed by asset id and locale
+  (`phoneme.sound-m.en`), so the same activity serves a second language without knowing.
+
+  `scripts/check-audio.mjs` is what keeps it true: no phoneme may reach a speech API, only
+  four files may construct an utterance, and an `AudioButton` carrying a phoneme must
+  declare it. Verified by deliberately breaking each rule.
+
+  `npm run audio:coverage` prints the recording worklist — currently 0 of 164, of which 19
+  are phonemes. Those nineteen are sounds children cannot hear today; they see the mouth
+  cue instead, which is the honest outcome and a better one than a wrong sound delivered
+  confidently.
+
+  Two faults were found while building it. The phoneme pattern was a hand-written list of
+  IPA characters and missed every short vowel the catalogue actually uses — `/ă/`, `/ĭ/`,
+  `/ŏ/`, `/ĕ/`, `/ŭ/` are written with a breve, so five of the nineteen sounds were
+  invisible to both the policy and the guard. And the guard carried its own copy of that
+  pattern, which is how the two drifted; there is now one definition, exported from the
+  policy.
+
+  Still not true: nothing is recorded, so phonics is currently taught by mouth cue and
+  example word rather than by voice. Nova's scripted lines and the decodable word list are
+  still synthesised — legitimately, since those are words and sentences — but they are on
+  the same worklist and will prefer a recording the moment one exists. Preloading a
+  lesson's clips is not built, because there are no clips to preload.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

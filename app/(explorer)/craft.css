@@ -274,3 +274,33 @@
   .scaffold-letters button:active:not(:disabled),
   .lab-items button:active:not(:disabled) { transform: none; }
 }
+
+/* ======================================================================
+   THE SOUND MODEL (§WP-07)
+   ======================================================================
+   What a child sees when a phoneme has no recording yet. It is not an error state:
+   a synthesiser would say "muh" for /m/, so saying nothing and handing the sound to
+   a grown-up is the correct outcome, and it has to look like an invitation. */
+
+.sound-model {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--green-300);
+  border-radius: var(--radius-xl);
+  background: var(--green-50);
+  text-align: center;
+  animation: craft-rise 320ms var(--ease-out) both;
+}
+.sound-model strong {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  line-height: 1;
+  color: var(--green-700);
+}
+.sound-model em { font-style: normal; font-size: var(--text-sm); color: var(--ink-soft); }
+.sound-model small { font-size: var(--text-sm); color: var(--muted); line-height: var(--leading-normal); max-width: 34ch; }
+
+@media (prefers-reduced-motion: reduce) { .sound-model { animation: none; } }
