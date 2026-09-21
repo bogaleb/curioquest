@@ -499,3 +499,116 @@
     --kid-dur-celebrate: 1ms;
   }
 }
+
+/* ======================================================================
+   AURORA — the depth layer
+   ======================================================================
+
+   A design language of depth rather than a second palette. Everything below is
+   additive: no existing token is redefined, so a screen that has not opted in is
+   untouched. A screen opts in by carrying `.aurora` (dark, immersive) or
+   `.aurora-lux` (luminous, for children).
+
+   Two registers of one system, because the audiences are genuinely different.
+   The conventional dark-neon treatment is right for a parent on a laptop at night
+   and wrong for a five-year-old learning to read: at that age contrast is not a
+   preference, it is whether the word is legible at all. So the *language* is shared —
+   the same mesh, the same glass, the same spring — and only the value is calibrated.
+   Children get it luminous; grown-ups get it deep.
+   ====================================================================== */
+
+:root {
+  /* ---- Deep ground ------------------------------------------------------
+     Not neutral black. Every step keeps a green cast, so the dark surfaces read
+     as the same forest at night rather than as a different product. */
+  --deep-900: #05090b;
+  --deep-800: #070f11;
+  --deep-700: #0a1518;
+  --deep-600: #0e1d20;
+  --deep-500: #14272a;
+  --deep-400: #1d3438;
+  --deep-300: #2a474b;
+  --deep-200: #3d6165;
+  --deep-100: #5d8286;
+
+  /* ---- Aurora accents ---------------------------------------------------
+     Four hues, each with a job. Mint carries the brand forward and is the only
+     one used for a primary action; the others are for state and for light. */
+  --aurora-mint: #3ddc97;
+  --aurora-mint-soft: #8af0c4;
+  --aurora-cyan: #46d9f0;
+  --aurora-violet: #a78bfa;
+  --aurora-gold: #f7c95c;
+  --aurora-rose: #fb7a8e;
+
+  /* Readable ink on deep ground. `--deep-ink-dim` is the floor for body text on
+     `--deep-700`; anything fainter is decoration and must not carry meaning. */
+  --deep-ink: #eaf5f2;
+  --deep-ink-dim: #a9c4c2;
+  --deep-ink-faint: #6f8f8f;
+
+  /* ---- Glass ------------------------------------------------------------
+     A surface, a hairline and a blur. Held together as tokens so every panel in
+     the product is the same material rather than six approximations of it. */
+  --glass-surface: rgba(255, 255, 255, 0.045);
+  --glass-surface-strong: rgba(255, 255, 255, 0.075);
+  --glass-surface-sunk: rgba(0, 0, 0, 0.22);
+  --glass-edge: rgba(255, 255, 255, 0.11);
+  --glass-edge-bright: rgba(255, 255, 255, 0.2);
+  --glass-blur: 16px;
+  --glass-blur-heavy: 28px;
+
+  /* The top highlight that makes glass read as glass: a one-pixel gradient where
+     the light would catch the edge of a real pane. */
+  --glass-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 45%);
+
+  /* ---- Glow -------------------------------------------------------------
+     Coloured light, not a drop shadow. Used to say "this is live", "this is
+     yours to press", never merely to decorate a box. */
+  --glow-mint: 0 0 0 1px rgba(61, 220, 151, 0.35), 0 8px 32px -8px rgba(61, 220, 151, 0.55);
+  --glow-cyan: 0 0 0 1px rgba(70, 217, 240, 0.32), 0 8px 32px -8px rgba(70, 217, 240, 0.5);
+  --glow-violet: 0 0 0 1px rgba(167, 139, 250, 0.32), 0 8px 32px -8px rgba(167, 139, 250, 0.5);
+  --glow-gold: 0 0 0 1px rgba(247, 201, 92, 0.32), 0 8px 32px -8px rgba(247, 201, 92, 0.5);
+  --glow-soft: 0 18px 50px -20px rgba(0, 0, 0, 0.75);
+  --glow-lift: 0 30px 70px -28px rgba(0, 0, 0, 0.85);
+
+  /* ---- Mesh -------------------------------------------------------------
+     The moving light behind everything. Three blobs and a wash; the animation
+     lives in the component so a static fallback costs nothing. */
+  --mesh-a: radial-gradient(38rem 30rem at 24% 26%, rgba(61, 220, 151, 0.42), transparent 66%);
+  --mesh-b: radial-gradient(34rem 28rem at 76% 20%, rgba(70, 217, 240, 0.34), transparent 64%);
+  --mesh-c: radial-gradient(42rem 34rem at 68% 80%, rgba(167, 139, 250, 0.38), transparent 68%);
+  --mesh-d: radial-gradient(26rem 22rem at 30% 78%, rgba(247, 201, 92, 0.22), transparent 64%);
+
+  /* A hairline grid, at the threshold of visible. It gives the eye a sense of
+     plane and scale that a pure gradient cannot, which is what stops a dark
+     screen reading as an empty one. */
+  --grid-line: rgba(255, 255, 255, 0.045);
+  --grid-size: 56px;
+
+  /* ---- Luminous register (child surfaces) -------------------------------
+     The same mesh and the same glass, inverted. Backgrounds stay bright so a
+     four-year-old reading a three-letter word is not fighting the screen. */
+  --lux-ground: #f4fbf7;
+  --lux-surface: rgba(255, 255, 255, 0.82);
+  --lux-surface-strong: rgba(255, 255, 255, 0.94);
+  --lux-edge: rgba(23, 105, 78, 0.12);
+  --lux-edge-bright: rgba(23, 105, 78, 0.22);
+  --lux-mesh-a: radial-gradient(38rem 30rem at 22% 22%, rgba(61, 220, 151, 0.34), transparent 64%);
+  --lux-mesh-b: radial-gradient(34rem 28rem at 78% 18%, rgba(70, 217, 240, 0.3), transparent 62%);
+  --lux-mesh-c: radial-gradient(42rem 34rem at 72% 82%, rgba(167, 139, 250, 0.26), transparent 66%);
+  --lux-mesh-d: radial-gradient(26rem 22rem at 26% 80%, rgba(247, 201, 92, 0.3), transparent 62%);
+  --lux-glow: 0 14px 40px -18px rgba(23, 105, 78, 0.35);
+  --lux-glow-lift: 0 26px 60px -24px rgba(23, 105, 78, 0.45);
+
+  /* ---- Motion -----------------------------------------------------------
+     Springs, because everything in this language is meant to feel physical —
+     a card that arrives has weight, a press gives. `--spring-out` overshoots
+     slightly; `--spring-soft` settles without one, for anything a child reads. */
+  --spring-out: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --spring-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-glide: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-drift: 28s;
+  --dur-drift-slow: 46s;
+  --dur-shimmer: 2.4s;
+}

@@ -1,0 +1,424 @@
+/*
+ * Aurora, applied to the app itself.
+ *
+ * Colocated with the route group, so it costs the sixteen legacy sheets nothing
+ * (`scripts/check-tokens.mjs`) and loads after them — which is what lets it restyle the
+ * shell, the panels and the cards without touching a line of their markup.
+ *
+ * Two registers, because `ExplorerShell` already splits the app in two and the split is
+ * the right one:
+ *
+ *   `.cq-shell`   Parent Corner and first-run setup. An adult, usually at night, usually
+ *                 on a laptop. Deep ground, coloured light, glass.
+ *   `.kid-shell`  Everything a child touches. The same mesh, the same glass, the same
+ *                 springs — inverted, so the ground stays bright. At four, contrast is
+ *                 not taste, it is whether the word can be read at all. §C5 and §D7 set
+ *                 the floor and this layer does not get to lower it.
+ *
+ * Nothing here changes a size, a touch target or a reading order. It is colour, depth
+ * and motion over a layout that WP-02 and WP-03 already made correct.
+ */
+
+/* ======================================================================
+   DEEP REGISTER — the grown-up shell
+   ====================================================================== */
+
+.cq-shell {
+  position: relative;
+  background: var(--deep-900);
+  color: var(--deep-ink);
+}
+
+/* The shell's own children sit above the fixed backdrop — every child except the
+   backdrop itself, which must keep `position: fixed`. Lifting it to `relative` here
+   collapses it to a zero-height box and the light disappears entirely. */
+.cq-shell > *:not(.aurora-backdrop) { position: relative; z-index: 1; }
+
+/* ---- rail ---- */
+
+.cq-shell .cq-rail {
+  background: var(--glass-surface);
+  backdrop-filter: blur(var(--glass-blur-heavy)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(140%);
+  border-right: 1px solid var(--glass-edge);
+}
+
+.cq-shell .cq-rail-divider { border-top-color: var(--glass-edge); }
+
+.cq-shell .cq-nav-item {
+  position: relative;
+  color: var(--deep-ink-dim);
+  border-radius: var(--radius-lg);
+  transition: color var(--dur-fast) var(--ease-glide), background var(--dur-fast) var(--ease-glide),
+    transform var(--dur-fast) var(--spring-out);
+}
+.cq-shell .cq-nav-item:hover { color: var(--deep-ink); background: var(--glass-surface); transform: translateX(2px); }
+.cq-shell .cq-nav-item[aria-current="page"] {
+  color: var(--deep-900);
+  background: linear-gradient(120deg, var(--aurora-mint), var(--aurora-cyan));
+  box-shadow: var(--glow-mint);
+  font-weight: 700;
+}
+.cq-shell .cq-nav-item[aria-current="page"] .cq-nav-count { color: var(--deep-800); }
+.cq-shell .cq-nav-count { color: var(--deep-ink-faint); }
+
+/* ---- topbar ---- */
+
+.cq-shell .cq-topbar {
+  background: rgba(7, 15, 17, 0.72);
+  backdrop-filter: blur(var(--glass-blur-heavy)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(140%);
+  border-bottom: 1px solid var(--glass-edge);
+  color: var(--deep-ink-dim);
+}
+.cq-shell .cq-crumb { color: var(--deep-ink-faint); }
+.cq-shell .cq-crumb-current { color: var(--deep-ink); }
+
+/* ---- tab bar (phone) ---- */
+
+.cq-shell .cq-tabbar {
+  background: rgba(7, 15, 17, 0.82);
+  backdrop-filter: blur(var(--glass-blur-heavy));
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy));
+  border-top: 1px solid var(--glass-edge);
+}
+.cq-shell .cq-nav-tab { color: var(--deep-ink-faint); }
+.cq-shell .cq-nav-tab[aria-current="page"] { color: var(--aurora-mint); }
+
+/* ---- sheet ---- */
+
+.cq-shell .cq-sheet-backdrop { background: rgba(3, 7, 8, 0.7); backdrop-filter: blur(6px); }
+.cq-shell .cq-sheet {
+  background: var(--deep-700);
+  border: 1px solid var(--glass-edge);
+  color: var(--deep-ink);
+  box-shadow: var(--glow-lift);
+}
+
+.cq-shell .cq-footer { border-top: 1px solid var(--glass-edge); color: var(--deep-ink-faint); }
+
+/* ---- the pieces the rail is handed ----
+ *
+ * `brand`, `switcher` and `utility` are passed into the shell by `ExplorerShell`, so
+ * they carry the legacy sheets' own cream backgrounds. On deep ground that is not a
+ * mismatch, it is light text on a light box — unreadable. Each one is brought onto the
+ * same glass as the rail around it. */
+
+.cq-shell .brand { color: var(--deep-ink); }
+.cq-shell .brand small { color: var(--deep-ink-faint); }
+.cq-shell .brand-q { color: var(--aurora-mint); }
+.cq-shell .brand-icon {
+  background: linear-gradient(135deg, var(--aurora-mint), var(--aurora-cyan));
+  color: var(--deep-900);
+  box-shadow: var(--glow-mint);
+}
+
+.cq-shell .explorer-switch {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-lg);
+}
+.cq-shell .explorer-switch label > span { color: var(--aurora-mint); }
+.cq-shell .explorer-switch select { color: var(--deep-ink); background: transparent; border: 0; }
+.cq-shell .explorer-switch > svg { color: var(--deep-ink-faint); }
+
+.cq-shell .nova-note {
+  background: var(--glass-surface);
+  border: 1px dashed var(--glass-edge-bright);
+  border-radius: var(--radius-xl);
+  color: var(--deep-ink-dim);
+}
+.cq-shell .nova-note strong { color: var(--deep-ink); }
+.cq-shell .nova-note p, .cq-shell .nova-note > span:last-child { color: var(--deep-ink-faint); }
+
+.cq-shell .version { color: var(--deep-ink-faint); }
+.cq-shell .icon-button { color: var(--deep-ink-dim); }
+.cq-shell .icon-button:hover { color: var(--aurora-mint); }
+
+/* The avatar chip in the top bar and the rail. */
+.cq-shell .mini { background: var(--glass-surface-strong); border: 1px solid var(--glass-edge); }
+
+/* ---- cards the legacy sheets draw on grown-up screens ---- */
+
+.cq-shell .nova-card,
+.cq-shell .reward-total,
+.cq-shell .badge-card,
+.cq-shell .privacy-note,
+.cq-shell .builder-generator,
+.cq-shell .assignment-card,
+.cq-shell .studio-toolbox {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-xl);
+  color: var(--deep-ink);
+}
+.cq-shell .badge-card.earned {
+  border-color: rgba(247, 201, 92, 0.45);
+  background: rgba(247, 201, 92, 0.08);
+  color: var(--aurora-gold);
+}
+.cq-shell .reward-total strong { color: var(--aurora-gold); }
+
+.cq-shell .world-card {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-2xl);
+  color: var(--deep-ink);
+  transition: transform var(--dur-base) var(--spring-out), border-color var(--dur-base) var(--ease-glide),
+    box-shadow var(--dur-base) var(--ease-glide);
+}
+.cq-shell .world-card:hover:not(:disabled) {
+  transform: translateY(-4px);
+  border-color: var(--aurora-mint);
+  box-shadow: var(--glow-mint), var(--glow-lift);
+}
+.cq-shell .world-symbol {
+  background: var(--glass-surface-strong);
+  border: 1px solid var(--glass-edge);
+  color: var(--aurora-mint);
+  box-shadow: none;
+}
+
+.cq-shell .parent-lock-toolbar .secondary { border-color: rgba(247, 201, 92, 0.4); color: var(--aurora-gold); }
+
+/* A details/summary is a control; on glass it needs to read as one. */
+.cq-shell details.panel summary { color: var(--deep-ink); }
+.cq-shell fieldset { border-color: var(--glass-edge); }
+.cq-shell legend { color: var(--deep-ink); }
+
+
+/* ======================================================================
+   DEEP REGISTER — the surfaces inside it
+   ======================================================================
+   These are the shared classes the legacy sheets give every grown-up screen, so
+   restyling them here carries Parent Corner, the reports, the builder and the
+   first-run setup in one pass rather than screen by screen. */
+
+.cq-shell .cq-main { color: var(--deep-ink); }
+
+.cq-shell h1, .cq-shell h2, .cq-shell h3 { color: var(--deep-ink); }
+.cq-shell .eyebrow { color: var(--aurora-mint); }
+.cq-shell .lead, .cq-shell p { color: var(--deep-ink-dim); }
+.cq-shell small, .cq-shell .form-note { color: var(--deep-ink-faint) !important; }
+
+/* ---- panels ---- */
+
+.cq-shell .panel,
+.cq-shell .today-card,
+.cq-shell .parent-quests,
+.cq-shell .personal-challenge,
+.cq-shell .future-worlds,
+.cq-shell .evidence-dashboard > section {
+  position: relative;
+  background: var(--glass-surface);
+  backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(130%);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--glow-soft);
+  color: var(--deep-ink);
+  transition: border-color var(--dur-base) var(--ease-glide), box-shadow var(--dur-base) var(--ease-glide);
+}
+.cq-shell .panel:hover { border-color: var(--glass-edge-bright); }
+
+/* Each panel arrives rather than appearing, in document order. Capped, so the twelfth
+   panel on a long parent screen is not still animating after the first is read. */
+.cq-shell .cq-main > *,
+.cq-shell .parent-grid > *,
+.cq-shell .parent-expansion > * {
+  animation: aurora-rise 600ms var(--spring-soft) both;
+}
+.cq-shell .parent-grid > *:nth-child(2) { animation-delay: 60ms; }
+.cq-shell .parent-grid > *:nth-child(3) { animation-delay: 120ms; }
+.cq-shell .parent-grid > *:nth-child(4) { animation-delay: 180ms; }
+.cq-shell .parent-grid > *:nth-child(n+5) { animation-delay: 240ms; }
+
+@keyframes aurora-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ---- controls ---- */
+
+.cq-shell .primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, var(--aurora-mint), var(--aurora-cyan));
+  color: var(--deep-900);
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glow-mint);
+  font-weight: 800;
+  transition: transform var(--dur-fast) var(--spring-out), box-shadow var(--dur-base) var(--ease-glide),
+    filter var(--dur-fast) var(--ease-glide);
+}
+.cq-shell .primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--glow-cyan), var(--glow-lift); }
+.cq-shell .primary:active:not(:disabled) { transform: translateY(1px); }
+.cq-shell .primary:disabled { filter: saturate(0.45) brightness(0.8); }
+
+.cq-shell .secondary {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-edge-bright);
+  border-radius: var(--radius-lg);
+  color: var(--deep-ink);
+  transition: background var(--dur-fast) var(--ease-glide), border-color var(--dur-fast) var(--ease-glide),
+    transform var(--dur-fast) var(--spring-out);
+}
+.cq-shell .secondary:hover:not(:disabled) { background: var(--glass-surface-strong); border-color: var(--aurora-mint); transform: translateY(-1px); }
+
+.cq-shell .text-button { color: var(--aurora-mint); }
+
+.cq-shell input,
+.cq-shell select,
+.cq-shell textarea {
+  background: var(--glass-surface-sunk);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-md);
+  color: var(--deep-ink);
+  transition: border-color var(--dur-fast) var(--ease-glide), box-shadow var(--dur-fast) var(--ease-glide);
+}
+.cq-shell input::placeholder, .cq-shell textarea::placeholder { color: var(--deep-ink-faint); }
+.cq-shell input:focus, .cq-shell select:focus, .cq-shell textarea:focus {
+  border-color: var(--aurora-mint);
+  box-shadow: 0 0 0 1px rgba(61, 220, 151, 0.4);
+}
+.cq-shell option { background: var(--deep-700); color: var(--deep-ink); }
+
+/* ---- rows, chips and tracks ---- */
+
+.cq-shell .skill-row, .cq-shell .history-row, .cq-shell .assignment-status { border-bottom-color: var(--glass-edge); }
+.cq-shell .progress-track { background: var(--glass-surface-sunk); }
+.cq-shell .progress-track span { background: linear-gradient(90deg, var(--aurora-mint), var(--aurora-cyan)); }
+
+.cq-shell .star-pill {
+  background: var(--glass-surface);
+  border: 1px solid rgba(247, 201, 92, 0.35);
+  color: var(--aurora-gold);
+}
+
+.cq-shell .error {
+  background: rgba(251, 122, 142, 0.1);
+  border: 1px solid rgba(251, 122, 142, 0.45);
+  border-radius: var(--radius-lg);
+  color: var(--deep-ink);
+}
+.cq-shell .success { color: var(--aurora-mint) !important; }
+
+.cq-shell .family-list button {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-lg);
+  color: var(--deep-ink);
+  transition: transform var(--dur-fast) var(--spring-out), border-color var(--dur-fast) var(--ease-glide);
+}
+.cq-shell .family-list button:hover { transform: translateX(3px); border-color: var(--glass-edge-bright); }
+.cq-shell .family-list button.active { border-color: var(--aurora-mint); background: var(--glass-surface-strong); box-shadow: var(--glow-mint); }
+
+.cq-shell .avatar, .cq-shell .profile-avatar {
+  background: var(--glass-surface-strong);
+  border: 1px solid var(--glass-edge);
+  box-shadow: none;
+}
+
+.cq-shell .avatar-options span,
+.cq-shell .interest-options span {
+  background: var(--glass-surface-sunk);
+  border-color: var(--glass-edge);
+  color: var(--deep-ink-dim);
+}
+.cq-shell .avatar-options input:checked + span,
+.cq-shell .interest-options input:checked + span {
+  background: var(--glass-surface-strong);
+  border-color: var(--aurora-mint);
+  color: var(--deep-ink);
+  box-shadow: var(--glow-mint);
+}
+
+/* ---- dialogs ---- */
+
+.cq-shell ~ .overlay, .overlay { background: rgba(3, 7, 8, 0.72); backdrop-filter: blur(8px); }
+.overlay .panel, .overlay .gate, .overlay .add-profile {
+  background: var(--deep-700);
+  border: 1px solid var(--glass-edge);
+  color: var(--deep-ink);
+  box-shadow: var(--glow-lift);
+}
+
+/* ======================================================================
+   LUX REGISTER — the child's shell
+   ======================================================================
+   The same system, bright. Children get depth and light and spring; they do not get
+   a dark screen to read three-letter words off. */
+
+.kid-shell {
+  position: relative;
+  background: var(--lux-ground);
+}
+.kid-shell > *:not(.aurora-backdrop) { position: relative; z-index: 1; }
+
+/*
+ * The child layer owns its own colour (`app/kid.css`, token-only by check-tokens), so
+ * this register deliberately stops at depth and light. It adds the ground and a little
+ * lift to the cards the legacy sheets still draw, and touches nothing that
+ * `components/kid/` renders.
+ */
+.kid-shell .kid-shell-door {
+  transition: transform var(--dur-base) var(--spring-out), filter var(--dur-base) var(--ease-glide);
+}
+.kid-shell .kid-shell-door:hover { transform: scale(1.04) rotate(-2deg); }
+
+.kid-shell .panel,
+.kid-shell .today-card,
+.kid-shell .world-card,
+.kid-shell .badge-card {
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--lux-glow);
+  transition: transform var(--dur-base) var(--spring-out), box-shadow var(--dur-base) var(--ease-glide);
+}
+.kid-shell .world-card:hover:not(:disabled),
+.kid-shell .badge-card:hover { transform: translateY(-4px); box-shadow: var(--lux-glow-lift); }
+
+.kid-shell .primary {
+  border-radius: var(--radius-xl);
+  box-shadow: var(--lux-glow);
+  transition: transform var(--dur-fast) var(--spring-out), box-shadow var(--dur-base) var(--ease-glide);
+}
+.kid-shell .primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--lux-glow-lift); }
+
+/* ======================================================================
+   MOTION
+   ====================================================================== */
+
+/*
+ * Every animation above either reveals content that is already in the document or
+ * moves something under the pointer. None of it carries meaning, so reduced motion
+ * removes all of it and the screens stay complete.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .cq-shell .cq-main > *,
+  .cq-shell .parent-grid > *,
+  .cq-shell .parent-expansion > * { animation: none; }
+  .cq-shell .cq-nav-item:hover,
+  .cq-shell .primary:hover:not(:disabled),
+  .cq-shell .secondary:hover:not(:disabled),
+  .cq-shell .family-list button:hover,
+  .kid-shell .world-card:hover:not(:disabled),
+  .kid-shell .badge-card:hover,
+  .kid-shell .primary:hover:not(:disabled),
+  .kid-shell .kid-shell-door:hover { transform: none; }
+}
+
+/*
+ * Without backdrop-filter, glass is low-contrast text over a moving gradient. The panes
+ * go opaque rather than staying translucent, because legibility is not the thing to
+ * trade for the effect.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .cq-shell .cq-rail, .cq-shell .cq-topbar, .cq-shell .cq-tabbar { background: var(--deep-800); }
+  .cq-shell .panel,
+  .cq-shell .today-card,
+  .cq-shell .parent-quests,
+  .cq-shell .personal-challenge,
+  .cq-shell .future-worlds,
+  .cq-shell .evidence-dashboard > section { background: var(--deep-700); }
+}

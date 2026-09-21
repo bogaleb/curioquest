@@ -1,0 +1,148 @@
+/*
+ * The account surfaces — choosing a child, and the family media library.
+ *
+ * These sit outside `(explorer)`, so the shell's Aurora layer does not reach them. They
+ * are also the first screen a parent sees after signing in, which made them the one
+ * place the language visibly stopped: a dark, lit welcome screen handing over to a flat
+ * white panel. Colocated with the route for the same reason as everywhere else — the
+ * sixteen legacy sheets are on a shrinking budget.
+ */
+
+.account-aurora {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--deep-900);
+  color: var(--deep-ink);
+}
+
+.account-aurora .app-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-height: 100dvh;
+  padding: max(var(--space-6), var(--safe-top)) max(var(--space-5), var(--safe-right))
+           max(var(--space-6), var(--safe-bottom)) max(var(--space-5), var(--safe-left));
+  background: none;
+}
+
+.account-aurora .panel {
+  position: relative;
+  width: min(60rem, 100%);
+  background: var(--glass-surface-strong);
+  backdrop-filter: blur(var(--glass-blur-heavy)) saturate(140%);
+  -webkit-backdrop-filter: blur(var(--glass-blur-heavy)) saturate(140%);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-3xl);
+  box-shadow: var(--glow-lift);
+  color: var(--deep-ink);
+  animation: account-enter 700ms var(--spring-soft) both;
+}
+.account-aurora .panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--glass-sheen);
+  pointer-events: none;
+}
+.account-aurora .panel > * { position: relative; }
+
+@keyframes account-enter {
+  from { opacity: 0; transform: translateY(var(--space-5)) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+
+.account-aurora .brand { color: var(--deep-ink); }
+.account-aurora .brand-q { color: var(--aurora-mint); }
+.account-aurora .brand-icon {
+  background: linear-gradient(135deg, var(--aurora-mint), var(--aurora-cyan));
+  color: var(--deep-900);
+  box-shadow: var(--glow-mint);
+}
+
+.account-aurora h1 {
+  font-family: var(--font-display);
+  background: linear-gradient(120deg, var(--deep-ink) 25%, var(--aurora-mint-soft) 70%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.account-aurora p { color: var(--deep-ink-dim); }
+
+/* ---- the explorers ---- */
+
+.account-aurora .worlds-grid { gap: var(--space-4); }
+
+/* Choosing which child is about to play is the one decision on this screen, so the
+   cards are the only lit thing on it. */
+.account-aurora .world-card {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-edge);
+  border-radius: var(--radius-2xl);
+  color: var(--deep-ink);
+  box-shadow: var(--glow-soft);
+  animation: account-enter 600ms var(--spring-soft) both;
+  transition: transform var(--dur-base) var(--spring-out), border-color var(--dur-base) var(--ease-glide),
+    box-shadow var(--dur-base) var(--ease-glide);
+}
+.account-aurora .world-card:nth-child(2) { animation-delay: 70ms; }
+.account-aurora .world-card:nth-child(3) { animation-delay: 140ms; }
+.account-aurora .world-card:nth-child(4) { animation-delay: 210ms; }
+.account-aurora .world-card:hover:not(:disabled) {
+  transform: translateY(-4px);
+  border-color: var(--aurora-mint);
+  box-shadow: var(--glow-mint), var(--glow-lift);
+}
+.account-aurora .world-card h3 { color: var(--deep-ink); }
+.account-aurora .world-card p { color: var(--deep-ink-dim); }
+
+.account-aurora .avatar {
+  background: var(--glass-surface-strong);
+  border: 1px solid var(--glass-edge);
+}
+
+/* ---- controls ---- */
+
+.account-aurora .primary {
+  background: linear-gradient(120deg, var(--aurora-mint), var(--aurora-cyan));
+  color: var(--deep-900);
+  border: 0;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glow-mint);
+  font-weight: 800;
+  transition: transform var(--dur-fast) var(--spring-out), box-shadow var(--dur-base) var(--ease-glide);
+}
+.account-aurora .primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: var(--glow-cyan), var(--glow-lift); }
+
+.account-aurora .secondary {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-edge-bright);
+  border-radius: var(--radius-lg);
+  color: var(--deep-ink);
+}
+.account-aurora .secondary:hover:not(:disabled) { background: var(--glass-surface-strong); border-color: var(--aurora-mint); }
+
+.account-aurora a { color: var(--aurora-mint); }
+.account-aurora input, .account-aurora select {
+  background: var(--glass-surface-sunk);
+  border: 1px solid var(--glass-edge);
+  color: var(--deep-ink);
+}
+
+.account-aurora .error {
+  background: rgba(251, 122, 142, 0.1);
+  border: 1px solid rgba(251, 122, 142, 0.45);
+  border-radius: var(--radius-lg);
+  color: var(--deep-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-aurora .panel, .account-aurora .world-card { animation-duration: 1ms; animation-delay: 0ms; }
+  .account-aurora .world-card:hover:not(:disabled), .account-aurora .primary:hover:not(:disabled) { transform: none; }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .account-aurora .panel { background: var(--deep-700); }
+  .account-aurora .world-card { background: var(--deep-600); }
+}

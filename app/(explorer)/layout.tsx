@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { authenticatedParent } from "@/lib/backend/context";
 import { ExplorerShell } from "@/components/app/ExplorerShell";
+import "./aurora.css";
 
 /**
  * Every explorer route sits behind the parent account check, done once here on the

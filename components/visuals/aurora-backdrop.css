@@ -1,0 +1,174 @@
+/*
+ * The moving light behind an Aurora surface.
+ *
+ * Everything here is CSS. There is no requestAnimationFrame, no canvas and no
+ * JavaScript timer, because this runs behind a five-year-old answering questions on an
+ * old iPad and a background must never compete with the activity for a frame. Compositor
+ * properties only — transform and opacity — so the whole layer stays off the main thread.
+ *
+ * It is decorative in the strict sense: remove every rule in this file and no
+ * information is lost. That is what makes it safe to switch the motion off entirely.
+ */
+
+/*
+ * The wrapper an Aurora surface carries, and it is not optional.
+ *
+ * `.aurora-backdrop` is `position: fixed`, so it paints the viewport and nothing below
+ * it. On any page taller than the viewport — the welcome screen on a phone — everything
+ * past the first screen would sit on whatever `body` provides, which is the light cream
+ * ground, with light text on it. That is not a cosmetic slip; it is white-on-white.
+ * The wrapper carries the ground colour for the full scroll height.
+ */
+.aurora {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--deep-900);
+  color: var(--deep-ink);
+}
+.aurora-lux {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--lux-ground);
+  color: var(--ink);
+}
+
+.aurora-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* The ground colour. A gradient alone would leave the corners transparent over
+     whatever the page background is, which is how a dark screen ends up with pale
+     edges on a short page. */
+  background: var(--deep-900);
+}
+.aurora-backdrop[data-variant="lux"] { background: var(--lux-ground); }
+
+/* ---- the blobs -------------------------------------------------------- */
+
+.aurora-blob {
+  position: absolute;
+  /* Oversized so the drift never slides an edge into view — but only just. At -30% the
+     gradient centres land outside the viewport and all that remains on screen is the
+     faint tail, which is how a mesh ends up looking like flat black. */
+  inset: -12%;
+  background-repeat: no-repeat;
+  will-change: transform;
+}
+
+.aurora-blob[data-layer="a"] { background-image: var(--mesh-a); animation: aurora-drift-a var(--dur-drift) var(--ease-in-out) infinite alternate; }
+.aurora-blob[data-layer="b"] { background-image: var(--mesh-b); animation: aurora-drift-b var(--dur-drift-slow) var(--ease-in-out) infinite alternate; }
+.aurora-blob[data-layer="c"] { background-image: var(--mesh-c); animation: aurora-drift-c var(--dur-drift) var(--ease-in-out) infinite alternate-reverse; }
+.aurora-blob[data-layer="d"] { background-image: var(--mesh-d); animation: aurora-drift-d var(--dur-drift-slow) var(--ease-in-out) infinite alternate; }
+
+[data-variant="lux"] .aurora-blob[data-layer="a"] { background-image: var(--lux-mesh-a); }
+[data-variant="lux"] .aurora-blob[data-layer="b"] { background-image: var(--lux-mesh-b); }
+[data-variant="lux"] .aurora-blob[data-layer="c"] { background-image: var(--lux-mesh-c); }
+[data-variant="lux"] .aurora-blob[data-layer="d"] { background-image: var(--lux-mesh-d); }
+
+/*
+ * Four paths, deliberately not harmonically related. Equal or multiple durations make
+ * the layers resynchronise every cycle, and a background that visibly loops is a
+ * background people start watching.
+ */
+@keyframes aurora-drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(4%, 3%, 0) scale(1.12); }
+}
+@keyframes aurora-drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.08); }
+  to   { transform: translate3d(-5%, 4%, 0) scale(1); }
+}
+@keyframes aurora-drift-c {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(-3%, -5%, 0) scale(1.15); }
+}
+@keyframes aurora-drift-d {
+  from { transform: translate3d(0, 0, 0) scale(1.1); }
+  to   { transform: translate3d(5%, -3%, 0) scale(1); }
+}
+
+/* ---- the grid --------------------------------------------------------- */
+
+/*
+ * A hairline plane, at the threshold of visible.
+ *
+ * This is the rule that stops a dark screen reading as an empty one: gradients alone
+ * give no sense of scale, so the eye has nothing to measure depth against. Masked to
+ * fade out at the edges, because a grid that meets the viewport edge reads as a table.
+ */
+.aurora-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+  mask-image: radial-gradient(ellipse 120% 90% at 50% 0%, #000 35%, transparent 78%);
+}
+[data-variant="lux"] .aurora-grid { opacity: 0.55; }
+
+/* ---- grain ------------------------------------------------------------ */
+
+/*
+ * Film grain, at about 3%.
+ *
+ * Large smooth gradients band badly on 8-bit panels — visible stripes through the
+ * falloff. A little noise dithers the gradient and removes them, which is why this is
+ * here rather than for texture's sake.
+ */
+.aurora-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---- vignette --------------------------------------------------------- */
+
+.aurora-vignette {
+  position: absolute;
+  inset: 0;
+  /* Enough to settle the corners, not enough to eat the light the blobs just put there. */
+  background: radial-gradient(ellipse 110% 90% at 50% 42%, transparent 55%, rgba(0, 0, 0, 0.42));
+}
+[data-variant="lux"] .aurora-vignette {
+  background: radial-gradient(ellipse 110% 90% at 50% 40%, transparent 50%, rgba(23, 105, 78, 0.07));
+}
+
+/* ---- a beam ----------------------------------------------------------- */
+
+/*
+ * One slow sweep of light across the top. Optional, and off by default: it is the most
+ * "look at me" element in the file, which makes it right for a landing screen and wrong
+ * behind an activity a child is concentrating on.
+ */
+.aurora-beam {
+  position: absolute;
+  top: -40%;
+  left: -20%;
+  width: 60%;
+  height: 180%;
+  transform: rotate(18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.055), transparent);
+  animation: aurora-sweep 14s var(--ease-in-out) infinite;
+}
+@keyframes aurora-sweep {
+  0%, 100% { transform: translateX(-30%) rotate(18deg); opacity: 0; }
+  45%      { opacity: 1; }
+  100%     { transform: translateX(240%) rotate(18deg); }
+}
+
+/*
+ * Reduced motion stops the drift and keeps the picture.
+ *
+ * Not `display: none`: the mesh is what the foreground's contrast was designed
+ * against, and removing it would leave text sitting on flat black. The layers hold
+ * their opening position, which is a composition rather than a paused animation.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .aurora-blob, .aurora-beam { animation: none; }
+  .aurora-beam { opacity: 0; }
+}
