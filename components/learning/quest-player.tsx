@@ -1,6 +1,7 @@
 "use client";
 import { ArrowLeft, ArrowRight, Lightbulb, Star, Trophy, Volume2 } from "lucide-react";
 import { ActivityEngineView } from "./activity-engine";
+import {TeachingMoveView} from "./teaching-move";
 import { StoryPage } from "./arcade-engines";
 import { campaignChapters } from "@/lib/campaign";
 import { gameById } from "@/lib/arcade";
@@ -71,7 +72,7 @@ export function QuestPlayer({profile,current,feedback,selected,busy,error,onBack
       <div className="activity-category">{worldName(current.subject)}</div>{purpose&&<div className="skill-purpose"><Lightbulb size={16}/><span>We are practising:</span> {purpose}</div>}<h1>{current.prompt}</h1>
       <button className="read-button" onClick={()=>readAloud(activityNarration(current))}><Volume2 size={20}/>Read it to me</button>
       <ActivityEngineView key={session.id+current.id} question={current} busy={busy} correct={!!feedback?.correct} selected={selected} onAnswer={onAnswer} onHint={onHint}/>
-      <div className={`feedback ${feedback?.correct?"positive":""} ${feedback?.assisted?"assisted":""}`} aria-live="polite"><span className="fox">🦊</span><div><strong>{feedback?.correct?"You figured it out!":feedback?.assisted?"Nova is joining in":"Nova is here to help"}</strong><p>{feedback?.message||feedback?.hint||"Take your time. You can try, think, and try again."}</p>{feedback?.hint&&feedback.message&&<p>{feedback.hint}</p>}{feedback?.assisted&&<small className="assisted-note">You are still the one who answers.</small>}</div></div>
+      <div className={`feedback ${feedback?.correct?"positive":""} ${feedback?.assisted?"assisted":""}`} aria-live="polite"><span className="fox">🦊</span><div><strong>{feedback?.correct?"You figured it out!":feedback?.assisted?"Nova is joining in":"Nova is here to help"}</strong><p>{feedback?.message||feedback?.hint||"Take your time. You can try, think, and try again."}</p>{feedback?.hint&&feedback.message&&<p>{feedback.hint}</p>}{feedback?.assisted&&<small className="assisted-note">You are still the one who answers.</small>}<TeachingMoveView feedback={feedback}/></div></div>
       {feedback?.correct&&place?.roundEnd&&<div className="round-break-note">Round {place.round} finished. {place.rounds-place.round===1?"One more round to go.":`${place.rounds-place.round} rounds to go.`}</div>}
       {feedback?.correct&&<div className="reflection-prompt"><p>What helped you? <small>You can tell a grown-up, too.</small></p>{[["counted","I counted"],["clue","I found a clue"],["pattern","I saw a pattern"],["tried","I tried another way"]].map(([strategy,label])=><button key={strategy} disabled={busy} aria-pressed={profile.reflections.some(r=>r.sessionId===session.id&&r.questionId===current.id&&r.strategy===strategy)} onClick={()=>onReflect(strategy)}>{label}</button>)}</div>}
       <div className="activity-actions">{feedback?.correct?<button className="primary" disabled={busy} onClick={onNext}>{session.index===session.total?"Finish my quest":"Next discovery"}<ArrowRight size={20}/></button>:<button className={stalled?"secondary nova-offer":"text-button"} disabled={busy} onClick={onHint}><Lightbulb size={19}/>{stalled?"Nova can help with this one":"Give me a hint"}</button>}</div>

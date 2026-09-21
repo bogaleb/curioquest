@@ -18,6 +18,8 @@ import { recordAttempt, recordHint } from "@/lib/mastery";
 import { eventForQuestion, latency, supportFrom, type LearningEvent } from "@/lib/learning-events";
 import { CODE_CATALOGUE_VERSION } from "@/lib/catalogue-version";
 import { errorKindFor } from "@/lib/distractor-reasons";
+import { teachingResponse, unmetPrerequisite } from "@/lib/teaching-response";
+import type { QuestFeedback } from "@/lib/explorer-view";
 import { recommendQuest, rememberActivityType } from "@/lib/recommendation";
 import { evaluateResponse } from "@/lib/activity-evaluation";
 import { campaignChapters, campaignQuestionIds } from "@/lib/campaign";
@@ -48,12 +50,44 @@ const allowedGoals = [8, 10, 15, 20];
  * struggling with this skill, which is ordinary and worth recording as such.
  */
 function missingPrerequisite(profile: ExplorerProfile, question: Question) {
-  const skill = skillById.get(question.skillId);
-  if (!skill?.prerequisites.length) return false;
-  return skill.prerequisites.some((id) => {
-    const record = profile.skillMastery[id];
-    return !record || record.attemptCount === 0;
-  });
+  return unmetPrerequisite(question.skillId, profile.skillMastery) !== null;
+}
+
+/**
+ * Put the missing foundation in front of the child, now.
+ *
+ * §C3: `not-yet-taught` "triggers a prerequisite detour". Saying so in the feedback and
+ * then asking the same unanswerable question again would be worse than saying nothing,
+ * so the session queue itself changes: one activity for the prerequisite skill is spliced
+ * in as the very next thing, and the item that exposed the gap stays where it is, to be
+ * met again afterwards.
+ *
+ * The detour is skipped silently when nothing suitable exists in the catalogue — a
+ * missing prerequisite activity is a content gap, and a child in the middle of a session
+ * is not the place to report it.
+ */
+function insertPrerequisiteDetour(
+  session: NonNullable<ExplorerProfile["session"]>,
+  profile: ExplorerProfile,
+  question: Question,
+  questions: Question[],
+): string | null {
+  const skillId = unmetPrerequisite(question.skillId, profile.skillMastery);
+  if (!skillId) return null;
+  const queued = new Set(session.questions);
+  const detour = questions.find((candidate) =>
+    candidate.skillId === skillId
+    && candidate.grade === question.grade
+    && candidate.level <= question.level
+    && !candidate.campaignOnly
+    && !queued.has(candidate.id));
+  if (!detour) return null;
+  session.questions = [
+    ...session.questions.slice(0, session.index),
+    detour.id,
+    ...session.questions.slice(session.index),
+  ];
+  return detour.id;
 }
 const maxProfiles = 4;
 
@@ -234,7 +268,7 @@ async function post(request: Request) {
     // the same transaction as the profile save, so an answer can never be banked
     // without the evidence that produced it.
     const events: LearningEvent[] = [];
-    let feedback: { correct?: boolean; message?: string; hint?: string | null; assisted?: boolean } | null = null;
+    let feedback: QuestFeedback = null;
 
     if(input.action==='controls'){
       const parsed=controlsSchema.safeParse(input.controls);if(!parsed.success)return Response.json({error:parsed.error.issues[0].message},{status:400});
@@ -460,11 +494,34 @@ async function post(request: Request) {
           catalogueVersion: CODE_CATALOGUE_VERSION,
           episodeId: session.chapter !== undefined ? `campaign-${session.chapter}` : null,
         }));
-        feedback = {
-          correct,
-          message: correct ? question.explanation : "Good thinking. Let’s try another answer.",
-          hint: correct ? null : question.hint,
-        };
+        if (correct) {
+          feedback = { correct: true, message: question.explanation, hint: null };
+        } else {
+          // The misconception was already being recorded on the event and then thrown
+          // away. It now decides what the child sees and what they are asked next.
+          const kind = events[events.length - 1]?.errorKind ?? null;
+          const teaching = teachingResponse({
+            question,
+            response: String(input.answer),
+            errorKind: kind,
+            band: profile.band,
+            mastery: profile.skillMastery,
+          });
+          const detour = teaching.move === "step-back"
+            ? insertPrerequisiteDetour(session, profile, question, questions)
+            : null;
+          feedback = {
+            correct: false,
+            message: teaching.message,
+            hint: teaching.hint,
+            move: teaching.move,
+            compare: teaching.compare,
+            listen: teaching.listen,
+            count: teaching.count,
+            pause: teaching.pause,
+            steppedBack: !!detour,
+          };
+        }
         if (correct) {
           // The scoring arc is folded in here, before misses and help level are cleared
           // for the next question, because those two are exactly what grade this answer.
@@ -548,7 +605,12 @@ async function post(request: Request) {
               track: question.grade,
               hintLevel: owed,
             }).text;
+            // The ladder replaces the words, not the move: a child on their third
+            // b/d confusion needs more help *and* still needs the two letters side by
+            // side. Keeping the move here is why escalation feels like the same lesson
+            // getting clearer rather than a different screen arriving.
             feedback = {
+              ...feedback,
               correct: false,
               message: assistedIntro(owed),
               hint: support,

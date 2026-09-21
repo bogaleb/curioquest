@@ -98,6 +98,38 @@ two disagree.
   layouts are unchanged, but they have not been walked through with a real family session on
   this branch.
 
+- **WP-04 — Error-responsive feedback. Shipped.** Wrong answers now teach. Every wrong
+  answer used to produce the same sentence — "Good thinking. Let's try another answer." —
+  followed by the same authored hint, while the misconception was recorded on the event
+  and then thrown away. It now decides what the child sees and what they are asked next.
+
+  `lib/teaching-response.ts` turns an error kind into a *move*, and
+  `components/learning/teaching-move.tsx` puts that move on screen: two shapes side by
+  side for a visual confusion, one big button that replays the sound for an aural one,
+  the sound written as it is said when a child gave the letter's name, counters to touch
+  one at a time for an off-by-one slip, a visible three-second beat for a fast guess, and
+  a note that a smaller step is coming when the prerequisite is missing. `not-yet-taught`
+  also changes the session: one activity for the missing prerequisite is spliced in as the
+  very next thing, and the item that exposed the gap is met again afterwards.
+
+  Copy follows §C5 — every line fits the band's on-screen word budget, uses no system
+  vocabulary and never delivers a verdict; a test checks all eight moves against all six
+  bands. The scaffolding ladder still escalates on repeated misses, but now replaces the
+  words while keeping the move, so a third b/d confusion gets more help *and* the two
+  letters still side by side. The reading slice branches on the same taxonomy.
+
+  The evidence rule (§C2) moved into `lib/evidence-rule.ts` and is now the only definition
+  of mastery in the codebase: both the event projection and the JSON blob ask it. A child
+  who scored 100 on five independent answers in one sitting, in one activity type, was
+  previously reported as having mastered the skill — that is now `strong`, and mastery
+  needs two representations, a day's spacing and two consecutive unaided answers.
+
+  Still not true: distractor reasons are inferred from the shape of the answer, not
+  authored — `lib/distractor-reasons.ts` is a mechanical first pass and every reason it
+  produces is a hypothesis until WP-05 puts authored reasons in the catalogue. The
+  `restate-rule` and `reorder` moves are words only, with no panel of their own. The
+  detour picks the first suitable prerequisite activity rather than the best one.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

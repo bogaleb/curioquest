@@ -9,6 +9,7 @@ import {buildReadingSession,advanceReadingSession,updateReadingMastery,classifyR
 import type {ReadingAttempt,ReadingCatalog,ReadingProfile,ReadingView} from '@/lib/reading/types';
 import {supportFrom,verbForReadingActivity,type LearningEvent} from '@/lib/learning-events';
 import {errorKindForReading} from '@/lib/distractor-reasons';
+import {readingTeachingLine} from '@/lib/teaching-response';
 import {CODE_CATALOGUE_VERSION} from '@/lib/catalogue-version';
 const reply=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 function view(profile:ReadingProfile,revision:number,catalog:ReadingCatalog,stars:number):ReadingView{
@@ -65,7 +66,10 @@ async function post(request:Request){try{
         errorKind:correct?null:errorKindForReading({errorType:attempt.errorType,kind:activity.kind,target,response}),
         latencyMs:attempt.responseTimeMs,catalogueVersion:CODE_CATALOGUE_VERSION});
       if(correct){feedback=activity.kind==='letter-catch'?'You connected a sound and its letter!':activity.kind==='sound-boxes'?'You built the sounds into a word!':activity.kind==='story'?'You found a detail in the story!':'You joined the sounds. Tell your grown-up the word.';if(activity.kind==='blend-train')profile.recentWords=[...profile.recentWords.filter(w=>w!==activity.target),activity.target].slice(-8);if(activity.kind==='story'){profile.books=[...new Set([...profile.books,activity.target])];profile.events.push({type:'reading_story_completed',at});}}
-      else {session.misses++;feedback='Let’s listen and try together. A little help is always welcome.';if(session.kind==='placement')session.placementMisses++;}
+      else {session.misses++;
+        // The same taxonomy the event carries decides what the child is told: a
+        // mis-heard sound is answered with listening, a mixed-up shape with looking.
+        feedback=readingTeachingLine(errorKindForReading({errorType:attempt.errorType,kind:activity.kind,target,response}),child.band);if(session.kind==='placement')session.placementMisses++;}
       if(correct||session.kind==='placement'||input.action==='skip'){
         profile.events.push({type:'reading_activity_completed',at,skillId:activity.skillId});const complete=advanceReadingSession(profile,catalog,now);
         if(complete){profile.events.push({type:'reading_session_completed',at});if(session.kind==='quest')stars=3;feedback=session.kind==='placement'?'Nova found a gentle place to begin.':'Reading adventure complete. Time to stretch and share a discovery!';}

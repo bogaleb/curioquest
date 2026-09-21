@@ -14,7 +14,9 @@ import { KidPreview } from "./KidPreview";
  * It is not a child surface and it never ships: in production this route is a 404. It carries
  * no child data, reads nothing from Supabase and needs no session.
  *
- *   /kid-preview?band=prek&world=grove
+ *   /kid-preview?band=prek&world=grove          the primitives
+ *   /kid-preview?screen=map&band=prek            the arrival map
+ *   /kid-preview?screen=moves&band=prek          every teaching move (WP-04)
  */
 const WORLDS: KidWorld[] = ["grove", "city", "harbor", "workshop", "treehouse", "lab"];
 
@@ -27,5 +29,6 @@ export default async function KidPreviewPage({
   const params = await searchParams;
   const band: LearningBandId = isLearningBandId(params.band) ? params.band : DEFAULT_BAND;
   const world = WORLDS.find((name) => name === params.world) ?? "grove";
-  return <KidPreview band={band} world={world} screen={params.screen === "map" ? "map" : "parts"} />;
+  const screen = params.screen === "map" ? "map" : params.screen === "moves" ? "moves" : "parts";
+  return <KidPreview band={band} world={world} screen={screen} />;
 }

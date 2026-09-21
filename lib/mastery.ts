@@ -1,5 +1,6 @@
 import type { ActivityType, Question } from "@/lib/curriculum";
 import { skillById } from "@/lib/skill-graph";
+import { masteryState, type EvidenceCounts } from "@/lib/evidence-rule";
 
 export type SkillMastery = {
   score: number;
@@ -142,11 +143,35 @@ export function recordAttempt(
   }
 }
 
+/**
+ * The three legs of the evidence rule, read out of the summary blob.
+ *
+ * The blob does not record verbs, so the engine kinds a child has been correct in stand
+ * in for representation — the same proxy `recordAttempt` has always counted — and a
+ * review passed on a later day stands in for spacing. They are approximations of what
+ * `learning_events` knows exactly, which is why WP-06 switches reads to the projection.
+ * Until then they are at least the *same rule*, asked of weaker data.
+ */
+export function evidenceFromBlob(record: SkillMastery): EvidenceCounts {
+  return {
+    representations: record.activityTypes.length,
+    spaced: (record.retainedReviews ?? 0) >= 1,
+    consecutiveIndependent: record.consecutiveIndependent,
+  };
+}
+
+/**
+ * Where a child is with a skill.
+ *
+ * `mastered` is decided by the evidence rule (§C2) and by nothing else: a high score with
+ * one representation, no spacing, or a run of hinted answers is `strong`, which is a
+ * perfectly good thing to be and is never reported to a parent as mastery. Before this,
+ * a child could reach "mastered" on five independent answers in a single sitting.
+ */
 export function progressionState(record: SkillMastery | undefined) {
   if (!record || record.attemptCount === 0) return "discovering" as const;
-  if (record.score >= 90 && record.confidence >= 75 && record.activityTypes.length >= 2
-    && record.sessionIds.length >= 3 && (record.questionIds?.length ?? 0) >= 4
-    && record.independentCorrect >= 5 && (record.retainedReviews ?? 0) >= 1) return "mastered" as const;
+  if (masteryState(evidenceFromBlob(record), true) === "mastered"
+    && record.score >= 90 && record.confidence >= 75) return "mastered" as const;
   if (record.score >= 80 && record.confidence >= 55) return "strong" as const;
   if (record.score >= 60) return "growing" as const;
   return "learning" as const;

@@ -933,3 +933,142 @@
   .kid-map-greeting { max-width: 100%; }
   .kid-map-who { justify-content: flex-end; }
 }
+
+/* --------------------------------------------------------------------------
+   Teaching moves — what a wrong answer earns (WP-04)
+
+   One panel per misconception, each one a different thing to look at or do.
+   They sit inside the legacy feedback card for now; when the activity screen
+   migrates they come with it and that card's rules leave learning.css.
+   -------------------------------------------------------------------------- */
+.kid-move {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin-block-start: var(--space-4);
+}
+.kid-move-note {
+  margin: 0;
+  font-size: var(--kid-text-min);
+  line-height: var(--kid-leading-tight);
+  color: var(--kid-ink-soft);
+  text-align: center;
+}
+
+/* ---- compare: the two shapes, side by side ---------------------------- */
+.kid-compare {
+  display: flex;
+  gap: var(--space-5);
+  align-items: stretch;
+}
+.kid-compare-one {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: var(--kid-touch-primary);
+  padding: var(--space-3) var(--space-4);
+  border: var(--kid-border) solid var(--kid-world-300);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+}
+.kid-compare-one > b {
+  /* The literacy face, at the size letters are compared at rather than read at. */
+  font-family: var(--font-reading);
+  font-size: var(--kid-text-grapheme);
+  line-height: 1;
+  color: var(--kid-ink);
+}
+.kid-compare-one > small {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+/* The child's own choice is marked, not scolded: no red, no cross. */
+.kid-compare-one[data-side="chosen"] { border-color: var(--kid-coral-300); }
+.kid-compare-one[data-side="answer"] { border-color: var(--kid-leaf-400); }
+
+/* ---- relisten: one button, nothing else to read ------------------------ */
+.kid-listen {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: var(--kid-touch-primary);
+  padding: var(--space-3) var(--space-8);
+  border: var(--kid-border) solid var(--kid-sky-500);
+  border-bottom-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-sky-100);
+  color: var(--kid-sky-ink);
+  font-family: var(--font-reading);
+  font-size: var(--kid-text-xl);
+  font-weight: 700;
+  cursor: pointer;
+}
+.kid-listen > svg { width: var(--kid-text-2xl); height: var(--kid-text-2xl); flex: none; }
+.kid-listen:active {
+  translate: 0 var(--kid-press);
+  border-bottom-width: var(--kid-border);
+}
+.kid-listen:focus-visible { outline: none; box-shadow: var(--kid-focus-ring); }
+
+/* ---- recount: counters to touch one at a time -------------------------- */
+.kid-counters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  max-width: 34ch;
+}
+.kid-counter {
+  display: grid;
+  place-items: center;
+  width: var(--kid-touch);
+  height: var(--kid-touch);
+  padding: 0;
+  border: var(--kid-border) solid var(--kid-world-300);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+  cursor: pointer;
+}
+/* An uncounted one is plain; a counted one is filled and outlined. The difference is
+   size and fill, not only colour, because the whole move is "which have I touched?" */
+.kid-counter > span {
+  width: 45%;
+  height: 45%;
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface-sunk);
+}
+.kid-counter[data-counted] { border-color: var(--kid-leaf-500); background: var(--kid-leaf-50); }
+.kid-counter[data-counted] > span { width: 62%; height: 62%; background: var(--kid-leaf-400); }
+.kid-counter:focus-visible { outline: none; box-shadow: var(--kid-focus-ring); }
+
+/* ---- settle: a beat, visibly passing ----------------------------------- */
+.kid-settle {
+  display: block;
+  width: 60%;
+  max-width: 22ch;
+  height: var(--space-3);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-sun-100);
+  border: 1px solid var(--kid-sun-300);
+  overflow: hidden;
+  position: relative;
+}
+.kid-settle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--kid-sun-300);
+  transform-origin: left center;
+  scale: 0 1;
+  transition: scale 3s linear;
+}
+.kid-settle[data-done]::after { scale: 1 1; }
+
+/* Reduced motion: the bar is already full when it appears. The beat still passes —
+   the child simply is not asked to watch it go by. */
+@media (prefers-reduced-motion: reduce) {
+  .kid-settle::after { transition: none; scale: 1 1; }
+}

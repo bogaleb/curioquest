@@ -1,5 +1,8 @@
 import { skillById } from "@/lib/skill-graph";
 import { scoresAgainstMastery } from "@/lib/error-kinds";
+import {
+  EVIDENCE_THRESHOLDS, masteryState, meetsIndependence, meetsRepresentation, meetsSpacing,
+} from "@/lib/evidence-rule";
 import type { LearningVerb, SupportLevel } from "@/lib/learning-events";
 import type { ActivityType } from "@/lib/curriculum";
 import { emptyMastery, type SkillMastery, type SkillMasteryMap } from "@/lib/mastery";
@@ -53,7 +56,7 @@ export function eventFromRow(row: {
   };
 }
 
-const DAY_MS = 24 * 60 * 60 * 1000;
+const DAY_MS = EVIDENCE_THRESHOLDS.spacingHours * 60 * 60 * 1000;
 
 /**
  * The three kinds of evidence a skill needs before it may be called mastered.
@@ -194,21 +197,36 @@ export function projectMastery(
         : nextReview.toISOString(),
       questionIds,
       retainedReviews,
+      // The three legs are counted here and judged by `lib/evidence-rule.ts`, which is
+      // also what the blob-backed `progressionState` asks. One rule, two data sources.
       evidence: {
-        representation: { verbs, met: verbs.length >= 2 },
-        spacing: { firstCorrectAt, spacedCorrectAt, met: !!spacedCorrectAt },
-        independence: { consecutive: consecutiveIndependent, met: consecutiveIndependent >= 2 },
+        representation: {
+          verbs,
+          met: meetsRepresentation({ representations: verbs.length, spaced: false, consecutiveIndependent: 0 }),
+        },
+        spacing: {
+          firstCorrectAt,
+          spacedCorrectAt,
+          met: meetsSpacing({ representations: 0, spaced: !!spacedCorrectAt, consecutiveIndependent: 0 }),
+        },
+        independence: {
+          consecutive: consecutiveIndependent,
+          met: meetsIndependence({ representations: 0, spaced: false, consecutiveIndependent }),
+        },
       },
       state: "practising",
     };
   }
 
   for (const record of Object.values(result)) {
-    record.state = record.attemptCount === 0
-      ? "untouched"
-      : record.evidence.representation.met && record.evidence.spacing.met && record.evidence.independence.met
-        ? "mastered"
-        : "practising";
+    record.state = masteryState(
+      {
+        representations: record.evidence.representation.verbs.length,
+        spaced: !!record.evidence.spacing.spacedCorrectAt,
+        consecutiveIndependent: record.evidence.independence.consecutive,
+      },
+      record.attemptCount > 0,
+    );
   }
   void now;
   return result;
