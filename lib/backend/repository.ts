@@ -5,6 +5,8 @@ import type { Json } from '@/lib/supabase/database.types';
 import type { ExplorerProfile } from '@/lib/explorers';
 import { questions as authoredQuestions, type Question } from '@/lib/curriculum';
 import { validEvents, type LearningEvent } from '@/lib/learning-events';
+import { catalogueVersion, CODE_CATALOGUE_VERSION } from '@/lib/catalogue-version';
+import { questionsFromSnapshot, readSnapshot, type PublishedCatalogue } from '@/lib/catalogue/catalogue';
 
 export async function read<T>(kind: string, options: {child?: string; id?: string; filter?: string; limit?: number; offset?: number} = {}): Promise<T> {
   const { data, error } = await createAdminClient().rpc('cq_read', {
@@ -113,22 +115,129 @@ export async function catalog<T>(name: string): Promise<T> {
 }
 
 /**
- * The activity catalogue the server will serve.
+ * The published catalogue, cached per server instance.
  *
- * The published catalogue in `private.catalogs` stays authoritative — it is what an
- * eventual admin surface will edit, and anything it defines wins. But an activity that
- * exists in code and not yet in the database is still served, rather than being
- * unreachable until someone runs a SQL refresh.
+ * One row read rather than a six-way join, because `content.cq_catalogue` returns a
+ * snapshot that was assembled at publish time. The five-minute window is the same one
+ * `catalog()` uses; a publish is not expected to reach every child instantly, and an
+ * author who needs to see their change now has the studio preview, which reads the
+ * working set rather than this.
  *
- * Without this, a deploy that shipped new activities ahead of its catalogue refresh
- * could recommend an id the server could not resolve. The refresh is still the right
- * thing to run; it just stops being a hard gate between writing content and a child
- * reaching it.
+ * A failure here is deliberately not fatal. If the catalogue cannot be read, or reads
+ * back as something that is not a catalogue, the app falls back to the bundled bank —
+ * a worse catalogue than the published one, and a far better outcome than every family
+ * losing their session to a 503.
  */
-export async function activityCatalogue(): Promise<Question[]> {
-  const published = await catalog<Question[]>('questions').catch(() => [] as Question[]);
-  if (!published.length) return authoredQuestions;
+let publishedCache: { expires: number; value: Promise<PublishedCatalogue | null> } | null = null;
+
+export async function publishedCatalogue(): Promise<PublishedCatalogue | null> {
+  parentId(); // Even cached curriculum is only served inside an authenticated request.
+  if (!publishedCache || publishedCache.expires < Date.now()) {
+    const value = loadPublishedCatalogue();
+    publishedCache = { expires: Date.now() + 300000, value };
+    value.catch(() => { publishedCache = null; });
+  }
+  return publishedCache.value;
+}
+
+async function loadPublishedCatalogue(): Promise<PublishedCatalogue | null> {
+  const { data, error } = await createAdminClient().rpc('cq_catalogue', { p_version: null });
+  if (error || !data) return null;
+  const row = data as { version?: number; label?: string; snapshot?: unknown };
+  const snapshot = readSnapshot(row.snapshot);
+  if (!snapshot) return null;
+  return {
+    version: catalogueVersion({ version: row.version ?? null }),
+    label: row.label ?? 'published',
+    questions: questionsFromSnapshot(snapshot),
+    skills: snapshot.skills,
+    lessons: snapshot.lessons,
+  };
+}
+
+/** Drop the cached catalogue, so a publish from the studio is visible without a wait. */
+export function forgetPublishedCatalogue() { publishedCache = null; }
+
+/**
+ * The activity catalogue the server will serve, and the version to record against it.
+ *
+ * Order of preference, and why:
+ *
+ *   1. `content.catalogue_versions` — the published snapshot (WP-05). Gated on
+ *      `reviewStatus = 'published'` at publish time and again in `questionsFromSnapshot`,
+ *      so unreviewed work is unreachable by construction rather than by convention.
+ *   2. `private.catalogs` — the pre-WP-05 blob, for a database that has the old
+ *      migrations and not the new ones.
+ *   3. `lib/curriculum.ts` — the bundle, so a fresh database still teaches something.
+ *
+ * Items that exist in code and not in the served catalogue are merged in at every level
+ * below the first. That tolerance was added because a deploy could ship activities ahead
+ * of its catalogue refresh and then recommend an id the server could not resolve. It is
+ * deliberately *not* applied to the published snapshot: once content is authored in the
+ * database, code silently adding to it would put unreviewed material in front of a
+ * child, which is the exact thing §C4's gate exists to prevent.
+ */
+export async function activityCatalogue(): Promise<{ questions: Question[]; version: string }> {
+  const live = await publishedCatalogue().catch(() => null);
+  if (live?.questions.length) return { questions: live.questions, version: live.version };
+
+  const legacy = await catalog<Question[]>('questions').catch(() => [] as Question[]);
+  if (!legacy.length) return { questions: authoredQuestions, version: CODE_CATALOGUE_VERSION };
   const byId = new Map(authoredQuestions.map((question) => [question.id, question]));
-  for (const question of published) byId.set(question.id, question);
-  return [...byId.values()];
+  for (const question of legacy) byId.set(question.id, question);
+  return { questions: [...byId.values()], version: CODE_CATALOGUE_VERSION };
+}
+
+// ---------------------------------------------------------------------------
+// Authoring (WP-05)
+// ---------------------------------------------------------------------------
+
+/**
+ * Read from the studio's side of the catalogue.
+ *
+ * Authorship is checked in the database, not here, so that a second caller cannot
+ * forget to. `Not a catalogue author` comes back as a thrown error and the route turns
+ * it into a 403.
+ */
+export async function contentRead<T>(kind: string, options: {
+  id?: string; filter?: Record<string, unknown>; limit?: number; offset?: number;
+} = {}): Promise<T> {
+  const { data, error } = await createAdminClient().rpc('cq_content_read', {
+    p_parent: parentId(), p_kind: kind, p_id: options.id ?? null,
+    p_filter: (options.filter ?? null) as Json,
+    p_limit: options.limit ?? 100, p_offset: options.offset ?? 0,
+  });
+  if (error) throw new ContentError(error.message);
+  return data as T;
+}
+
+export async function contentWrite<T>(kind: string, payload: Record<string, unknown>): Promise<T> {
+  const { data, error } = await createAdminClient().rpc('cq_content_write', {
+    p_parent: parentId(), p_kind: kind, p_data: payload as Json,
+  });
+  if (error) throw new ContentError(error.message);
+  // A publish that nobody can see is not a publish. The cache is per instance, so this
+  // is a courtesy to the author's own next request rather than a distributed guarantee.
+  if (kind === 'publish' || kind === 'rollback') forgetPublishedCatalogue();
+  return data as T;
+}
+
+/** Carries the database's own sentence, which the studio shows to the author verbatim. */
+export class ContentError extends Error {
+  readonly authorised: boolean;
+  constructor(message: string) {
+    super(message);
+    this.name = 'ContentError';
+    this.authorised = !/not a catalogue author/i.test(message);
+  }
+}
+
+export async function isCatalogueAuthor() {
+  try {
+    await contentRead('overview');
+    return true;
+  } catch (cause) {
+    if (cause instanceof ContentError && !cause.authorised) return false;
+    throw cause;
+  }
 }

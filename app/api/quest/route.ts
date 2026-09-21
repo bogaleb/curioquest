@@ -16,7 +16,6 @@ import { assistedIntro, nextScaffold } from "@/lib/scaffolding";
 import { missionStars, rampOrder, readArc, scoreAnswer } from "@/lib/game-loop";
 import { recordAttempt, recordHint } from "@/lib/mastery";
 import { eventForQuestion, latency, supportFrom, type LearningEvent } from "@/lib/learning-events";
-import { CODE_CATALOGUE_VERSION } from "@/lib/catalogue-version";
 import { errorKindFor } from "@/lib/distractor-reasons";
 import { teachingResponse, unmetPrerequisite } from "@/lib/teaching-response";
 import type { QuestFeedback } from "@/lib/explorer-view";
@@ -156,7 +155,7 @@ function validGoal(value: unknown) {
 
 async function get(request: Request) {
   try {
-    const questions = await activityCatalogue();
+    const { questions } = await activityCatalogue();
     if(!(await familyAuthorized(request)))return Response.json({error:"Sign in with this family's account to open its adventures."},{status:403,headers:{"Cache-Control":"no-store"}});
     return Response.json({ profiles: await readAll(questions) }, {headers:{"Cache-Control":"no-store"}});
   } catch (error) {
@@ -170,7 +169,10 @@ async function get(request: Request) {
 
 async function post(request: Request) {
   try {
-    const questions = await activityCatalogue();
+    // The catalogue version travels with the pool it came from: an event recorded
+    // against `db-7` has to mean the item as `db-7` published it, or item health
+    // (WP-06) compares two different questions wearing the same id.
+    const { questions, version: catalogueVersion } = await activityCatalogue();
     if(!(await familyAuthorized(request)))return Response.json({error:"Sign in with this family's account to open its adventures."},{status:403});
     const origin = request.headers.get("origin");
     if (origin && origin !== new URL(request.url).origin) {
@@ -489,9 +491,13 @@ async function post(request: Request) {
             response: String(input.answer),
             latencyMs: latency(session.activityStarted),
             prerequisiteMissing: missingPrerequisite(profile, question),
+            // The reason an author attached to this wrong answer, when the published
+            // catalogue carries one. It beats the inference, because a person who
+            // wrote the distractor knows why they wrote it.
+            authored: question.distractorReasons,
           }),
           latencyMs: latency(session.activityStarted),
-          catalogueVersion: CODE_CATALOGUE_VERSION,
+          catalogueVersion,
           episodeId: session.chapter !== undefined ? `campaign-${session.chapter}` : null,
         }));
         if (correct) {

@@ -640,6 +640,9 @@ export type Database = {
       cq_events: { Args: { p_parent: string; p_child: string; p_since?: string | null; p_limit?: number | null }; Returns: Json };
       cq_import: { Args: { p_parent: string; p_bundle: Json; p_hash: string }; Returns: Json };
       cq_read: { Args: { p_parent: string; p_kind: string; p_child?: string | null; p_id?: string | null; p_filter?: string | null; p_limit?: number | null; p_offset?: number | null }; Returns: Json };
+      cq_catalogue: { Args: { p_version?: number | null }; Returns: Json };
+      cq_content_read: { Args: { p_parent: string; p_kind: string; p_id?: string | null; p_filter?: Json | null; p_limit?: number | null; p_offset?: number | null }; Returns: Json };
+      cq_content_write: { Args: { p_parent: string; p_kind: string; p_data: Json }; Returns: Json };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

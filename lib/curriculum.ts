@@ -5,6 +5,9 @@ import {
   type SkillSubject,
 } from "@/lib/skill-graph";
 import type { ActivityEngine } from "./activity-types";
+import type { ErrorKind } from "./error-kinds";
+import type { LearningVerb } from "./learning-events";
+import type { ReviewStatus } from "./catalogue/model";
 import { resolveBand, type LearningBandId } from "./learning-bands";
 import { gardenActivities } from "./garden-content";
 import { arcadeActivities } from "./arcade-content";
@@ -47,6 +50,29 @@ export type Question = {
   campaignOnly?: boolean;
   passage?: { title: string; text: string; emoji: string };
   audioLabel?: string;
+
+  /**
+   * The three fields below arrive only from the published catalogue (WP-05). They are
+   * optional because the bundled bank predates them and is still the fallback when
+   * nothing has been published yet.
+   */
+
+  /** Which lesson this item belongs to, so an event can be attributed to one. */
+  lessonId?: string;
+  /**
+   * What the child is asked to *do* (§C1), authored rather than guessed from the engine
+   * kind. `verbForActivity` infers it when this is absent, and cannot tell a child
+   * sorting shapes from a child sorting sounds.
+   */
+  verb?: LearningVerb;
+  /** §C4. Only `published` is ever served; anything else here is a bug upstream. */
+  reviewStatus?: ReviewStatus;
+  /**
+   * The §C3 reason an author attached to each wrong answer. An authored reason always
+   * beats the inference in `lib/distractor-reasons.ts`, because a person who wrote the
+   * distractor knows why they wrote it.
+   */
+  distractorReasons?: { value: string; errorKind: ErrorKind }[];
 };
 
 export const questions: Question[] = [];

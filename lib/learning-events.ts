@@ -148,7 +148,8 @@ export function latency(startedAt: number | string | null | undefined, now = Dat
  */
 export function eventForQuestion(input: {
   id?: string;
-  question: Pick<Question, "id" | "skillId" | "activityType" | "phase">;
+  question: Pick<Question, "id" | "skillId" | "activityType" | "phase"> &
+    Partial<Pick<Question, "verb" | "lessonId">>;
   sessionId: string;
   correct: boolean;
   support: SupportLevel;
@@ -166,9 +167,13 @@ export function eventForQuestion(input: {
     occurredAt: input.occurredAt ?? new Date().toISOString(),
     skillId: input.question.skillId,
     itemId: input.question.id,
-    lessonId: input.lessonId ?? null,
+    lessonId: input.lessonId ?? input.question.lessonId ?? null,
     episodeId: input.episodeId ?? null,
-    verb: verbForActivity(input.question.activityType),
+    // An authored verb, where the published catalogue carries one. `verbForActivity`
+    // reads it off the engine kind, which cannot tell a child sorting shapes from a
+    // child sorting sounds — it is a fallback for content that predates §C4, not the
+    // definition.
+    verb: input.question.verb ?? verbForActivity(input.question.activityType),
     phase: input.question.phase,
     correct: input.correct,
     support: input.support,

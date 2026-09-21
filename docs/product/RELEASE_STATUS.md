@@ -130,6 +130,55 @@ two disagree.
   `restate-rule` and `reorder` moves are words only, with no panel of their own. The
   detour picks the first suitable prerequisite activity rather than the best one.
 
+- **WP-05 — Content out of the bundle. Shipped.** A lesson no longer needs a developer.
+  The 78 skills and the generated item bank now live in a `content` schema in Postgres —
+  523 items, 144 lessons, 428 wrong answers — and the app serves an immutable published
+  *snapshot* of them rather than a TypeScript literal. `activityCatalogue()` prefers that
+  snapshot, falls back to the pre-WP-05 `private.catalogs` blob, and falls back again to
+  the bundle, so a database missing the new migrations still teaches. Every learning event
+  now records the real catalogue version, which is what makes WP-06's item-health query
+  able to compare like with like.
+
+  Serving is gated on `reviewStatus = 'published'` twice: once when the snapshot is
+  assembled in `content.cq_snapshot`, and again in `questionsFromSnapshot`, so the gate
+  holds even for a snapshot loaded from a fixture or a rolled-back version. Authoring is
+  an explicit grant (`content.authors`), empty on arrival — the catalogue is global, so
+  being a parent is not being an author. RLS is on with no policies; everything goes
+  through `public.cq_catalogue`, `cq_content_read` and `cq_content_write`, granted to
+  `service_role` only, the same posture as the rest of the schema.
+
+  The studio is at `/studio`, in a new `(grownup)` route group rather than inside the
+  child shell. It browses skills → lessons → items with the filtering done in Postgres,
+  edits an item beside a **live preview that renders through the real
+  `ActivityEngineView`** at any of the six bands — the same component the quest player
+  mounts, so an engine that gains a behaviour gains it in the preview too — and states
+  what the chosen band does to that item: words against the §C5 budget, choices against
+  the band's ceiling, whether Nova narrates unasked. Answering in the preview records no
+  event; an author tapping through their own item is not evidence of a child learning.
+
+  Publishing validates the **whole catalogue**, not the edited row, because an item can
+  be locally valid and globally broken. `lib/catalogue/model.ts` is the single rulebook —
+  Zod shapes plus graph rules for dangling skills, prerequisite cycles, published items
+  inside unpublished lessons, an answer that is also a distractor, §C5 word budgets per
+  band, and product vocabulary on a child surface. Errors refuse the publish and come
+  back as sentences naming the row, the field and the reason; warnings do not block, and
+  are stored with the version so the backlog stays countable. The seed generator runs the
+  same module, so a seed that could not be published is never produced.
+
+  The migration measured two things the bundle had only implied. **The pre-K pool is not
+  written for three-year-olds** — 151 of its 256 prompts exceed the eight words §C5 allows
+  on an early-preschool screen, and item reach is now a number: early-preschool 105,
+  pre-K 167, kindergarten 252, grade 1 and up 267. And four prompts no band in their pool
+  can hold are seeded `draft` and are no longer served until somebody rewrites them.
+
+  Still not true: `lib/skill-graph.ts` is still a bundled literal rather than a loader
+  over the same snapshot, so a *new skill* — as opposed to a new lesson or item — still
+  needs a deploy. The studio has no asset upload, no episode editor and no per-field edit
+  history; assets are referenced by id and must already exist. Distractor reasons are
+  authored where somebody wrote one (82 of 428) and left null elsewhere rather than
+  filled in with a guess, so most wrong answers still fall through to the WP-04
+  inference. Publishing is not yet audited beyond `published_by` and the version notes.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.
