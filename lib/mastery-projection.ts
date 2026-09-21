@@ -42,7 +42,10 @@ export type ProjectionEvent = {
 /** Map a database row onto the projection's input shape. */
 export function eventFromRow(row: {
   session_id: string; occurred_at: string; skill_id: string; item_id: string;
-  verb: LearningVerb; correct: boolean; support: SupportLevel; error_kind: string | null;
+  verb: LearningVerb; correct: boolean; support: SupportLevel;
+  // Optional, because the stream omits it on a correct answer and a caller reading
+  // straight from `cq_family_events` hands the column through as it comes.
+  error_kind?: string | null;
 }): ProjectionEvent {
   return {
     sessionId: row.session_id,
@@ -52,7 +55,7 @@ export function eventFromRow(row: {
     verb: row.verb,
     correct: row.correct,
     support: row.support,
-    errorKind: row.error_kind,
+    errorKind: row.error_kind ?? null,
   };
 }
 

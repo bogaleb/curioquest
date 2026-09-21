@@ -1,0 +1,85 @@
+/*
+ * The retention panel (WP-06).
+ *
+ * Colocated with the route rather than appended to one of the sixteen legacy sheets,
+ * which are on a shrinking budget (`scripts/check-tokens.mjs`). Same rule as the
+ * studio's stylesheet: every value is a token, so this file can move into the shared
+ * layer later without being rewritten first.
+ */
+
+.parent-retention { display: grid; gap: var(--space-4); }
+.parent-retention .panel-title { margin-bottom: 0; }
+
+.retention-windows { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.retention-windows button {
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+.retention-windows button.is-current {
+  background: var(--green-600);
+  border-color: var(--green-700);
+  color: var(--cream);
+  transform: translateY(-1px);
+}
+
+/* The headline is a sentence, never a bare percentage (§D5). */
+.retention-sentence {
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  max-width: 60ch;
+  margin: 0;
+}
+
+.retention-bar {
+  display: flex;
+  height: var(--space-4);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: var(--sand-200);
+}
+.retention-bar > span {
+  flex: var(--share) 0 0%;
+  animation: retention-fill var(--dur-slow) var(--ease-out) both;
+}
+@keyframes retention-fill { from { flex-grow: 0; } to { flex-grow: var(--share); } }
+
+.retention-held { background: var(--green-500); }
+.retention-slipped { background: var(--sun-400); }
+/* Not yet due: neither a success nor a failure, and coloured like neither. */
+.retention-waiting { background: var(--sand-400); }
+
+.retention-key { display: flex; flex-wrap: wrap; gap: var(--space-5); list-style: none; padding: 0; margin: 0; }
+.retention-key li { display: flex; align-items: center; gap: var(--space-2); font-size: var(--text-sm); color: var(--muted); }
+.retention-key strong { color: var(--ink); font-size: var(--text-base); }
+.retention-dot { width: var(--space-3); height: var(--space-3); border-radius: var(--radius-pill); flex: none; }
+.retention-dot.is-held { background: var(--green-500); }
+.retention-dot.is-slipped { background: var(--sun-400); }
+.retention-dot.is-waiting { background: var(--sand-400); }
+
+.retention-slipped-list h3 { margin-bottom: var(--space-3); }
+.retention-slipped-list ul { list-style: none; padding: 0; margin: 0 0 var(--space-3); display: grid; gap: var(--space-2); }
+.retention-slipped-list li {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--sun-400);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.retention-slipped-list strong { display: block; font-size: var(--text-sm); }
+.retention-slipped-list small { display: block; font-size: var(--text-xs); color: var(--muted); margin-top: 2px; }
+
+.parent-retention .form-note { display: flex; align-items: flex-start; gap: var(--space-2); }
+.parent-retention .form-note svg { flex: none; margin-top: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .retention-bar > span, .retention-windows button { animation: none; transition: none; transform: none; }
+}

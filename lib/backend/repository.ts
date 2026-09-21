@@ -7,6 +7,9 @@ import { questions as authoredQuestions, type Question } from '@/lib/curriculum'
 import { validEvents, type LearningEvent } from '@/lib/learning-events';
 import { catalogueVersion, CODE_CATALOGUE_VERSION } from '@/lib/catalogue-version';
 import { questionsFromSnapshot, readSnapshot, type PublishedCatalogue } from '@/lib/catalogue/catalogue';
+import { eventFromRow, masteryFromEvents } from '@/lib/mastery-projection';
+import type { SkillMasteryMap } from '@/lib/mastery';
+import { emptyRetention, MIN_WRONG_ANSWERS, type ItemHealth, type Retention } from '@/lib/insights';
 
 export async function read<T>(kind: string, options: {child?: string; id?: string; filter?: string; limit?: number; offset?: number} = {}): Promise<T> {
   const { data, error } = await createAdminClient().rpc('cq_read', {
@@ -239,5 +242,146 @@ export async function isCatalogueAuthor() {
   } catch (cause) {
     if (cause instanceof ContentError && !cause.authorised) return false;
     throw cause;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Mastery from events (WP-06)
+// ---------------------------------------------------------------------------
+
+/**
+ * Every child's evidence, in one round trip, keyed by child id.
+ *
+ * `cq_events` reads one child. Projecting on read means folding a whole history per
+ * profile, and a family of four would otherwise pay four sequential round trips on
+ * every page load. The cap is per child, so one prolific sibling cannot crowd out
+ * another's history and silently understate their mastery.
+ */
+export async function familyEvents(limit = 8000): Promise<Record<string, LearningEventRow[]>> {
+  const { data, error } = await createAdminClient().rpc('cq_family_events', {
+    p_parent: parentId(), p_limit: limit,
+  });
+  if (error) throw new Error(`Learning history read failed (${error.code}).`);
+  return (data ?? {}) as Record<string, LearningEventRow[]>;
+}
+
+/**
+ * The projection, per child, as the rest of the app already consumes mastery.
+ *
+ * This is the WP-06 switch. `profile.skillMastery` used to be whatever the blob said;
+ * it is now folded out of `learning_events` on every read. The recommender
+ * (`lib/recommendation.ts`) and the parent surface both read that field, so both move
+ * to the projection through this one seam rather than through a change each.
+ *
+ * A read failure returns an empty map and the caller keeps the blob. The projection
+ * being unavailable must not empty a child's history in front of their parent — the
+ * blob is a cache of exactly this, and a slightly stale cache beats a blank screen.
+ *
+ * One known difference from the blob it replaces: `learning_events` has no column for
+ * the engine an item used or its context tags, so the projection's `confidence` counts
+ * representation variety from the default rather than from the real engine kind. The
+ * *evidence* legs — verbs, spacing, consecutive independence — are all columns, so the
+ * `practising`/`mastered` judgement is unaffected. Confidence reads slightly low until
+ * the stream carries the kind; it is never overstated, which is the direction that
+ * matters.
+ */
+export async function masteryForFamily(now = new Date()): Promise<Record<string, SkillMasteryMap>> {
+  let rows: Record<string, LearningEventRow[]>;
+  try {
+    rows = await familyEvents();
+  } catch {
+    return {};
+  }
+  return Object.fromEntries(
+    Object.entries(rows).map(([childId, events]) => [
+      childId,
+      masteryFromEvents(events.map(eventFromRow), now),
+    ]),
+  );
+}
+
+/**
+ * Write a rebuilt projection back into the blob.
+ *
+ * The blob is a cache now. This is the write half of that claim: after a rebuild it
+ * holds exactly what the projection produced, so the two can be compared and the cache
+ * can be thrown away without losing anything. It deliberately does not bump the row's
+ * revision — see the migration for why a cache refresh may never fail a family's save.
+ */
+export async function cacheMastery(childId: string, mastery: SkillMasteryMap) {
+  if (!uuid(childId)) return 0;
+  const { data, error } = await createAdminClient().rpc('cq_mastery_cache', {
+    p_parent: parentId(), p_child: childId, p_mastery: mastery as unknown as Json,
+  });
+  if (error) throw new Error(`Mastery cache write failed (${error.code}).`);
+  return (data as { updated?: number } | null)?.updated ?? 0;
+}
+
+/** Items whose wrong answers cluster on one distractor (§WP-06.2). Authors only. */
+export async function itemHealth(options: { minWrong?: number; limit?: number } = {}) {
+  const { data, error } = await createAdminClient().rpc('cq_insights', {
+    p_parent: parentId(), p_kind: 'item-health', p_child: null, p_days: 14,
+    p_min_attempts: options.minWrong ?? MIN_WRONG_ANSWERS, p_limit: options.limit ?? 100,
+  });
+  if (error) throw new ContentError(error.message);
+  return (data ?? []) as ItemHealth[];
+}
+
+/** How much of what a child learned is still there `days` later (§WP-06.3). */
+export async function retention(childId?: string, days = 14): Promise<Retention> {
+  const { data, error } = await createAdminClient().rpc('cq_insights', {
+    p_parent: parentId(), p_kind: 'retention', p_child: uuid(childId) ?? null,
+    p_days: days, p_min_attempts: 5, p_limit: 100,
+  });
+  if (error) throw new Error(`Retention read failed (${error.code}).`);
+  return (data as Retention | null) ?? emptyRetention(days);
+}
+
+/**
+ * One child's mastery, with the projection authoritative wherever the stream reaches.
+ *
+ * Not a straight replacement, and this is the one judgement in WP-06 that is not
+ * mechanical. `learning_events` began at WP-01. A family who played before that has
+ * mastery in the blob which no event can reproduce, and switching reads to a bare
+ * projection would erase that history from their parent report — the product silently
+ * forgetting what a child did is a worse fault than the blob being unauditable.
+ *
+ * So: the projection wins for every skill the stream has an opinion about, and the blob
+ * survives for skills it has never seen. Every new attempt writes an event, so the
+ * blob-only residue can only shrink. `scripts/rebuild-mastery.mjs --report` prints how
+ * much of it is left, which is the number that says when this merge can be deleted.
+ */
+export function withProjectedMastery(
+  profile: ExplorerProfile,
+  projected: Record<string, SkillMasteryMap>,
+): ExplorerProfile {
+  const mastery = projected[profile.id];
+  if (!mastery) return profile;
+  return { ...profile, skillMastery: { ...profile.skillMastery, ...mastery } };
+}
+
+/** Skills the blob claims that the event stream cannot account for. */
+export function unexplainedSkills(profile: ExplorerProfile, mastery: SkillMasteryMap): string[] {
+  return Object.keys(profile.skillMastery).filter((skillId) => !(skillId in mastery));
+}
+
+/**
+ * One child's projected mastery.
+ *
+ * The quest route calls this at the moment a quest is *selected*, rather than on every
+ * answer. Selection is where the recommender consults mastery (§WP-06 acceptance), and
+ * reading a whole history on each of a child's twelve taps would buy nothing: the
+ * events written during a session are the ones `recordAttempt` has already folded into
+ * the profile in memory.
+ */
+export async function masteryForChild(childId: string, now = new Date()): Promise<SkillMasteryMap | null> {
+  if (!uuid(childId)) return null;
+  try {
+    const rows = await readLearningEvents(childId);
+    return masteryFromEvents(rows.map(eventFromRow), now);
+  } catch {
+    // The blob is a cache of exactly this. A recommender that falls back to it picks
+    // slightly staler activities; one that throws ends the child's session.
+    return null;
   }
 }

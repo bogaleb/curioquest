@@ -1,5 +1,5 @@
 import { withFamily } from '@/lib/backend/context';
-import { ContentError, contentRead, contentWrite } from '@/lib/backend/repository';
+import { ContentError, contentRead, contentWrite, itemHealth } from '@/lib/backend/repository';
 import { requestJson, RequestBodyError } from '@/lib/request-json';
 import { catalogueErrors, describeProblem, validateCatalogue, type CatalogueProblem } from '@/lib/catalogue/model';
 
@@ -36,6 +36,24 @@ function failure(error: unknown) {
 async function get(request: Request) {
   const url = new URL(request.url);
   const kind = url.searchParams.get('kind') ?? 'overview';
+
+  /*
+   * Item health (WP-06) is the one read that does not come from the working set. It
+   * aggregates `learning_events` across every family, because how an item behaves is a
+   * property of the item rather than of one child — and it is gated on catalogue
+   * authorship for exactly that reason, by the same `content.cq_is_author` check.
+   */
+  if (kind === 'item-health') {
+    try {
+      return Response.json({ data: await itemHealth({
+        minWrong: Math.min(Math.max(Number(url.searchParams.get('minWrong')) || 5, 1), 100),
+        limit: 120,
+      }) });
+    } catch (error) {
+      return failure(error);
+    }
+  }
+
   if (!READS.has(kind)) return Response.json({ error: 'Unknown catalogue read.' }, { status: 400 });
   // Only the filters `cq_content_read` understands are forwarded. An unknown key would
   // be ignored by the function, which is worse than refused: an author would see a

@@ -1,4 +1,4 @@
-import {readExplorer as row,listExplorers,createExplorer,deleteExplorer,saveExplorers,activityCatalogue} from "@/lib/backend/repository";
+import {readExplorer as row,listExplorers,createExplorer,deleteExplorer,saveExplorers,activityCatalogue,masteryForFamily,masteryForChild,withProjectedMastery} from "@/lib/backend/repository";
 import {withFamily} from "@/lib/backend/context";
 import { publicQuestion, type Question, type Subject } from "@/lib/curriculum";
 import {
@@ -112,8 +112,18 @@ function clean(profile: ExplorerProfile, questions: Question[]) {
   };
 }
 
+/**
+ * Every profile, with mastery folded out of the event stream (WP-06).
+ *
+ * This is the switch the work package asks for, made once. `profile.skillMastery` is
+ * what the recommender selects on and what the parent surface reports, so both read the
+ * projection from here rather than through a change each.
+ */
 async function readAll(questions: Question[]) {
-  return (await listExplorers()).map(item => clean(normalizeExplorer(JSON.parse(item.data)), questions));
+  const projected = await masteryForFamily();
+  return (await listExplorers())
+    .map(item => withProjectedMastery(normalizeExplorer(JSON.parse(item.data)), projected))
+    .map(profile => clean(profile, questions));
 }
 
 function validName(value: unknown): value is string {
@@ -426,6 +436,11 @@ async function post(request: Request) {
         return Response.json({ profile: clean(profile, questions) });
       }
 
+      // The recommender selects on the projection, not on the blob (§WP-06). Read here
+      // rather than at the top of the handler: this is the only branch that consults
+      // mastery to choose, and every other action would pay for a history it never uses.
+      const projected = await masteryForChild(profile.id);
+      if (projected) profile.skillMastery = { ...profile.skillMastery, ...projected };
       const recommendation = recommendQuest(profile, requestedSubject, new Date(), questions);
       if (!recommendation.questionIds.length) {
         return Response.json({ error: "No quest activities are ready for this explorer." }, { status: 409 });

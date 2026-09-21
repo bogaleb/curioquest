@@ -643,6 +643,9 @@ export type Database = {
       cq_catalogue: { Args: { p_version?: number | null }; Returns: Json };
       cq_content_read: { Args: { p_parent: string; p_kind: string; p_id?: string | null; p_filter?: Json | null; p_limit?: number | null; p_offset?: number | null }; Returns: Json };
       cq_content_write: { Args: { p_parent: string; p_kind: string; p_data: Json }; Returns: Json };
+      cq_family_events: { Args: { p_parent: string; p_limit?: number | null }; Returns: Json };
+      cq_mastery_cache: { Args: { p_parent: string; p_child: string; p_mastery: Json }; Returns: Json };
+      cq_insights: { Args: { p_parent: string; p_kind: string; p_child?: string | null; p_days?: number | null; p_min_attempts?: number | null; p_limit?: number | null }; Returns: Json };
     };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };

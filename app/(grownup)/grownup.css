@@ -737,6 +737,85 @@
 .studio-gate code { font-size: var(--text-sm); background: var(--surface-sunk); padding: 0 var(--space-1); border-radius: var(--radius-sm); }
 .studio-gate .studio-button { background: var(--green-600); border-color: var(--green-700); color: var(--cream); }
 
+/* ---------------------------------------------------------------- item health */
+
+.health .studio-card { margin-bottom: var(--space-5); }
+.health-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--space-3); }
+.health-list li {
+  animation: studio-rise var(--dur-fast) var(--ease-out) both;
+  animation-delay: calc(min(var(--row, 0), 12) * 28ms);
+}
+.health-list button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  padding: var(--space-4) var(--space-5);
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  /* The verdict, carried on the edge of the row: scannable before anything is read. */
+  border-left: 4px solid var(--sand-400);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.health-list button:hover:not(:disabled) { transform: translateX(2px); box-shadow: var(--shadow-sm); }
+.health-list .is-rewrite button { border-left-color: var(--berry); }
+.health-list .is-watch button { border-left-color: var(--sun-400); }
+.health-list .is-healthy button { border-left-color: var(--green-400); }
+
+.health-main { flex: 1; min-width: 0; }
+.health-main strong { display: block; font-size: var(--text-sm); font-weight: 600; }
+.health-main small { display: block; font-size: var(--text-xs); color: var(--ink-faint); margin-top: 2px; }
+.health-verdict {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  color: var(--muted);
+  max-width: 62ch;
+}
+.is-rewrite .health-verdict { color: var(--berry); }
+
+.health-figures { display: flex; align-items: center; gap: var(--space-4); flex: none; }
+.health-bar {
+  display: block;
+  width: 7rem;
+  height: var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--sand-200);
+  overflow: hidden;
+}
+.health-share {
+  display: block;
+  height: 100%;
+  width: calc(var(--share) * 100%);
+  border-radius: var(--radius-pill);
+  background: var(--green-400);
+  animation: studio-grow var(--dur-slow) var(--ease-out) both;
+}
+.is-rewrite .health-share { background: var(--berry); }
+.is-watch .health-share { background: var(--sun-400); }
+
+.health-numbers { text-align: right; }
+.health-numbers b { display: block; font-size: var(--text-lg); font-variant-numeric: tabular-nums; }
+.health-numbers small { display: block; font-size: var(--text-2xs); color: var(--muted); max-width: 9rem; }
+.health-meta { display: grid; gap: var(--space-1); justify-items: flex-end; }
+.health-meta em { font-style: normal; font-size: var(--text-2xs); color: var(--muted); }
+
+@media (max-width: 1180px) {
+  .health-list button { flex-wrap: wrap; gap: var(--space-3); }
+  .health-figures { width: 100%; justify-content: space-between; }
+  .health-bar { flex: 1; width: auto; }
+}
+@media (max-width: 680px) {
+  .health-figures { flex-wrap: wrap; }
+  .health-bar { flex-basis: 100%; }
+  .health-meta { justify-items: flex-start; }
+}
+
 /* ---------------------------------------------------------------- responsive
  *
  * A laptop is where this surface belongs, but an author with an iPad has to be able to

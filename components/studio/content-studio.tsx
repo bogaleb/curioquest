@@ -3,18 +3,20 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, BookOpen, HelpCircle, LayoutGrid, Library, Loader2, Rocket, Upload,
+  Activity, ArrowLeft, BookOpen, HelpCircle, LayoutGrid, Library, Loader2, Rocket, Upload,
 } from "lucide-react";
 import { CatalogueBrowser } from "./catalogue-browser";
+import { ItemHealthView } from "./item-health";
 import { ImportPanel } from "./import-panel";
 import { PublishPanel } from "./publish-panel";
 import { errorKindLabels, studioGet, StudioError, type Overview } from "./studio-data";
 
-type View = "overview" | "catalogue" | "import" | "publish";
+type View = "overview" | "catalogue" | "health" | "import" | "publish";
 
 const VIEWS: { id: View; label: string; icon: typeof LayoutGrid; blurb: string }[] = [
   { id: "overview", label: "Overview", icon: LayoutGrid, blurb: "What is live, and what is waiting" },
   { id: "catalogue", label: "Catalogue", icon: Library, blurb: "Skills, lessons and every item" },
+  { id: "health", label: "Item health", icon: Activity, blurb: "What the evidence says is broken" },
   { id: "import", label: "Import", icon: Upload, blurb: "Add a batch without a deploy" },
   { id: "publish", label: "Publish", icon: Rocket, blurb: "Validate, ship, roll back" },
 ];
@@ -172,6 +174,7 @@ export function ContentStudio() {
         )}
 
         {view === "catalogue" && <CatalogueBrowser onChanged={refresh}/>}
+        {view === "health" && <ItemHealthView onChanged={refresh}/>}
         {view === "import" && <ImportPanel onImported={refresh}/>}
         {view === "publish" && <PublishPanel overview={overview} onPublished={refresh}/>}
       </main>

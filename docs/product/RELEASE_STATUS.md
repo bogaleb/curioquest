@@ -179,6 +179,48 @@ two disagree.
   filled in with a guess, so most wrong answers still fall through to the WP-04
   inference. Publishing is not yet audited beyond `published_by` and the version notes.
 
+- **WP-06 — Mastery from events. Shipped.** The JSON blob is no longer what the product
+  believes. `profile.skillMastery` is folded out of `learning_events` on every read, so
+  the recommender (which selects on it) and the parent surface (which reports it) both
+  read the projection — one seam in `readAll`, plus one at the moment a quest is
+  selected, rather than a change per caller. The blob is a cache:
+  `node scripts/rebuild-mastery.mjs` reproduces it from the stream and writes it back,
+  and `--report` compares without writing.
+
+  One judgement, and it is not mechanical. `learning_events` began at WP-01, so a family
+  who played before that holds mastery no event can reproduce. A bare projection would
+  erase it from their parent report, and the product silently forgetting what a child did
+  is a worse fault than the blob being unauditable. So the projection wins for every skill
+  the stream reaches and the blob survives for skills it has never seen;
+  `unexplainedSkills` counts the residue, the rebuild script prints it, and when it
+  reaches zero the merge can go and the blob can be dropped outright.
+
+  **Item health** (`/studio` → Item health) answers the question no score can: an item
+  where wrong answers spread across the choices means children did not know, and an item
+  where one distractor takes more than 60% of them means the item is teaching something
+  nobody intended. `lib/insights.ts` makes three distinctions the raw percentage cannot —
+  a dominant distractor *with* an authored reason is a teaching gap, one *without* is an
+  authoring gap, and an item almost nobody gets right is a prompt problem rather than a
+  distractor problem, so an author is not sent to fix the wrong half. Every flagged row
+  opens the real editor. It aggregates across families, so it is gated on catalogue
+  authorship, not on being a parent.
+
+  **Retention** (Parent Corner → “What stayed”) reports the proportion of skills still
+  correct 7, 14 or 30 days after they were first got right. Never as a bare percentage:
+  §D5 forbids dressing a practice signal as an assessment, and a number with no
+  denominator reads as a grade. A skill that has not come round again yet is reported as
+  waiting rather than folded into either column, the slipped ones are named, and the copy
+  says plainly that forgetting is how spaced practice is meant to work.
+
+  Still not true: `learning_events` has no column for the engine an item used or its
+  context tags, so the projection's *confidence* counts representation variety from a
+  default rather than the real engine kind — it reads slightly low, never high, and the
+  `practising`/`mastered` judgement is unaffected because all three evidence legs are
+  columns. Retention is computed per child on demand rather than cached, so a family with
+  a long history pays for it on the panel opening. Item health has no per-band or
+  per-version breakdown, so an item rewritten in a later catalogue version still shows its
+  old wrong answers mixed in.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.
