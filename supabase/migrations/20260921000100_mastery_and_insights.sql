@@ -68,7 +68,9 @@ end $$;
  * that save and lose a child's answer to a cache refresh. A cache may never cost
  * somebody their work.
  *
- * Used by `scripts/rebuild-mastery.mjs` and by the reconciliation on read.
+ * Called by `scripts/rebuild-mastery.mjs`, which talks to this function directly
+ * rather than through the repository: it runs outside Next and cannot import
+ * `server-only` code.
  */
 create or replace function public.cq_mastery_cache(p_parent uuid, p_child uuid, p_mastery jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$

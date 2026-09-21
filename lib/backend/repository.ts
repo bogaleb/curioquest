@@ -300,23 +300,6 @@ export async function masteryForFamily(now = new Date()): Promise<Record<string,
   );
 }
 
-/**
- * Write a rebuilt projection back into the blob.
- *
- * The blob is a cache now. This is the write half of that claim: after a rebuild it
- * holds exactly what the projection produced, so the two can be compared and the cache
- * can be thrown away without losing anything. It deliberately does not bump the row's
- * revision — see the migration for why a cache refresh may never fail a family's save.
- */
-export async function cacheMastery(childId: string, mastery: SkillMasteryMap) {
-  if (!uuid(childId)) return 0;
-  const { data, error } = await createAdminClient().rpc('cq_mastery_cache', {
-    p_parent: parentId(), p_child: childId, p_mastery: mastery as unknown as Json,
-  });
-  if (error) throw new Error(`Mastery cache write failed (${error.code}).`);
-  return (data as { updated?: number } | null)?.updated ?? 0;
-}
-
 /** Items whose wrong answers cluster on one distractor (§WP-06.2). Authors only. */
 export async function itemHealth(options: { minWrong?: number; limit?: number } = {}) {
   const { data, error } = await createAdminClient().rpc('cq_insights', {

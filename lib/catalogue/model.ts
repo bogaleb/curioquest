@@ -25,7 +25,7 @@ import type { LearningVerb } from "@/lib/learning-events";
  *      the whole graph and refuses the publish rather than the row.
  *
  * Nothing here imports `lib/curriculum.ts`. The mapping between this model and the
- * runtime `Question` shape lives in `lib/content/catalogue.ts`, so that the model can be
+ * runtime `Question` shape lives in `lib/catalogue/catalogue.ts`, so that the model can be
  * tested — and an author's draft validated — without loading the bundled bank.
  */
 
