@@ -3016,63 +3016,14 @@
   object-fit: contain;
 }
 
-/* --------------------------------------------------------------------------
-   The way out, and the way to sound
-   --------------------------------------------------------------------------
-   Bottom-end corner, clear of the film's own composition, and both controls are
-   full-sized targets rather than the small grey "skip" a phone app usually
-   hides in a corner.
-   -------------------------------------------------------------------------- */
-
-.app-intro-controls {
-  position: absolute;
-  inset-block-end: calc(var(--safe-bottom) + var(--space-6));
-  inset-inline-end: calc(var(--safe-right) + var(--space-6));
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.app-intro-skip,
-.app-intro-sound {
-  min-height: var(--touch-min);
-  padding: var(--space-3) var(--space-6);
-  border: 2px solid var(--sand-100);
-  border-radius: var(--radius-pill);
-  background: rgba(12, 53, 41, 0.55);
-  color: var(--sand-50);
-  font-family: var(--font-display);
-  font-size: var(--text-lg);
-  font-weight: 700;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition: background var(--dur-fast) var(--ease-out);
-}
-.app-intro-skip:hover,
-.app-intro-sound:hover { background: rgba(12, 53, 41, 0.8); }
-.app-intro-skip:focus-visible,
-.app-intro-sound:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px var(--green-900), 0 0 0 7px var(--sun-300);
-}
-
-/* Sound is the offer, so it leads; Skip is the exit and stays quieter. */
-.app-intro-sound {
-  background: var(--sun-400);
-  border-color: var(--sun-300);
-  color: var(--green-900);
-}
-.app-intro-sound:hover { background: var(--sun-300); }
-
-@media (max-width: 767px) {
-  .app-intro-controls {
-    inset-inline: var(--space-4);
-    inset-block-end: calc(var(--safe-bottom) + var(--space-4));
-    justify-content: center;
-  }
-  .app-intro-skip,
-  .app-intro-sound { flex: 1; justify-content: center; }
-}
+/*
+ * Nothing is drawn over the film.
+ *
+ * There was a Skip button and a Turn on sound button here. Both are gone: a title
+ * card with a Skip in the corner is an advertisement, and one with a Turn on
+ * sound is an apology. The film opens itself, plays, and hands over — the way
+ * out is the end of it, plus Escape, which costs the screen nothing.
+ */
 
 /*
  * Reduced motion never reaches this stylesheet — `AppIntro` does not render at

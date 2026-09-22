@@ -112,9 +112,12 @@ this package's.
 
 **The line that still holds: no film is ever shown inside the app.** Both are 3D and the
 product is flat vector; both live on the signed-out entrance; a signed-in family goes
-straight to the map and never sees either. The title sequence is skippable from its first
-frame, does not appear for anyone who has asked for less movement, and plays once per
-session rather than on every navigation.
+straight to the map and never sees either. The title sequence carries **no controls at
+all** — no skip, no sound button, no progress bar. It opens itself, plays, and hands over,
+because a title card with a Skip in the corner is an advertisement and one with a Turn on
+sound is an apology. It does not appear for anyone who has asked for less movement, plays
+once per session rather than on every navigation, and is on a watchdog so a slow network
+can never hold a parent on a poster frame.
 
 **One thing to keep an eye on.** The title sequence features a yellow robot and a purple
 monster who are not Pip and not Bramble, and the authored cast is four (§2.3). On the

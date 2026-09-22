@@ -7,38 +7,43 @@ import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 /**
  * The title sequence: ten seconds, with sound, before the sign-in screen.
  *
- * The same idea as the intro on ABCmouse and every other children's app that opens with
- * its world rather than with a form. It plays once, it can be left at any moment, and the
- * sign-in fades up underneath it.
+ * Nothing is drawn over it. No skip button, no sound button, no progress bar — it opens by
+ * itself, plays, and hands over to the sign-in screen when it is done. That is the whole
+ * behaviour, and the absence of controls is the point: a title card with a "Skip" in the
+ * corner is an advertisement, and one with a "Turn on sound" is an apology.
  *
  * ## Sound, and the thing browsers will not let us do
  *
- * A page cannot start audio on its own. Chrome, Safari and Firefox all block it until the
- * viewer has interacted with the site, which is a rule a native app does not have — so an
- * intro that simply assumes sound would be silent for most people and broken for the rest.
+ * A page cannot start audio on its own. Chrome, Safari and Firefox block it until the
+ * viewer has interacted with the site, which is a rule a native app does not have — so
+ * some first visits will be silent however this is written.
  *
- * So it asks, and then degrades: play unmuted first, and if the browser refuses, start
- * muted and offer a single obvious control to turn the sound on. Either way the film
- * plays. Nobody ever sees a dead frame waiting for permission.
- *
- * ## Once
- *
- * A ten-second title sequence on every navigation would be a toll rather than a welcome,
- * so it is remembered for the browser session. Closing the tab and coming back plays it
- * again, which is what "opening the app" means.
+ * What it does instead of asking: play unmuted, fall back to muted if refused, and then
+ * unmute on the first touch or key press, whatever and wherever it is. That is invisible,
+ * costs the viewer nothing, and means the sound arrives the moment the browser will allow
+ * it. An installed app, or any later visit, plays with sound from the first frame.
  *
  * ## Leaving
  *
- * Three ways out, because this sits between a parent and their password: the film ending,
- * the Skip button — focused the moment it appears — and Escape. It also removes itself if
- * the file does not load, since a sign-in screen nobody can reach is worse than no intro.
+ * It leaves on its own at the end. Escape also works — invisible, no chrome, and the
+ * keyboard route out of anything modal. And it is on a watchdog: if the file has not
+ * started within six seconds, or has not finished within its own length plus a margin, it
+ * gives up and shows the sign-in screen. A title sequence is never worth a viewer waiting
+ * on a network.
  *
- * Never shown to anyone who has asked for less movement, and never shown to a child: this
- * is the signed-out entrance, and a signed-in family goes straight to the map.
+ * ## Once
+ *
+ * Remembered for the browser session, so it is a welcome rather than a toll. Never shown
+ * to anyone who has asked for less movement, and never shown inside the app: a signed-in
+ * family goes straight to the map.
  */
 const SEEN = "curioquest:intro-seen";
 /** Matches `--kid-dur-travel`, so the fade out and the stylesheet agree. */
 const FADE_MS = 520;
+/** How long to wait for the film to start before giving up on it entirely. */
+const START_MS = 6000;
+/** Slack on top of the film's own length, in case `ended` never arrives. */
+const OVERRUN_MS = 1500;
 
 function alreadySeen() {
   try {
@@ -65,9 +70,6 @@ function remember() {
  * there on the first client render instead of one render late — and so the *server*
  * answers "yes, seen", which means the HTML never contains a full-screen overlay that a
  * viewer with JavaScript disabled could not dismiss.
- *
- * It never changes during a session except when this component dismisses itself, and that
- * path re-renders through its own state, so the subscription has nothing to listen to.
  */
 const noChanges = () => () => {};
 
@@ -76,40 +78,75 @@ export function AppIntro() {
   const seen = useSyncExternalStore(noChanges, alreadySeen, () => true);
   const [dismissed, setDismissed] = useState(false);
   const [leaving, setLeaving] = useState(false);
-  const [muted, setMuted] = useState(false);
   const video = useRef<HTMLVideoElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fade = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const watchdog = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Derived rather than stored, so nothing has to be set from an effect on the way in.
   const open = !reduced && !seen && !dismissed;
 
   const finish = useCallback(() => {
-    if (timer.current) return;
+    if (fade.current) return;
+    if (watchdog.current) clearTimeout(watchdog.current);
     setLeaving(true);
     // `remember()` deliberately waits for the fade to finish. `seen` is read from
     // `sessionStorage` on every render, so writing it here would flip the derived `open`
     // to false on the very next render and tear the overlay out of the DOM instantly —
     // the transition would never run. Found by watching it rather than by reading it.
-    timer.current = setTimeout(() => {
+    fade.current = setTimeout(() => {
       remember();
       setDismissed(true);
     }, FADE_MS);
   }, []);
 
-  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
+  useEffect(
+    () => () => {
+      if (fade.current) clearTimeout(fade.current);
+      if (watchdog.current) clearTimeout(watchdog.current);
+    },
+    [],
+  );
 
-  // Sound if the browser allows it, silence with a way back if not.
+  // Sound if the browser allows it, silence if not — and never a question about it.
   useEffect(() => {
     const element = video.current;
     if (!open || !element) return;
     element.muted = false;
     element.play().catch(() => {
       element.muted = true;
-      setMuted(true);
       element.play().catch(() => finish());
     });
   }, [open, finish]);
 
+  // The first touch or key press anywhere turns the sound on, if it was refused. It does
+  // not dismiss: the viewer did not ask to leave, and a title card that vanishes on a
+  // stray tap is worse than one that plays for ten seconds.
+  useEffect(() => {
+    if (!open) return;
+    const unmute = () => {
+      const element = video.current;
+      if (!element?.muted) return;
+      element.muted = false;
+      void element.play().catch(() => {});
+    };
+    window.addEventListener("pointerdown", unmute, { once: true });
+    window.addEventListener("keydown", unmute, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", unmute);
+      window.removeEventListener("keydown", unmute);
+    };
+  }, [open]);
+
+  // Nothing here is worth waiting on a slow network for.
+  useEffect(() => {
+    if (!open) return;
+    watchdog.current = setTimeout(finish, START_MS);
+    return () => {
+      if (watchdog.current) clearTimeout(watchdog.current);
+    };
+  }, [open, finish]);
+
+  // Escape is the one way out a viewer can reach, and it costs the screen nothing.
   useDialogFocus(open, finish);
 
   if (!open) return null;
@@ -129,30 +166,16 @@ export function AppIntro() {
         poster="/media/curioquest-intro.jpg"
         playsInline
         preload="auto"
+        onPlaying={() => {
+          // It started, so the start watchdog is replaced by one sized to the film.
+          if (watchdog.current) clearTimeout(watchdog.current);
+          const element = video.current;
+          const left = element ? (element.duration - element.currentTime) * 1000 : 0;
+          watchdog.current = setTimeout(finish, Math.max(0, left) + OVERRUN_MS);
+        }}
         onEnded={finish}
         onError={finish}
       />
-
-      <div className="app-intro-controls">
-        {muted && (
-          <button
-            type="button"
-            className="app-intro-sound"
-            onClick={() => {
-              const element = video.current;
-              if (!element) return;
-              element.muted = false;
-              setMuted(false);
-              void element.play().catch(() => {});
-            }}
-          >
-            Turn on sound
-          </button>
-        )}
-        <button type="button" className="app-intro-skip" onClick={finish}>
-          Skip
-        </button>
-      </div>
     </div>
   );
 }

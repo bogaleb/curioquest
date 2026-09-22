@@ -595,16 +595,25 @@ two disagree.
   Launching at `/` redirects to `/auth/sign-in`, so the film is genuinely the first thing
   on screen rather than something bolted onto a later page.
 
+  **Nothing is drawn over it.** No skip, no sound button, no progress bar — a title card
+  with a Skip in the corner is an advertisement, and one with a Turn on sound is an
+  apology. It opens itself, plays, and hands over.
+
   **Sound is the part browsers make hard.** A page cannot start audio on its own — Chrome,
   Safari and Firefox all block it until the viewer has interacted with the site, which is a
-  rule native apps do not have. So it asks and then degrades: play unmuted, and if the
-  browser refuses, start muted and offer one obvious control to turn the sound on. Either
-  way the film plays; nobody sees a dead frame waiting for permission. Both paths are
-  verified by driving a real browser with the autoplay policy on and off.
+  rule native apps do not have, so some first visits are silent however this is written.
+  Rather than put a button on screen about it: play unmuted, fall back to muted if refused,
+  and then unmute on the first touch or key press anywhere. That is invisible, costs the
+  viewer nothing, and means the sound arrives the moment the browser will allow it — an
+  installed app, or any later visit, plays with sound from the first frame. The tap
+  deliberately does *not* dismiss: nobody asked to leave, and a title card that vanishes on
+  a stray tap is worse than one that plays for ten seconds.
 
-  **Three ways out**, because this sits between a parent and their password: the film
-  ending, a full-size Skip button focused the moment it appears, and Escape. A file that
-  fails to load removes the overlay rather than leaving a black rectangle over the form.
+  **It leaves on its own**, which is what makes having no visible control acceptable.
+  Escape also works — invisible, no chrome, the keyboard route out of anything modal — and
+  a watchdog covers the rest: if the film has not started within six seconds, or not
+  finished within its own length plus a margin, it gives up and shows the sign-in screen.
+  A broken file removes the overlay rather than leaving a black rectangle over the form.
   It plays once per browser session, never for anyone who has asked for less movement, and
   never inside the app — a signed-in family goes straight to the map, because a ten-second
   film in front of a child who came to learn is the regression §0 of the blueprint is
@@ -623,12 +632,14 @@ two disagree.
   product. The swap is already cut and on the same page: `welcome-nova.mp4` contains no
   character but Nova.
 
-  Five new tests pin the rules that a screenshot cannot: skippable, escapable, survives a
-  broken file, asks for sound and survives refusal, gated on the preference and the
-  session, mounted only on sign-in and never in `KidShell` — plus a 2.5 MB ceiling on
-  anything in `public/media/`, since both source clips arrived at 5 MB and 13 MB.
+  Six tests pin the rules a screenshot cannot: that it renders no button and that
+  `app/kid.css` styles none, that it ends itself and Escape leaves it, that it survives a
+  broken file and a slow one, that it takes sound without asking for it, that it is gated
+  on both the preference and the session, and that it is mounted only on sign-in and never
+  in `KidShell` — plus a 2.5 MB ceiling on anything in `public/media/`, since both source
+  clips arrived at 5 MB and 13 MB.
 
-  288 tests pass, build clean. `outputs/wp11-intro.png`,
+  289 tests pass, build clean. `outputs/wp11-intro.png`,
   `outputs/wp11-intro-transition.png`.
 
 ## Implemented in this expansion

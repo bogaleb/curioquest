@@ -182,25 +182,46 @@ test("reduced motion stops loops rather than speeding them up", () => {
 // The title sequence (WP-11)
 // ---------------------------------------------------------------------------
 
-test("the opening film is skippable, and never traps anyone on the way to signing in", () => {
+test("the opening film draws no controls over itself", () => {
   const intro = readFileSync(join(root, "components/auth/app-intro.tsx"), "utf8");
-  // Three ways out. This sits between a parent and their password, so every one of
-  // them matters: the film ending, the button, and the key people reach for.
-  assert.match(intro, /onEnded=\{finish\}/, "the film does not end itself");
-  assert.match(intro, /app-intro-skip/, "there is no skip control");
-  assert.match(intro, /useDialogFocus\(open, finish\)/, "Escape does not leave the film");
-  // A file that fails to load must not leave a dead rectangle over the form.
-  assert.match(intro, /onError=\{finish\}/, "a broken video would block the sign-in screen");
+  const css = readFileSync(join(root, "app/kid.css"), "utf8");
+  // A title card with a Skip in the corner is an advertisement, and one with a Turn on
+  // sound is an apology. It opens itself, plays, and hands over.
+  for (const gone of ["app-intro-skip", "app-intro-sound", "app-intro-controls"]) {
+    assert.ok(!intro.includes(gone), `the intro still renders ${gone}`);
+    assert.ok(!css.includes(gone), `app/kid.css still styles ${gone}`);
+  }
+  assert.ok(!/<button/.test(intro), "the intro renders a button");
 });
 
-test("the opening film asks for sound and survives being refused", () => {
+test("the opening film leaves on its own, and cannot strand anyone", () => {
   const intro = readFileSync(join(root, "components/auth/app-intro.tsx"), "utf8");
-  // Browsers block audio until the viewer has interacted with the site. An intro that
-  // assumes sound is silent for most people; one that gives up is dead air.
-  assert.match(intro, /element\.muted = false;\s*\n\s*element\.play\(\)\.catch/,
-    "it does not try for sound first");
+  // It ends by itself, which is what makes having no visible control acceptable.
+  assert.match(intro, /onEnded=\{finish\}/, "the film does not end itself");
+  // Escape stays, because it is the keyboard route out of anything modal and it costs
+  // the screen nothing to keep.
+  assert.match(intro, /useDialogFocus\(open, finish\)/, "Escape does not leave the film");
+  // A broken file must not leave a black rectangle over the form, and a slow network
+  // must not hold a parent on a poster frame.
+  assert.match(intro, /onError=\{finish\}/, "a broken video would block the sign-in screen");
+  assert.match(intro, /setTimeout\(finish, START_MS\)/, "there is no start watchdog");
+  assert.match(intro, /onPlaying=/, "the watchdog is never resized to the film");
+});
+
+test("the opening film takes sound without asking for it", () => {
+  const intro = readFileSync(join(root, "components/auth/app-intro.tsx"), "utf8");
+  // Browsers block audio until the viewer has interacted with the site, so some first
+  // visits are silent however this is written. What it must not do is put a button on
+  // screen about it: it tries unmuted, falls back to muted, and takes the first touch
+  // or key press anywhere as permission.
+  assert.match(
+    intro,
+    /element\.muted = false;\s*\n\s*element\.play\(\)\.catch/,
+    "it does not try for sound first",
+  );
   assert.match(intro, /element\.muted = true;/, "it has no muted fallback");
-  assert.match(intro, /app-intro-sound/, "there is no way to turn sound back on");
+  assert.match(intro, /const unmute = \(\) => \{/, "a refused unmute is never retried");
+  assert.match(intro, /addEventListener\("pointerdown", unmute, \{ once: true \}\)/);
 });
 
 test("the opening film is skipped entirely for reduced motion, and shown once a session", () => {
