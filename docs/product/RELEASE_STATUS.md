@@ -547,6 +547,46 @@ two disagree.
 
   283 tests pass, build clean. `outputs/wp11-auth.png`, `outputs/wp11-today.png`.
 
+- **WP-11 — The welcome film. Shipped.** The sign-in page's hero is now nine seconds of
+  animation: an empty stone path under floating books, planets and numbers, then Nova walks
+  in, waves, and stands looking at you.
+
+  It is cut from a thirty-second clip the product owner generated and added to the
+  repository, trimmed to 21.0s–30.0s and re-encoded from 13 MB to **1.7 MB**. There is no
+  `ffmpeg` on the build machine, so the trim was done by playing the source in a real
+  browser, drawing each frame to a canvas and recording the canvas stream — Chrome can
+  record H.264 in MP4, so the result plays anywhere the original did, which matters because
+  iPadOS is a primary target.
+
+  **It is the only moving image in the product and it is parent-facing only.** The clip is
+  3D and everything else here is flat vector; those can share a marketing surface but not a
+  child's screen. And the source clip's first twenty seconds feature a yellow robot and a
+  purple monster who are not Pip and not Bramble — putting them in front of a four-year-old
+  would teach a second cast alongside the authored four. The cut contains neither: only
+  Nova, in her own green vest.
+
+  The drawn scene added in the previous commit is not replaced, it is the fallback — and a
+  real one. It is what renders on the server's first paint, when the viewer has asked for
+  less movement, and if the file fails to load. Both share one `16 / 9` box so the column
+  does not shift when one becomes the other.
+
+  The second clip supplied (`gemini_generated_video_89DDDAB4.mp4`) is **not used**: apart
+  from about a second and a half of character-free rainbow arches it is the robot and the
+  monster throughout.
+
+  Provenance, recorded rather than hidden: the asset is generative-model output and carries
+  the generator's visible watermark in the lower-right corner, left in place deliberately.
+  Blueprint §A bans *live* generative output shown to a child; this is neither live nor
+  shown to a child, but it is near enough the line to be a decision on the record.
+
+  A small tidy went with it: the reduced-motion hook that `Celebration` kept privately is
+  now `hooks/use-reduced-motion.ts`, shared by both. It exists for the cases where the
+  *behaviour* changes rather than the animation — a schedule that should not run, a video
+  that should not start — because a stylesheet can stop a loop but cannot cancel either.
+
+  283 tests pass, build clean. `outputs/wp11-auth-film.png`,
+  `outputs/wp11-auth-film-reduced.png`.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

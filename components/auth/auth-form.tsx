@@ -5,6 +5,7 @@ import { ArrowRight, Check, Compass, Eye, EyeOff, LoaderCircle, Mail, ShieldChec
 import { Scene, ScenePlane } from '@/components/kid/art/Scene';
 import { Bush, FarHills, GroundBand, SkyWash, Tree } from '@/components/kid/art/backdrops';
 import { CastFigure } from '@/components/kid/art/cast';
+import { WelcomeFilm } from './welcome-film';
 import {
   expiredLinkState,
   idleState,
@@ -233,28 +234,35 @@ export function AuthForm({ mode, initialError = '' }: { mode: Mode; initialError
 
             This is the only surface a parent judges before they have an account, and it
             was three text blocks under a tagline explaining that CurioQuest is a learning
-            world. One scene — the same valley, the same cast, the same drawing rules as
-            everything behind the sign-in — makes that claim in the way the product will
-            have to keep making it. The tagline goes: the picture is saying it.
+            world. The tagline is gone; the picture makes the claim.
+
+            The film is the first choice and the drawn scene is the fallback, and both are
+            real: the scene is what a viewer sees when they have asked for less movement,
+            when the file will not load, and on the server's first paint. Neither is a
+            placeholder for the other.
           */}
-          <div className="auth-scene" aria-hidden="true">
-            <Scene world="grove" label="">
-              <ScenePlane plane="sky"><SkyWash /></ScenePlane>
-              <ScenePlane plane="far"><FarHills /></ScenePlane>
-              <ScenePlane plane="mid">
-                <GroundBand />
-                <span className="auth-scene-tree" data-at="1"><Tree tone="mid" /></span>
-                <span className="auth-scene-tree" data-at="2"><Tree /></span>
-              </ScenePlane>
-              <ScenePlane plane="near">
-                <span className="auth-scene-bush"><Bush /></span>
-              </ScenePlane>
-              <ScenePlane plane="actors">
-                <span className="auth-scene-cast" data-who="nova"><CastFigure who="nova" state="wave" /></span>
-                <span className="auth-scene-cast" data-who="pip"><CastFigure who="pip" facing="left" /></span>
-              </ScenePlane>
-            </Scene>
-          </div>
+          <WelcomeFilm
+            fallback={
+              <div className="auth-scene" aria-hidden="true">
+                <Scene world="grove" label="">
+                  <ScenePlane plane="sky"><SkyWash /></ScenePlane>
+                  <ScenePlane plane="far"><FarHills /></ScenePlane>
+                  <ScenePlane plane="mid">
+                    <GroundBand />
+                    <span className="auth-scene-tree" data-at="1"><Tree tone="mid" /></span>
+                    <span className="auth-scene-tree" data-at="2"><Tree /></span>
+                  </ScenePlane>
+                  <ScenePlane plane="near">
+                    <span className="auth-scene-bush"><Bush /></span>
+                  </ScenePlane>
+                  <ScenePlane plane="actors">
+                    <span className="auth-scene-cast" data-who="nova"><CastFigure who="nova" state="wave" /></span>
+                    <span className="auth-scene-cast" data-who="pip"><CastFigure who="pip" facing="left" /></span>
+                  </ScenePlane>
+                </Scene>
+              </div>
+            }
+          />
           <h2>A learning world built for children, run by you.</h2>
           <ul>
             <li>

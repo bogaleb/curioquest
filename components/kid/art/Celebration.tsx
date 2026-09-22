@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-reduced-motion";
 import { CastFigure, type CastName } from "./cast";
 
 /**
@@ -130,31 +131,3 @@ export function Celebration({
   );
 }
 
-/**
- * The preference, subscribed to rather than sampled.
- *
- * Read in JavaScript as well as in CSS because this component's *schedule* changes, not
- * only its animations — under the preference there is no sequence to run at all, and a
- * stylesheet cannot cancel a `setTimeout`.
- *
- * `useSyncExternalStore` rather than an effect that sets state: `matchMedia` is exactly
- * the external store this hook is for, and it gives the value on the first render instead
- * of one render late. The server snapshot is `false`, so the markup React sends matches
- * the markup it would produce for a browser that has not expressed a preference, and a
- * child who has expressed one gets the rest state immediately on hydration.
- */
-const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
-
-function subscribeToMotionPreference(onChange: () => void) {
-  const query = window.matchMedia(REDUCED_QUERY);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-}
-
-function usePrefersReducedMotion() {
-  return useSyncExternalStore(
-    subscribeToMotionPreference,
-    () => window.matchMedia(REDUCED_QUERY).matches,
-    () => false,
-  );
-}

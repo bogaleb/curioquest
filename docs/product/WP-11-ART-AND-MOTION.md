@@ -99,6 +99,35 @@ Decided in session over painted rasters, because vector:
 
 `game-zone.png` stays as the one painted establishing image it already is. No new rasters.
 
+### The one film, and why it is the only one
+
+`public/media/welcome-nova.mp4` is nine seconds of 3D animation on the sign-in page: an
+empty stone path under floating books, planets and numbers, then Nova walks in, waves, and
+stands. It is cut from a thirty-second clip the product owner generated with Gemini and
+added to the repository, trimmed to 21.0s–30.0s and re-encoded from 13 MB to 1.7 MB.
+
+**It is the only moving image in the product, and it is on a parent-facing surface only.**
+Two reasons, and both are rules this package has been applying everywhere else:
+
+- **Register.** The clip is rendered in 3D; everything else here is flat vector. Those can
+  share a *marketing* surface — a poster has never had to look like the thing it
+  advertises — but not a child's screen.
+- **Cast.** The source clip's first twenty seconds feature a yellow robot and a purple
+  monster who are not Pip and not Bramble. Putting them in front of a four-year-old would
+  teach a second cast alongside the authored four (§2.3), which is the confusion the
+  one-cast rule exists to prevent. The cut contains neither of them — only Nova.
+
+The second clip the owner supplied (`gemini_generated_video_89DDDAB4.mp4`, ten seconds) is
+**not used**: apart from about a second and a half of character-free rainbow arches, it is
+the robot and the monster throughout, and rainbow arches are not in this product's visual
+world either. Using it as decoration would break §4's first rule.
+
+Provenance is worth recording rather than hiding: the asset is generative-model output,
+it carries the generator's visible watermark in the lower-right corner, and the watermark
+is deliberately left in place. Note that blueprint §A bans **live** generative output shown
+to a child — this is neither live nor shown to a child, but it is close enough to the line
+that it should be a decision someone made on purpose rather than one that drifted in.
+
 ---
 
 ## §2 Foundation
