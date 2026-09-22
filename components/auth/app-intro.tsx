@@ -118,23 +118,36 @@ export function AppIntro() {
     });
   }, [open, finish]);
 
-  // The first touch or key press anywhere turns the sound on, if it was refused. It does
-  // not dismiss: the viewer did not ask to leave, and a title card that vanishes on a
-  // stray tap is worse than one that plays for ten seconds.
+  // Any touch or key press anywhere turns the sound on, if the browser refused it. It
+  // does not dismiss: the viewer did not ask to leave, and a title card that vanishes on
+  // a stray tap is worse than one that plays for ten seconds.
+  //
+  // Not `once`. Unmuting only works from inside a real user gesture — a browser that is
+  // still withholding permission pauses the element instead — so a failed attempt has to
+  // be allowed to happen again on the next tap rather than spending the one listener.
   useEffect(() => {
     if (!open) return;
-    const unmute = () => {
+    const events = ["pointerdown", "touchstart", "keydown"] as const;
+    const detach = () => {
+      for (const name of events) window.removeEventListener(name, unmute);
+    };
+    function unmute() {
       const element = video.current;
-      if (!element?.muted) return;
+      if (!element) return;
+      if (!element.muted) {
+        detach();
+        return;
+      }
       element.muted = false;
-      void element.play().catch(() => {});
-    };
-    window.addEventListener("pointerdown", unmute, { once: true });
-    window.addEventListener("keydown", unmute, { once: true });
-    return () => {
-      window.removeEventListener("pointerdown", unmute);
-      window.removeEventListener("keydown", unmute);
-    };
+      element.volume = 1;
+      void element.play().then(detach).catch(() => {
+        // Permission still withheld: put it back and wait for a gesture that counts.
+        element.muted = true;
+        void element.play().catch(() => {});
+      });
+    }
+    for (const name of events) window.addEventListener(name, unmute);
+    return detach;
   }, [open]);
 
   // Nothing here is worth waiting on a slow network for.
@@ -166,6 +179,13 @@ export function AppIntro() {
         poster="/media/curioquest-intro.jpg"
         playsInline
         preload="auto"
+        // Chrome floats a picture-in-picture button over any large playing video, and
+        // Safari and Chromecast add their own. None of them belong on a title card: they
+        // are the browser advertising that this is a video player, which is exactly the
+        // impression the sequence is trying not to give.
+        disablePictureInPicture
+        disableRemotePlayback
+        controlsList="nodownload noplaybackrate noremoteplayback nofullscreen"
         onPlaying={() => {
           // It started, so the start watchdog is replaced by one sized to the film.
           if (watchdog.current) clearTimeout(watchdog.current);

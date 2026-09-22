@@ -192,6 +192,23 @@ test("the opening film draws no controls over itself", () => {
     assert.ok(!css.includes(gone), `app/kid.css still styles ${gone}`);
   }
   assert.ok(!/<button/.test(intro), "the intro renders a button");
+
+  // The browser will put its own controls there if it is not told not to. Chrome floats
+  // a picture-in-picture button over any large playing video; Safari and Chromecast add
+  // their own. All of them announce "this is a video player", which is the one thing a
+  // title card must not look like. This was a real defect, seen on screen, not a
+  // hypothetical.
+  assert.match(intro, /disablePictureInPicture/, "Chrome will float a PiP button over it");
+  assert.match(intro, /disableRemotePlayback/, "a cast button will appear over it");
+  assert.match(intro, /controlsList="[^"]*noremoteplayback[^"]*"/);
+});
+
+test("the opening film fills the screen", () => {
+  const css = readFileSync(join(root, "app/kid.css"), "utf8");
+  const rule = /\.app-intro-film\s*\{([^}]*)\}/.exec(css);
+  assert.ok(rule, "the film has no rule");
+  // Letterbox bars read as a video embedded in a page. A landing page fills the screen.
+  assert.match(rule[1], /object-fit:\s*cover/, "the film is letterboxed");
 });
 
 test("the opening film leaves on its own, and cannot strand anyone", () => {
@@ -220,8 +237,17 @@ test("the opening film takes sound without asking for it", () => {
     "it does not try for sound first",
   );
   assert.match(intro, /element\.muted = true;/, "it has no muted fallback");
-  assert.match(intro, /const unmute = \(\) => \{/, "a refused unmute is never retried");
-  assert.match(intro, /addEventListener\("pointerdown", unmute, \{ once: true \}\)/);
+
+  // Touch, pen, mouse and keyboard all count as the gesture that grants permission.
+  assert.match(intro, /\["pointerdown", "touchstart", "keydown"\]/, "not every gesture is heard");
+  assert.match(intro, /window\.addEventListener\(name, unmute\)/);
+
+  // Emphatically *not* `once`. Unmuting only works from inside a real user gesture — a
+  // browser still withholding permission pauses the element instead — so a failed
+  // attempt has to be allowed to happen again rather than spending the one listener.
+  assert.ok(!/unmute, \{ once: true \}/.test(intro), "one refused tap would end the attempt");
+  assert.match(intro, /element\.muted = true;\s*\n\s*void element\.play\(\)/,
+    "a refused unmute leaves the film paused");
 });
 
 test("the opening film is skipped entirely for reduced motion, and shown once a session", () => {

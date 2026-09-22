@@ -595,19 +595,37 @@ two disagree.
   Launching at `/` redirects to `/auth/sign-in`, so the film is genuinely the first thing
   on screen rather than something bolted onto a later page.
 
-  **Nothing is drawn over it.** No skip, no sound button, no progress bar — a title card
-  with a Skip in the corner is an advertisement, and one with a Turn on sound is an
-  apology. It opens itself, plays, and hands over.
+  **Nothing is drawn over it** — including by the browser. No skip, no sound button, no
+  progress bar, and `disablePictureInPicture` / `disableRemotePlayback` / `controlsList`
+  switch off Chrome's floating picture-in-picture button and Safari's cast button, which
+  otherwise appear over any large playing video and announce "video player" rather than
+  "title card". It fills the screen rather than letterboxing: bars read as a video
+  embedded in a page, and this is meant to be the page.
 
-  **Sound is the part browsers make hard.** A page cannot start audio on its own — Chrome,
-  Safari and Firefox all block it until the viewer has interacted with the site, which is a
-  rule native apps do not have, so some first visits are silent however this is written.
-  Rather than put a button on screen about it: play unmuted, fall back to muted if refused,
-  and then unmute on the first touch or key press anywhere. That is invisible, costs the
-  viewer nothing, and means the sound arrives the moment the browser will allow it — an
-  installed app, or any later visit, plays with sound from the first frame. The tap
-  deliberately does *not* dismiss: nobody asked to leave, and a title card that vanishes on
-  a stray tap is worse than one that plays for ten seconds.
+  Both of those were defects seen on a real screen after the first version shipped, not
+  hypotheticals — which is the argument for looking at the thing rather than reasoning
+  about it.
+
+  **Sound is the part browsers make hard, and it is not fully solvable.** A page cannot
+  start audio on its own: Chrome, Safari and Firefox all refuse until the viewer has
+  interacted with the site. That is a rule native apps do not have, so **a first visit in
+  a browser tab is silent until the viewer touches the screen**, and no encoding change
+  alters that — the audio track is present and verified second by second in the shipped
+  file.
+
+  Rather than put a button on screen about it: play unmuted, fall back to muted if
+  refused, and unmute on the first touch, pen, mouse or key event anywhere. Deliberately
+  not a `once` listener — unmuting only works from inside a real user gesture, and a
+  browser still withholding permission pauses the element instead, so a refused attempt
+  has to be allowed to happen again rather than spending the one listener. The gesture
+  does *not* dismiss: nobody asked to leave, and a title card that vanishes on a stray tap
+  is worse than one that plays for ten seconds.
+
+  Sound does play from the first frame in the two cases that matter most: the **installed
+  app**, where `display: standalone` in the manifest already grants autoplay, and any
+  later visit once the browser's media-engagement signal is established. Guaranteeing it
+  on a cold first visit needs a tap-to-begin gate, which is a control on screen — a
+  product decision rather than a technical one, and not taken here.
 
   **It leaves on its own**, which is what makes having no visible control acceptable.
   Escape also works — invisible, no chrome, the keyboard route out of anything modal — and
@@ -639,7 +657,7 @@ two disagree.
   in `KidShell` — plus a 2.5 MB ceiling on anything in `public/media/`, since both source
   clips arrived at 5 MB and 13 MB.
 
-  289 tests pass, build clean. `outputs/wp11-intro.png`,
+  290 tests pass, build clean. `outputs/wp11-intro.png`,
   `outputs/wp11-intro-transition.png`.
 
 ## Implemented in this expansion

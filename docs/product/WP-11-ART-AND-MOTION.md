@@ -113,11 +113,26 @@ this package's.
 **The line that still holds: no film is ever shown inside the app.** Both are 3D and the
 product is flat vector; both live on the signed-out entrance; a signed-in family goes
 straight to the map and never sees either. The title sequence carries **no controls at
-all** — no skip, no sound button, no progress bar. It opens itself, plays, and hands over,
-because a title card with a Skip in the corner is an advertisement and one with a Turn on
-sound is an apology. It does not appear for anyone who has asked for less movement, plays
-once per session rather than on every navigation, and is on a watchdog so a slow network
-can never hold a parent on a poster frame.
+all** — no skip, no sound button, no progress bar, and the browser's own are switched off
+too (`disablePictureInPicture`, `disableRemotePlayback`, `controlsList`), because Chrome
+floats a picture-in-picture button over any large playing video and that announces "video
+player" rather than "title card". It fills the screen rather than letterboxing, does not
+appear for anyone who has asked for less movement, plays once per session rather than on
+every navigation, and is on a watchdog so a slow network can never hold a parent on a
+poster frame.
+
+**What cannot be fixed in code: sound on a first visit.** Chrome, Safari and Firefox all
+refuse to start audio until the viewer has interacted with the site. The film therefore
+tries unmuted, falls back to muted, and unmutes on the first touch or key press anywhere —
+invisible, and instant when it happens. Sound plays from the first frame in the two cases
+that matter: the **installed app** (`display: standalone` in the manifest already grants
+it) and any later visit once the browser's media-engagement signal is established. A first
+visit in a browser tab is silent until the viewer touches the screen, and no amount of
+re-encoding changes that — the audio track is present and verified.
+
+The only way to guarantee sound on a cold first visit is a tap-to-begin gate, which is a
+control on screen and is the thing this section exists to keep out. That trade is a
+product decision, not a technical one.
 
 **One thing to keep an eye on.** The title sequence features a yellow robot and a purple
 monster who are not Pip and not Bramble, and the authored cast is four (§2.3). On the

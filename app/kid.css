@@ -3011,9 +3011,10 @@
   display: block;
   width: 100%;
   height: 100%;
-  /* `contain` rather than `cover`: this is a composed shot, and cropping a title
-     sequence to fill a phone cuts the thing it was composed around. */
-  object-fit: contain;
+  /* Full bleed. Letterbox bars read as a video player embedded in a page; a
+     landing page fills the screen. The shot is centred on the arches and the
+     path, so the crop takes sky and grass from the edges and nothing else. */
+  object-fit: cover;
 }
 
 /*
