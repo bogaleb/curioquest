@@ -524,6 +524,29 @@ two disagree.
   §A's ban on emoji as artwork is therefore **not yet met**, and saying otherwise because
   the obvious ones are gone would be the kind of claim §G exists to prevent.
 
+- **WP-11 §3.7–§3.9 — Today's trail and the adult surfaces. Shipped; the package is
+  complete.** `/today` keeps its start button and gets the visual floor: the drawn
+  door in place of a text back-link, the world behind it, sentence case where three
+  ALL-CAPS strings were hard-coded in the markup, and the step trail's labels lifted from
+  11px to the band's size — they are the text that says where a child is.
+
+  **One scope correction, recorded in the plan.** §3.7 originally said this screen should
+  *become nothing*: that arrival should resume into the first item, because a decision
+  placed in front of a five-year-old before learning starts is a regression (§0). That is
+  still right, and it is still not this package's to do — it changes *when a session
+  begins*, not how it looks, and it is WP-08's first acceptance criterion. Doing it here
+  would have been a flow decision smuggled in under a paint job.
+
+  The sign-in screen is the only surface a parent judges before they have an account, and
+  the one place in the product where a tagline would be correct. It had one anyway, in
+  capitals, above three text blocks explaining that CurioQuest is a learning world. The
+  tagline is replaced by the world: one scene with Nova and Pip in it, the same valley and
+  the same drawing rules as everything behind the sign-in. Parent Corner, the account
+  screens and the studio are untouched — they are meant to read as a calm, familiar
+  application (§D7), and this package has no business repainting them.
+
+  283 tests pass, build clean. `outputs/wp11-auth.png`, `outputs/wp11-today.png`.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

@@ -1,8 +1,10 @@
 'use client';
-
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, Check, Compass, Eye, EyeOff, LoaderCircle, Mail, ShieldCheck, Sparkles } from 'lucide-react';
+import { Scene, ScenePlane } from '@/components/kid/art/Scene';
+import { Bush, FarHills, GroundBand, SkyWash, Tree } from '@/components/kid/art/backdrops';
+import { CastFigure } from '@/components/kid/art/cast';
 import {
   expiredLinkState,
   idleState,
@@ -226,7 +228,33 @@ export function AuthForm({ mode, initialError = '' }: { mode: Mode; initialError
           that moves below the fold on a phone.
         */}
         <aside className="auth-aside">
-          <span className="eyebrow">SMALL STEPS. BIG DISCOVERIES.</span>
+          {/*
+            The world, shown rather than described.
+
+            This is the only surface a parent judges before they have an account, and it
+            was three text blocks under a tagline explaining that CurioQuest is a learning
+            world. One scene — the same valley, the same cast, the same drawing rules as
+            everything behind the sign-in — makes that claim in the way the product will
+            have to keep making it. The tagline goes: the picture is saying it.
+          */}
+          <div className="auth-scene" aria-hidden="true">
+            <Scene world="grove" label="">
+              <ScenePlane plane="sky"><SkyWash /></ScenePlane>
+              <ScenePlane plane="far"><FarHills /></ScenePlane>
+              <ScenePlane plane="mid">
+                <GroundBand />
+                <span className="auth-scene-tree" data-at="1"><Tree tone="mid" /></span>
+                <span className="auth-scene-tree" data-at="2"><Tree /></span>
+              </ScenePlane>
+              <ScenePlane plane="near">
+                <span className="auth-scene-bush"><Bush /></span>
+              </ScenePlane>
+              <ScenePlane plane="actors">
+                <span className="auth-scene-cast" data-who="nova"><CastFigure who="nova" state="wave" /></span>
+                <span className="auth-scene-cast" data-who="pip"><CastFigure who="pip" facing="left" /></span>
+              </ScenePlane>
+            </Scene>
+          </div>
           <h2>A learning world built for children, run by you.</h2>
           <ul>
             <li>

@@ -2883,3 +2883,73 @@
 
 /* Nova on the discovery invitation, where a 🦊 glyph used to stand. */
 .kid-shell .discovery-buddy { display: block; width: clamp(72px, 10vw, 120px); --cast-size: 100%; }
+
+/* --------------------------------------------------------------------------
+   Today's trail
+   --------------------------------------------------------------------------
+
+   The step list along the top is a progress display, not a menu — a child does
+   not choose between "Sound Bridge" and "Tiny story", they walk them in order.
+   It was set at 11px, which is below the floor for every band, on the labels
+   that say where a child is. It is quietened and enlarged rather than replaced:
+   whether arrival should skip this screen entirely and resume mid-episode is a
+   flow decision, and it belongs to WP-08 rather than to a package that moves
+   pixels.
+   -------------------------------------------------------------------------- */
+
+.kid-shell .adventure-toolbar {
+  gap: var(--space-4);
+  border-block-end: 0;
+}
+.kid-shell .adventure-toolbar > span {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  letter-spacing: normal;
+  color: var(--kid-world-ink);
+}
+.kid-shell .adventure-trail small {
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--kid-ink-soft);
+}
+.kid-shell .adventure-trail li > span {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+}
+
+/* --------------------------------------------------------------------------
+   The sign-in scene                                                  (WP-11)
+   --------------------------------------------------------------------------
+
+   The only surface a parent judges before they have an account, and the one
+   place in the product where a product tagline would be correct. It had one
+   anyway — an ALL-CAPS `SMALL STEPS. BIG DISCOVERIES.` above three text blocks
+   explaining that CurioQuest is a learning world.
+
+   The scene replaces the tagline rather than joining it. A picture of the world
+   makes that claim in the way the product then has to keep making it, and on a
+   phone, where the explanation moves below the form, it is the one piece that
+   still does its job at a glance.
+   -------------------------------------------------------------------------- */
+
+.auth-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 5 / 2;
+  margin-block-end: var(--space-5);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+.auth-scene > .kid-scene-world { position: absolute; inset: 0; }
+
+.auth-scene-tree { position: absolute; display: block; }
+.auth-scene-tree[data-at="1"] { left: 4%; bottom: 14%; width: 13%; }
+.auth-scene-tree[data-at="2"] { right: 6%; bottom: 4%; width: 17%; }
+
+.auth-scene-bush { position: absolute; display: block; left: 26%; bottom: 3%; width: 12%; }
+
+.auth-scene-cast { position: absolute; display: block; --cast-size: 100%; }
+.auth-scene-cast[data-who="nova"] { left: 44%; bottom: 4%; width: 16%; }
+.auth-scene-cast[data-who="pip"] { left: 62%; bottom: 4%; width: 13%; }

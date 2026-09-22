@@ -298,10 +298,18 @@ No new mechanics, no new game types, no new content. Bug fixes and the visual fl
 **Now:** a start screen — Nova on a beige card, an ALL-CAPS kicker, a 25-word parent-facing
 paragraph, and a "Start my trail" button.
 
-**Becomes** nothing, for the common case. §0 of the blueprint: *the app already knows where
-the child is, takes them there, and something happens.* A decision placed in front of a
-five-year-old before learning starts is a regression. Arrival resumes into the first item.
-The intro beat survives only as Nova's spoken line over the scene, ≤12 words, skippable.
+**Becomes** the child-layer frame: the drawn door, the world behind it, the step trail at
+the band's type size, and no shouting. The kicker and the parent-facing paragraph go.
+
+**Scope corrected during implementation.** This section originally said the screen should
+*become nothing* — that arrival should resume into the first item, because §0 of the
+blueprint says the app already knows where the child is and a decision placed in front of a
+five-year-old before learning starts is a regression. That is still true, and it is still
+the right end state. But it is a change to **when a session begins**, not to how it looks,
+and §7 of this file says this package does not change flow. Resume-on-arrival is WP-08's
+first acceptance criterion (*"Arrival resumes the current episode automatically — no menu,
+no 'start my daily quest' button as the primary path"*), and doing it here would be a flow
+decision smuggled in under a paint job. `/today` gets the visual floor and keeps its button.
 
 ### 3.8 Grown-up surfaces — `/parent`, `/account/*`, `/studio`
 
