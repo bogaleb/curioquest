@@ -26,17 +26,21 @@ const root = resolve(import.meta.dirname, "..");
  * grow while the other sixteen shrink, and mixing them into one number would hide both
  * movements behind each other. It was 227,589B when WP-02 started, and 220,457B when
  * WP-03 started; the child map retired app/wonder.css entirely.
+ *
+ * WP-11 took it to 206,664B: the Reading Grove replaced the reading hero and its five
+ * emoji stage cards, so `.reading-hero*` and `.reading-map*` left `app/reading.css`
+ * — 2,418 bytes, 16 raw colours and 11 px font sizes with them.
  */
 export const BUDGETS = {
-  legacyCssBytes: 209_082,
+  legacyCssBytes: 206_664,
   important: 25,
   /**
    * Raw colours and px font sizes still sitting in the sixteen legacy sheets. The blueprint
    * bans both in new CSS; in old CSS they are a debt with a number on it. A screen that moves
    * to the child layer takes its share of them with it.
    */
-  legacyRawHex: 948,
-  legacyFontPx: 520,
+  legacyRawHex: 932,
+  legacyFontPx: 509,
 };
 
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;

@@ -2218,3 +2218,252 @@
   line-height: var(--kid-leading-body);
   color: var(--kid-ink-soft);
 }
+
+/* ==========================================================================
+   THE READING GROVE                                                 (WP-11)
+   ==========================================================================
+
+   Reading is the spine, so this is the screen a child on the reading trail sees
+   every day. It was a landing page — kicker, headline, subhead, call to action,
+   and five stage cards illustrated with emoji. It is now a place with five
+   stations along a path through it.
+   ========================================================================== */
+
+.kid-grove {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.kid-grove-scene {
+  position: relative;
+  width: 100%;
+  /* Taller than wide on a phone. A five-plane composition in a 16/10 strip at
+     phone width is about 220px high: the sky swallows the horizon and the
+     stations fall off the bottom. A scene needs height before it needs width. */
+  aspect-ratio: 4 / 5;
+  border-radius: var(--kid-radius-lg);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .kid-grove-scene { aspect-ratio: 2 / 1; }
+}
+
+
+
+/* --------------------------------------------------------------------------
+   The five stations
+   --------------------------------------------------------------------------
+
+   They sit along a path that climbs from the near left to the far right, so the
+   order a child walks them is the order they read across the picture. Percentages
+   throughout, so the composition survives every viewport.
+
+   They are scenery, not controls. The whole grove is entered with one button, and
+   putting five more choices in front of a four-year-old before anything happens is
+   the regression §0 of the blueprint is named after.
+   -------------------------------------------------------------------------- */
+
+.kid-grove-stations { display: block; }
+
+.kid-grove-stop {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  width: 15%;
+  text-align: center;
+}
+.kid-grove-stop[data-at="1"] { left: 3%; bottom: 6%; width: 18%; }
+.kid-grove-stop[data-at="2"] { left: 23%; bottom: 20%; width: 16%; }
+.kid-grove-stop[data-at="3"] { left: 42%; bottom: 31%; width: 15%; }
+.kid-grove-stop[data-at="4"] { left: 60%; bottom: 41%; width: 13%; }
+.kid-grove-stop[data-at="5"] { left: 77%; bottom: 50%; width: 12%; }
+
+/*
+ * A station the child has not reached yet.
+ *
+ * Deliberately *not* hidden, greyed out or locked. A grove where two of the five
+ * places are missing is a shorter grove, and a padlock on a picture is a promise
+ * that something is being withheld. These are simply further away: paler, as
+ * anything at distance is, which is the same language the `far` plane already
+ * speaks. Everything is still drawn and still named.
+ */
+.kid-grove-stop:not([data-reached]) { opacity: 0.55; }
+
+.kid-grove-stop > svg { width: 100%; height: auto; }
+
+.kid-grove-name {
+  padding: 0 var(--space-2);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+  color: var(--kid-world-ink);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  font-weight: 700;
+  line-height: var(--kid-leading-tight);
+  white-space: nowrap;
+}
+
+/* Scenery, kept clear of the stations' channels. */
+.kid-grove-tree { position: absolute; display: block; }
+.kid-grove-tree[data-at="1"] { left: 16%; bottom: 44%; width: 9%; }
+.kid-grove-tree[data-at="2"] { left: 88%; bottom: 8%; width: 13%; }
+.kid-grove-tree[data-at="3"] { left: 34%; bottom: 52%; width: 7%; }
+
+.kid-grove-bush { position: absolute; display: block; width: 8%; }
+.kid-grove-bush[data-at="1"] { left: 36%; bottom: 2%; }
+.kid-grove-bush[data-at="2"] { left: 66%; bottom: 8%; }
+
+.kid-grove-grass { position: absolute; display: block; width: 6%; }
+.kid-grove-grass[data-at="1"] { left: 52%; bottom: 1%; }
+.kid-grove-grass[data-at="2"] { left: 24%; bottom: 3%; }
+
+.kid-grove-bloom { position: absolute; display: block; width: 2.2%; }
+.kid-grove-bloom[data-at="1"] { left: 47%; bottom: 4%; }
+.kid-grove-bloom[data-at="2"] { left: 70%; bottom: 2%; }
+
+.kid-grove-nova {
+  position: absolute;
+  display: block;
+  inset-block-end: 2%;
+  inset-inline-end: 6%;
+  width: 12%;
+  --cast-size: 100%;
+}
+
+/*
+ * The path zig-zags on a phone.
+ *
+ * The wide layout walks the five stations along one diagonal, which is the
+ * clearest reading of "these come in this order". At 390px it does not survive:
+ * the stations are about 55px apart vertically and their names — which cannot go
+ * below the band's 20px floor, and should not — are wider than the stations they
+ * label. Five names stacked up a diagonal overlap into an unreadable pile.
+ *
+ * So the path alternates sides instead. It is still one path walked in one order,
+ * it still climbs away from the child, and every name has a side of the picture to
+ * itself. The alternative was shrinking the type, which is the one thing on a
+ * child surface that is not available.
+ */
+@media (max-width: 767px) {
+  .kid-grove-stop[data-at="1"] { left: 3%; bottom: 3%; width: 30%; }
+  .kid-grove-stop[data-at="2"] { left: 47%; bottom: 18%; width: 27%; }
+  .kid-grove-stop[data-at="3"] { left: 6%; bottom: 33%; width: 25%; }
+  .kid-grove-stop[data-at="4"] { left: 50%; bottom: 47%; width: 22%; }
+  .kid-grove-stop[data-at="5"] { left: 12%; bottom: 61%; width: 20%; }
+
+  /* Scenery thins out — at this size it is competing for the same few pixels the
+     stations need, and the stations are the point. */
+  .kid-grove-tree[data-at="1"],
+  .kid-grove-tree[data-at="3"],
+  .kid-grove-bush[data-at="1"],
+  .kid-grove-grass[data-at="2"],
+  .kid-grove-bloom[data-at="1"] { display: none; }
+
+  .kid-grove-tree[data-at="2"] { left: 84%; bottom: 4%; width: 18%; }
+  .kid-grove-nova { inset-inline-end: 4%; inset-block-end: 1%; width: 20%; }
+}
+
+/* --------------------------------------------------------------------------
+   The one thing to do
+   -------------------------------------------------------------------------- */
+
+.kid-grove-reach {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+.kid-grove-reach .kid-bubble-slot { flex: 1 1 18rem; }
+
+.kid-grove-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  flex: none;
+  min-width: var(--kid-touch-primary);
+  min-height: var(--kid-touch-primary);
+  padding: var(--space-4) var(--space-8);
+  border: var(--kid-border) solid var(--kid-leaf-500);
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius);
+  background: var(--kid-leaf-400);
+  color: var(--kid-surface);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  font-weight: 700;
+  box-shadow: var(--kid-shadow);
+  cursor: pointer;
+  transition:
+    translate var(--kid-dur-tap) var(--ease-out),
+    border-block-end-width var(--kid-dur-tap) var(--ease-out);
+}
+.kid-grove-go:active:not(:disabled) {
+  translate: 0 var(--kid-press);
+  border-block-end-width: var(--kid-border);
+}
+.kid-grove-go:focus-visible { outline: none; box-shadow: var(--kid-focus-ring); }
+.kid-grove-go:disabled { opacity: 0.5; cursor: default; }
+
+/* The station rings: sound coming out of the listening hollow. */
+.kid-place-ring {
+  fill: none;
+  stroke: var(--kid-world-400);
+  stroke-width: 4;
+  stroke-linecap: round;
+  opacity: 0.8;
+}
+.kid-place-rope {
+  fill: none;
+  stroke: var(--scene-bark-deep);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+/* Keeps the trail centred in the reading session's header, where there is no
+   full-screen control to balance it. */
+.kid-activity-spacer { flex: none; width: var(--touch-min); }
+
+/* The reading session reuses the activity frame, so its own controls get the
+   same physical weight as the engines'. */
+.kid-activity .letter-fireflies button,
+.kid-activity .reading-word-choices button,
+.kid-activity .phoneme-boxes > button,
+.kid-activity .letter-tiles button,
+.kid-activity .decodable-page button {
+  border-color: var(--kid-world-200);
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-block-end-style: solid;
+  box-shadow: var(--kid-shadow);
+  transition:
+    translate var(--kid-dur-tap) var(--ease-out),
+    border-block-end-width var(--kid-dur-tap) var(--ease-out);
+}
+.kid-activity .letter-fireflies button:active:not(:disabled),
+.kid-activity .reading-word-choices button:active:not(:disabled),
+.kid-activity .phoneme-boxes > button:active:not(:disabled),
+.kid-activity .letter-tiles button:active:not(:disabled),
+.kid-activity .decodable-page button:active:not(:disabled) {
+  translate: 0 var(--kid-press);
+  border-block-end-width: var(--kid-border);
+}
+
+/* `app/reading.css` animates the letter buttons with a 6s nod loop. It is
+   ambient, so it stops under the preference along with everything else. */
+@media (prefers-reduced-motion: reduce) {
+  .kid-activity .letter-fireflies button { animation: none; }
+}
+
+/* The listening cue inside Letter Catch. `app/reading.css` sized it as a 60px
+   font, because it used to be an emoji glyph; it is a drawing now and needs a
+   box rather than a type size. */
+.kid-activity .listening-orb {
+  display: block;
+  width: clamp(88px, 14vw, 140px);
+  margin-inline: auto;
+}

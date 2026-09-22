@@ -391,6 +391,56 @@ two disagree.
   job and not a styling one. The reading slice does not use this player at all and is
   unchanged.
 
+- **WP-11 §3.3 — The Reading Grove. Shipped.** Reading is the spine (§D2), so this is the
+  screen a child on the reading trail sees every day, and it was a marketing landing page:
+  an ALL-CAPS kicker, a three-line headline — "A sound. A word. A whole new world." — a
+  subhead, a call to action, and five stage cards illustrated with 👂 🏡 🚂 🧩 📖. A
+  four-year-old who cannot read arrived at a pitch written for their parent.
+
+  It is now the grove. Five drawn stations stand along a path through the trees in the
+  order a child walks them — a hollow log with sound coming out of it, a village of little
+  houses, a plank bridge, a workbench with letter blocks, an open book on a stump — and the
+  path is lit exactly as far as the child has been. Nova waves and says one short line.
+  There is one thing to touch.
+
+  Stations a child has not reached are not hidden, greyed or padlocked: they are simply
+  further away, which is the same language the `far` plane already speaks. A grove missing
+  two of its five places is a shorter grove, and a padlock is a promise that something is
+  being withheld.
+
+  The session view reuses the activity frame from §3.2 — the drawn door, the progress
+  trail, Nova asking in her bubble, the scene behind a veil — so walking from the grove into
+  a lesson stays in one place. `LetterCatch` lost its `LETTER VILLAGE` kicker, its 👂 (now
+  the drawn listening hollow), and the heading that repeated in different words what Nova
+  had just asked, which put two instructions in front of a child at once and went over the
+  band's on-screen word budget.
+
+  Every line of the data flow is unchanged: `fetchReading`, `act`, revision handling, the
+  four-step help ladder, the skip path, placement. `LetterCatch`, `BlendTrain`, `SoundBoxes`
+  and `DecodableReader` keep their mechanics exactly; their controls gained the same
+  physical press as the other engines.
+
+  The path zig-zags on a phone rather than climbing one diagonal. At 390px the stations are
+  about 55px apart and their names are wider than the stations they label, so five names up
+  one diagonal overlap into a pile. Alternating sides gives every name a half of the picture.
+  The alternative was shrinking the type below the band's floor, which is the one thing on a
+  child surface that is not available.
+
+  **The ratchet moved for the first time since WP-03.** `.reading-hero*` and `.reading-map*`
+  left `app/reading.css` with the screen that used them: legacy stylesheets 209,082B →
+  **206,664B**, raw colours 948 → 932, px font sizes 520 → 509. Budgets lowered in the same
+  commit, as the check requires.
+
+  Verified by playing the grove and a letter-catch session at four viewports.
+  Screenshots in `outputs/wp11-grove-*` and `outputs/wp11-reading-session.png`. 283 tests
+  pass, build clean.
+
+  Still not true: the word shelf still shows the content's own emoji beside each word,
+  because those live in the catalogue rows rather than in a component — replacing them needs
+  a drawn picture per word, which is content work. ALL-CAPS kickers survive on the Creative
+  Studio, the Game Zone's help panels, the story passages and the discovery invitation; they
+  go with the rooms pass.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.
