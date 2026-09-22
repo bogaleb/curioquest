@@ -6,29 +6,58 @@ import { PlaceArt } from "@/components/kid/PlaceArt";
 import { PlaceMarker } from "@/components/kid/PlaceMarker";
 import { SpeechBubble } from "@/components/kid/SpeechBubble";
 import { KidSurfaceProvider } from "@/components/kid/surface";
+import { Scene, ScenePlane } from "@/components/kid/art/Scene";
+import {
+  Bloom,
+  Bush,
+  FarCanopy,
+  FarHills,
+  ForeLeaves,
+  GrassTuft,
+  GroundBand,
+  Rock,
+  SkyWash,
+  Tree,
+} from "@/components/kid/art/backdrops";
+import { CastFigure } from "@/components/kid/art/cast";
 import type { PublicExplorer } from "@/lib/explorer-view";
 import { mapPlaces, destinationFor } from "@/lib/navigation";
 import { audioSettings } from "@/lib/audio";
 import { readAloud, stopReading } from "@/lib/speech";
 
 /**
- * Arrival: the map that replaced the dashboard.
+ * Arrival: the map that replaced the dashboard, now drawn as a place.
  *
- * The old home screen asked a four-year-old to read eleven headings, a grade label, a star
- * count and two marketing lines before anything happened. This asks them to touch a picture.
+ * The behaviour here is WP-03's and is deliberately untouched. The trail is still the
+ * biggest thing on the screen and still one touch. Every landmark still sits at the fixed
+ * coordinate `lib/navigation.ts` gives it, and nothing reorders by recency, progress or
+ * recommendation — position is how a child remembers where things are. Touching a place
+ * still says its name before committing, and the second touch still enters.
  *
- * Three rules from the blueprint are visible in the markup:
+ * What changed is everything underneath that. The map used to be two flat colour bands, a
+ * CSS-ellipse sun and an arc for a ridge, with eleven destinations drawn as eleven
+ * identical white circles. It is now a valley across the five depth planes of WP-11 §2.2:
  *
- *   - **The trail is the biggest thing on the screen** and it is the thing to do: one touch
- *     resumes whatever is unfinished, or starts today's adventure. A child who wants to learn
- *     never has to find anything.
- *   - **Every place is a drawn picture with a fixed position** (§WP-03). The word underneath
- *     is a label; touching the word is touching the picture, and neither is the only clue.
- *   - **Two touches to enter**: the first says the name aloud, the second goes. That is how a
- *     non-reader learns a menu, and it makes a wrong touch cost a word rather than a screen.
+ *   sky     gradient, sun, drifting cloud
+ *   far     hills, a distant treeline, and the six places that are further away
+ *   mid     the ground, and the five near landmarks plus the trail
+ *   near    planting the child's eye passes over on the way down to the trail
+ *   fore    leaves at the very edge, which is what says the child is standing somewhere
+ *   actors  Nova, above the scene and never inside it
  *
- * Nothing on this screen reorders itself. Not by recency, not by recommendation, not by
- * progress — position is how a child remembers where things are.
+ * Two consequences worth naming, because both were bugs waiting in the old layout.
+ *
+ * **Nova is on the actors plane, inside the picture.** She used to be exiled to a strip
+ * below the map so her speech bubble could never land on top of a landmark. The actors
+ * plane neither parallaxes nor crops, so she can stand in the scene and still never be
+ * covered by a tree — and the greeting is now spoken by someone who is *there*.
+ *
+ * **Parallax is driven from the scroll container, not from React state.** The map is
+ * wider than a phone and is panned rather than reflowed; as it pans, the hills move less
+ * than the grass. Re-rendering a dozen landmark buttons on every scroll event to move some
+ * hills is not a trade worth making, so the scroll handler writes one custom property and
+ * the stylesheet does the rest. `--scene-parallax` resolving to 0 under reduced motion
+ * switches the whole thing off without this code knowing.
  */
 export function ChildMap({
   profile,
@@ -56,9 +85,12 @@ export function ChildMap({
   const [said, setSaid] = useState("");
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const trailhead = useRef<HTMLButtonElement>(null);
+  const scroller = useRef<HTMLDivElement>(null);
   const paused = profile.preferences.paused;
   const places = mapPlaces({ faith: profile.controls.faith });
   const trail = destinationFor("adventure")!;
+  const near = places.filter((place) => place.place.size === "large");
+  const far = places.filter((place) => place.place.size === "small");
 
   // An open place closes itself after a few seconds. A child who wandered off mid-touch
   // should not come back to a screen that will jump somewhere on the next tap.
@@ -83,6 +115,30 @@ export function ChildMap({
     trailhead.current?.scrollIntoView({ block: "center", inline: "center", behavior: "instant" });
   }, []);
 
+  // Parallax. One property, written at most once per frame, read by every plane.
+  useEffect(() => {
+    const element = scroller.current;
+    if (!element) return;
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const travel = element.scrollWidth - element.clientWidth;
+      // -1 at the far left of the valley, 1 at the far right, 0 when there is nowhere
+      // to pan — a desktop showing the whole map at once is not a scene that moves.
+      const pan = travel > 0 ? (element.scrollLeft / travel) * 2 - 1 : 0;
+      element.style.setProperty("--scene-pan", String(pan));
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    update();
+    element.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      element.removeEventListener("scroll", onScroll);
+    };
+  }, []);
+
   const select = useCallback((id: string, spoken: string) => {
     setOpen(id);
     setSaid(spoken);
@@ -100,64 +156,122 @@ export function ChildMap({
       value={{ band: profile.band, narration: profile.controls.audio.narration, world: "grove" }}
     >
       <div className="kid-map-frame" data-kid-world="grove" data-band={profile.band}>
-        {/* The ground is bigger than a phone and is panned, not reflowed. Nova and the
-            buddies sit outside it, in a strip that stays put — so a landmark and a speech
-            bubble can never end up on top of each other, whatever the screen. */}
-        <div className="kid-map-scroll">
-        <section className="kid-map" aria-label="Your map">
-        <div className="kid-map-sky" aria-hidden="true">
-          <span className="kid-map-sun" />
-          <span className="kid-map-ridge" />
+        <div className="kid-map-scroll" ref={scroller}>
+          <Scene world="grove" band={profile.band} className="kid-map" label="Your map">
+            <ScenePlane plane="sky">
+              <SkyWash />
+            </ScenePlane>
+
+            {/* The horizon, and the places that are further away. The six secondary
+                destinations live here rather than in a rail: visibly there, reachable,
+                and not competing with the five a child uses constantly. */}
+            <ScenePlane plane="far">
+              <FarHills />
+              <span className="kid-map-treeline"><FarCanopy /></span>
+            </ScenePlane>
+            <ScenePlane plane="far" presentational={false} className="kid-map-far-places">
+              {far.map((destination) => (
+                <PlaceMarker
+                  key={destination.id}
+                  id={destination.id}
+                  childName={destination.place.childName}
+                  label={destination.place.childName}
+                  world={destination.place.world}
+                  x={destination.place.x}
+                  y={destination.place.y}
+                  size={destination.place.size}
+                  selected={open === destination.id}
+                  disabled={busy || paused}
+                  onSelect={select}
+                  onEnter={(id) => {
+                    stopReading();
+                    onGo(id);
+                  }}
+                />
+              ))}
+            </ScenePlane>
+
+            {/* The ground, and the five places a child reaches constantly. */}
+            <ScenePlane plane="mid">
+              <GroundBand />
+              <span className="kid-map-tree" data-at="1"><Tree tone="mid" /></span>
+              <span className="kid-map-tree" data-at="2"><Tree tone="mid" /></span>
+            </ScenePlane>
+            <ScenePlane plane="mid" presentational={false} className="kid-map-near-places">
+              {/* The trail. Larger than everything else, lowest on the screen, and a
+                  single touch: the one control a child may use without learning the
+                  two-touch rule first. */}
+              <button
+                ref={trailhead}
+                type="button"
+                className="kid-trailhead"
+                data-kid-world={trail.place.world}
+                disabled={busy || paused}
+                aria-label={hasActiveTrail ? "Carry on with your trail" : "Start today's trail"}
+                onClick={onTrail}
+              >
+                <span className="kid-place-mark">
+                  <PlaceArt id="adventure" />
+                </span>
+                <span className="kid-place-label">{hasActiveTrail ? "Carry on" : "My trail"}</span>
+              </button>
+
+              {near.map((destination) => (
+                <PlaceMarker
+                  key={destination.id}
+                  id={destination.id}
+                  childName={destination.place.childName}
+                  label={destination.place.childName}
+                  world={destination.place.world}
+                  x={destination.place.x}
+                  y={destination.place.y}
+                  size={destination.place.size}
+                  selected={open === destination.id}
+                  disabled={busy || paused}
+                  onSelect={select}
+                  onEnter={(id) => {
+                    stopReading();
+                    onGo(id);
+                  }}
+                />
+              ))}
+            </ScenePlane>
+
+            {/* Planting the eye passes over on the way down to the trail. */}
+            <ScenePlane plane="near">
+              <span className="kid-map-bush" data-at="1"><Bush /></span>
+              <span className="kid-map-bush" data-at="2"><Bush /></span>
+              <span className="kid-map-rock"><Rock /></span>
+              <span className="kid-map-grass" data-at="1"><GrassTuft /></span>
+              <span className="kid-map-grass" data-at="2"><GrassTuft /></span>
+              <span className="kid-map-grass" data-at="3"><GrassTuft /></span>
+              <span className="kid-map-bloom" data-at="1"><Bloom tone="a" /></span>
+              <span className="kid-map-bloom" data-at="2"><Bloom tone="b" /></span>
+              <span className="kid-map-bloom" data-at="3"><Bloom tone="c" /></span>
+            </ScenePlane>
+
+            <ScenePlane plane="fore">
+              <ForeLeaves />
+            </ScenePlane>
+
+            {/* Nova, in the picture rather than exiled below it. */}
+            <ScenePlane plane="actors">
+              <span className="kid-map-nova">
+                <CastFigure who="nova" state={open ? "point" : "idle"} facing="left" />
+              </span>
+            </ScenePlane>
+          </Scene>
         </div>
-
-        {/* The trail. Larger than everything else, lowest on the screen, and a single touch:
-            the one control a child may use without learning the two-touch rule first. */}
-        <button
-          ref={trailhead}
-          type="button"
-          className="kid-trailhead"
-          data-kid-world={trail.place.world}
-          disabled={busy || paused}
-          aria-label={hasActiveTrail ? "Carry on with your trail" : "Start today's trail"}
-          onClick={onTrail}
-        >
-          <span className="kid-place-mark">
-            <PlaceArt id="adventure" />
-          </span>
-          <span className="kid-place-label">{hasActiveTrail ? "Carry on" : "My trail"}</span>
-        </button>
-
-        {places.map((destination) => (
-          <PlaceMarker
-            key={destination.id}
-            id={destination.id}
-            childName={destination.place.childName}
-            label={destination.place.childName}
-            world={destination.place.world}
-            x={destination.place.x}
-            y={destination.place.y}
-            size={destination.place.size}
-            selected={open === destination.id}
-            disabled={busy || paused}
-            onSelect={select}
-            onEnter={(id) => {
-              stopReading();
-              onGo(id);
-            }}
-          />
-        ))}
 
         {paused && (
           <p className="kid-map-rest" role="status">
             Time for a rest. Everything you made is safe.
           </p>
         )}
-        </section>
-        </div>
 
-        {/* The arrival strip: Nova on one side, who is playing on the other. Both belong
-            to arriving rather than to the map, and keeping them out of the ground is what
-            stops a speech bubble ever sitting on top of a landmark. */}
+        {/* The arrival strip: what Nova is saying, the way through to the grown-ups, and
+            who is playing. It stays out of the panned ground so a speech bubble can never
+            end up under a landmark, and so both adult-facing controls sit in one place. */}
         <div className="kid-map-strip">
           <div className="kid-map-greeting">
             <SpeechBubble line={{ who: "nova", text: said || greeting }} tail="start" />

@@ -304,6 +304,45 @@ two disagree.
   `components/kid/PlaceArt.tsx` still holds the provisional geometry it describes itself as.
   The foundation is a means, and on its own it changes nothing a child sees.
 
+- **WP-11 §3.1 — The map. Shipped.** The arrival screen is the first thing anyone sees and
+  it was two flat colour bands, a CSS-ellipse sun, an arc for a ridge, and eleven
+  destinations drawn as eleven identical white circles. It is now a valley across the five
+  depth planes: hills and a treeline on the far plane, the ground and the five near
+  landmarks on the mid plane, planting on the near plane, framing leaves at the edge, and
+  Nova on the actors plane — in the picture rather than exiled to the strip below it.
+
+  `components/kid/PlaceArt.tsx` no longer describes itself as provisional geometry. All
+  thirteen places are drawn as scenery with a footprint: a grove with a hollow in the big
+  tree, a harbour with a jetty, a treehouse with a lit window, a camp with a fire. They are
+  built out of the scene materials — the same bark and stone as the landscape — and spend
+  the world's hue only on the part that identifies the place, which is what stopped the map
+  reading as thirteen coloured swatches. No rings, no white discs: each landmark sits on
+  the ground with its own contact shadow.
+
+  WP-03's behaviour is untouched, deliberately. The trail is still the biggest thing on the
+  screen and still one touch; every coordinate in `lib/navigation.ts` is unchanged, because
+  position is memory; the two-touch rule still says the name before it commits. Touch
+  targets come from the band exactly as before.
+
+  Parallax is driven by one custom property written from the scroll container at most once
+  a frame, not by React state — re-rendering a dozen landmark buttons to move some hills is
+  not a trade worth making — and `--scene-parallax` resolving to 0 switches it off without
+  that code knowing.
+
+  Four collisions were found by looking at the rendered screen rather than the markup, and
+  all four were the kind only a screenshot catches: the foreground leaf drew straight across
+  the Reading Grove's name, the near-plane planting covered two landmarks, the treehouse
+  roof had no fill defined and rendered black, and Nova sat on top of the trail's label
+  because a character sizes itself from `--cast-size` and ignores a percentage on its
+  wrapper. Scenery now lives in the four channels between the landmark coordinates, and the
+  control planes sit above the scenery — a bush drawn in front of a landmark is correct
+  perspective and an unreachable button.
+
+  Verified at four viewports, with reduced motion on and off, and by walking the two-touch
+  path. 283 tests pass. Ratchets unmoved.
+
+  Still not true: every other child screen. The activity player is next.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

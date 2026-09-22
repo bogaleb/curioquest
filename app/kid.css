@@ -647,9 +647,6 @@
 }
 
 .kid-map {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   width: 100%;
   height: 100%;
   /* The map has a size of its own. These two numbers and the coordinates in
@@ -657,44 +654,75 @@
      top of each other, which `tests/child-map.test.mjs` checks for. */
   min-width: 68rem;
   min-height: 40rem;
-  background: linear-gradient(
-    180deg,
-    var(--kid-sky-100) 0%,
-    var(--kid-sky-50) 29%,
-    var(--kid-leaf-50) 30%,
-    var(--kid-leaf-100) 100%
-  );
   border-radius: var(--kid-radius-lg);
 }
 
-/* Sky, sun and the ridge where the ground begins. Flat shapes, no animation:
-   the map is a place to read, not a thing to watch. */
-.kid-map-sky {
+/*
+ * The two planes that hold controls have to let them be touched, and they sit
+ * above the scenery on their own plane.
+ *
+ * Depth realism loses this argument on purpose. A bush drawn in front of a
+ * landmark is correct perspective and an unreachable button, and a four-year-old
+ * who touches a place and gets a shrub does not conclude that the shrub is
+ * nearer. Scenery is placed clear of the landmark coordinates as well, so this
+ * is a guarantee rather than the only defence.
+ */
+.kid-map-near-places,
+.kid-map-far-places { pointer-events: none; }
+.kid-map-near-places > *,
+.kid-map-far-places > * { pointer-events: auto; }
+.kid-plane.kid-map-far-places { z-index: 3; }
+.kid-plane.kid-map-near-places { z-index: 6; }
+
+/* Scenery placement. All percentages, so the composition survives every viewport
+   rather than only the one it was drawn at — and deliberately clear of the
+   coordinates in lib/navigation.ts, so a bush never lands on a landmark. */
+.kid-map-treeline { position: absolute; inset: auto 0 40% 0; display: block; }
+
+.kid-map-tree { position: absolute; display: block; }
+.kid-map-tree[data-at="1"] { left: 2%; bottom: 42%; width: 6%; }
+.kid-map-tree[data-at="2"] { right: 2%; bottom: 44%; width: 5%; }
+
+/*
+ * Planting is placed in the gaps between landmarks, not wherever it looks best.
+ *
+ * `lib/navigation.ts` puts the five near places at x = 10, 30, 50, 70 and 90,
+ * and each one is about ten per cent wide with a label under it. That leaves
+ * four usable channels along the bottom — roughly 16–24%, 38–46%, 56–64% and
+ * 78–86% — and every piece of scenery below lives in one of them. Anything else
+ * ends up drawn across a place name.
+ */
+.kid-map-bush { position: absolute; display: block; width: 6%; }
+.kid-map-bush[data-at="1"] { left: 15%; bottom: 1%; }
+.kid-map-bush[data-at="2"] { left: 79%; bottom: 0; }
+
+.kid-map-rock { position: absolute; display: block; left: 58%; bottom: 2%; width: 4%; }
+
+.kid-map-grass { position: absolute; display: block; width: 5%; }
+.kid-map-grass[data-at="1"] { left: 40%; bottom: 0; }
+.kid-map-grass[data-at="2"] { left: 81%; bottom: 5%; }
+.kid-map-grass[data-at="3"] { left: 20%; bottom: 6%; }
+
+.kid-map-bloom { position: absolute; display: block; width: 1.8%; }
+.kid-map-bloom[data-at="1"] { left: 44%; bottom: 3%; }
+.kid-map-bloom[data-at="2"] { left: 62%; bottom: 5%; }
+.kid-map-bloom[data-at="3"] { left: 21%; bottom: 7%; }
+
+/* Nova stands in the channel between the making place and the trail, facing the
+   trail, at the bottom of the picture where the child's eye finishes. She is in
+   the scene now rather than in the strip below it, which the actors plane makes
+   safe: it neither parallaxes nor crops, so she can never end up behind a tree. */
+.kid-map-nova {
   position: absolute;
-  inset: 0 0 auto 0;
-  height: 30%;
-  pointer-events: none;
-}
-.kid-map-sun {
-  position: absolute;
-  inset-block-start: 12%;
-  inset-inline-end: 12%;
-  width: var(--kid-text-4xl);
-  height: var(--kid-text-4xl);
-  border-radius: var(--kid-radius-pill);
-  background: var(--kid-sun-200);
-  border: var(--kid-border) solid var(--kid-sun-400);
-}
-/* A band of far hills rather than a line, so the landmarks standing on the horizon
-   look like they are standing on something. */
-.kid-map-ridge {
-  position: absolute;
-  inset: auto 0 calc(var(--space-8) * -1) 0;
-  height: var(--space-16);
-  background: var(--kid-leaf-200);
-  border-block-start: var(--kid-border) solid var(--kid-leaf-400);
-  border-start-start-radius: 50% 100%;
-  border-start-end-radius: 50% 100%;
+  display: block;
+  inset-block-end: 1%;
+  inset-inline-start: 40%;
+  width: 9%;
+  /* `.kid-cast` sizes itself from `--cast-size`, which defaults to a fixed 140px.
+     A percentage on this wrapper alone does nothing — the figure inside keeps its
+     own width and, at map scale, lands on top of the trail's name. Handing the
+     wrapper's width down is what makes a character scale with the scene. */
+  --cast-size: 100%;
 }
 
 /* The strip along the bottom, in the flow, so it takes room from the map rather than
@@ -743,37 +771,109 @@
   cursor: pointer;
 }
 
+/*
+ * The landmark itself.
+ *
+ * No ring, no card, no white disc. The drawing sits directly on the ground with
+ * its own contact shadow, which is the single change that turns a legend back
+ * into a place — a picture inside a circle is an icon, however well it is drawn.
+ *
+ * The box is still `--kid-touch-primary`, so the target a finger has to hit is
+ * exactly what the band asked for and has not moved.
+ */
 .kid-place-mark {
   display: grid;
-  place-items: center;
-  width: var(--kid-touch-primary);
-  height: var(--kid-touch-primary);
-  border-radius: var(--kid-radius-pill);
-  background: var(--kid-surface);
-  border: var(--kid-border) solid var(--kid-world-400);
-  box-shadow: var(--kid-shadow);
-  color: var(--kid-world-400);
+  place-items: end center;
+  width: calc(var(--kid-touch-primary) * 1.15);
+  height: calc(var(--kid-touch-primary) * 1.15);
+  transition: translate var(--dur-base) var(--ease-spring), scale var(--dur-base) var(--ease-spring);
 }
 .kid-place[data-size="small"] .kid-place-mark {
   width: var(--kid-touch);
   height: var(--kid-touch);
 }
-.kid-place-art { width: 62%; height: 62%; }
+
+/* A place a child has not been to yet is not hidden or dimmed — that would make
+   the map a checklist. It simply has no lamp lit. */
+.kid-place[data-size="small"] .kid-place-lamp,
+.kid-place[data-size="small"] .kid-place-window { fill: var(--scene-stone); }
+/* --------------------------------------------------------------------------
+   Landmark materials
+   --------------------------------------------------------------------------
+
+   A landmark is built out of the same materials as the landscape it stands in —
+   `--scene-bark` is the same bark in a tree on the `near` plane and in the
+   treehouse's trunk — and the world's hue is spent only on the one or two parts
+   that say *which place this is*: a sail, a roof, a dome, a flag.
+
+   That split is the whole reason the map stopped reading as a legend. Thirteen
+   shapes each filled entirely in their own world colour are thirteen swatches;
+   thirteen shapes made of wood and stone with one coloured part each are
+   thirteen buildings in one valley.
+   -------------------------------------------------------------------------- */
+
+.kid-place-art { display: block; width: 100%; height: 100%; overflow: visible; }
+
+/* The identity colours: sparing, and always the part a child would point at. */
 .kid-place-fill { fill: var(--kid-world-300); }
-.kid-place-shade { fill: var(--kid-world-600); }
 .kid-place-accent { fill: var(--kid-world-500); }
-.kid-place-path {
+
+/* Ground contact. Nothing on this map floats. */
+.kid-place-ground { fill: var(--scene-contact); }
+
+/* Wood */
+.kid-place-bark { fill: var(--scene-bark); }
+.kid-place-bark-deep { fill: var(--scene-bark-deep); }
+.kid-place-timber { fill: var(--scene-timber); }
+.kid-place-timber-deep { fill: var(--scene-timber-deep); }
+.kid-place-log { fill: var(--scene-bark); }
+.kid-place-post { fill: none; stroke: var(--scene-bark); stroke-width: 6; stroke-linecap: round; }
+
+/* Stone */
+.kid-place-stone { fill: var(--scene-path); }
+.kid-place-stone-wall { fill: var(--scene-stone); }
+.kid-place-stone-deep { fill: var(--scene-stone-deep); }
+.kid-place-path-fill { fill: var(--scene-path); }
+
+/* Foliage */
+.kid-place-leaf { fill: var(--scene-canopy-near); }
+.kid-place-leaf-deep { fill: var(--scene-canopy-deep); }
+.kid-place-leaf-far { fill: var(--scene-canopy-mid); }
+.kid-place-hill { fill: var(--scene-ground-deep); }
+.kid-place-hill-deep { fill: var(--scene-ground-shade); }
+.kid-place-hill-far { fill: var(--scene-canopy-far); }
+.kid-place-vine { fill: none; stroke: var(--scene-canopy-near); stroke-width: 4; stroke-linecap: round; }
+.kid-place-bloom { fill: var(--scene-bloom-a); }
+
+/* Water */
+.kid-place-water { fill: var(--scene-water); }
+.kid-place-water-deep { fill: var(--scene-water-deep); }
+
+/* Openings. A doorway is darker than everything around it, which is how a
+   four-year-old reads "you can go in there" without being told. */
+.kid-place-doorway,
+.kid-place-hollow { fill: var(--scene-bark-deep); }
+.kid-place-window,
+.kid-place-stage { fill: var(--kid-sun-100); }
+.kid-place-lamp { fill: var(--kid-sun-300); }
+.kid-place-canvas { fill: var(--kid-surface); }
+
+/* Odds and ends that belong to one landmark each. */
+.kid-place-roof { fill: var(--scene-roof); }
+.kid-place-hull { fill: var(--scene-timber-deep); }
+.kid-place-ball { fill: var(--kid-surface); }
+.kid-place-block { fill: var(--kid-sky-300); }
+.kid-place-block-deep { fill: var(--kid-leaf-300); }
+.kid-place-pot { fill: var(--scene-stone); }
+.kid-place-flask { fill: var(--kid-sky-100); }
+.kid-place-bubble { fill: var(--kid-sky-300); }
+.kid-place-flame { fill: var(--kid-sun-300); }
+.kid-place-line {
   fill: none;
-  stroke: var(--kid-world-600);
+  stroke: var(--scene-bark-deep);
   stroke-width: 3;
   stroke-linecap: round;
-}
-/* The trail behind the stepping stones: a track, drawn as a track. */
-.kid-place-trail {
-  fill: none;
-  stroke: var(--kid-world-200);
-  stroke-width: 7;
-  stroke-linecap: round;
+  opacity: 0.55;
 }
 
 /* The written name. A label under a picture, never the thing being touched. It stays
@@ -787,17 +887,28 @@
   white-space: nowrap;
 }
 
-/* Open: touched once, waiting for the second touch. It grows and lifts, so the
-   place a child is about to enter is obvious without reading the prompt. */
-.kid-place[data-open] {
-  z-index: 4;
-  border-color: var(--kid-sun-500);
-  background: var(--kid-sun-50);
-}
+/* Open: touched once, waiting for the second touch. It lifts off the ground and
+   grows, so the place a child is about to enter is obvious without reading the
+   prompt. The lift is what carries it — a border change alone is invisible to a
+   child scanning a picture. */
+.kid-place[data-open] { z-index: 4; }
 .kid-place[data-open] .kid-place-mark {
-  border-color: var(--kid-sun-500);
-  box-shadow: var(--kid-shadow-lift);
-  scale: 1.12;
+  translate: 0 calc(var(--space-2) * -1);
+  scale: 1.14;
+}
+/* A warm pool of light under the open landmark, behind the drawing. Sunlight on
+   the place you are about to walk into, rather than a selection rectangle. */
+.kid-place[data-open]::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-block-start: 8%;
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  width: 120%;
+  aspect-ratio: 1;
+  border-radius: var(--kid-radius-pill);
+  background: radial-gradient(circle, var(--kid-sun-100) 0%, transparent 68%);
 }
 .kid-place-again {
   padding: var(--space-1) var(--space-2);
@@ -825,10 +936,8 @@
   font-size: var(--kid-text-lg);
 }
 .kid-trailhead .kid-place-mark {
-  width: calc(var(--kid-touch-primary) * 1.35);
-  height: calc(var(--kid-touch-primary) * 1.35);
-  border-color: var(--kid-world-500);
-  border-width: calc(var(--kid-border) * 2);
+  width: calc(var(--kid-touch-primary) * 1.55);
+  height: calc(var(--kid-touch-primary) * 1.55);
 }
 .kid-trailhead .kid-place-label {
   font-size: var(--kid-text-lg);
@@ -1341,11 +1450,20 @@
    Fore — the framing edge
    -------------------------------------------------------------------------- */
 
+/*
+ * Framing foliage, cropped by the edge.
+ *
+ * Deliberately small. The first version was 260px wide and 260px tall, which on
+ * the map covered the bottom-left corner from 60% of the height downwards — and
+ * the Reading Grove sits at x=10, y=62. It drew a leaf straight across the name
+ * of the most important destination in the product. Foreground framing is worth
+ * a corner; it is not worth a landmark.
+ */
 .kid-fore-leaves {
   position: absolute;
   bottom: 0;
   left: 0;
-  width: clamp(120px, 18vw, 260px);
+  width: clamp(72px, 9vw, 132px);
   height: auto;
   transform-origin: 0% 100%;
   animation: kid-sway calc(var(--kid-dur-ambient) * 1.7) var(--kid-ease-ambient) infinite;

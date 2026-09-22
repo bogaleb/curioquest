@@ -48,9 +48,14 @@ export function Scene({
   narration = true,
   /**
    * How far the scene is panned, -1 (fully left) to 1 (fully right). Planes translate by
-   * this times their own depth. Left at 0 the picture is centred and still.
+   * this times their own depth.
+   *
+   * Left out entirely when something above the scene is driving `--scene-pan` itself —
+   * the map sets it on its scroll container once per frame, imperatively, because
+   * re-rendering a dozen landmark buttons on every scroll event to move some hills is not
+   * a trade worth making. A declared `pan` of 0 here would shadow that inherited value.
    */
-  pan = 0,
+  pan,
   /** Time of day. Changes the sky and the light, never the layout or the landmarks. */
   light = "day",
   labelledBy,
@@ -61,7 +66,7 @@ export function Scene({
   world: KidWorld;
   band?: LearningBandId;
   narration?: boolean;
-  pan?: number;
+  pan?: number | undefined;
   light?: "day" | "dusk";
   labelledBy?: string;
   label?: string;
@@ -70,7 +75,8 @@ export function Scene({
 }) {
   // The one value the data owns rather than the stylesheet: how far this particular
   // scene is panned right now. Everything else about depth is in app/kid.css.
-  const panning = { "--scene-pan": String(clamp(pan)) } as CSSProperties;
+  const panning =
+    pan === undefined ? undefined : ({ "--scene-pan": String(clamp(pan)) } as CSSProperties);
 
   return (
     <KidSurfaceProvider value={{ band, narration, world }}>
