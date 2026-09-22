@@ -1072,3 +1072,576 @@
 @media (prefers-reduced-motion: reduce) {
   .kid-settle::after { transition: none; scale: 1 1; }
 }
+
+/* ==========================================================================
+   THE SCENE                                                         (WP-11)
+   ==========================================================================
+
+   Everything below draws and animates the world a child stands in: the five
+   depth planes, the scenery that fills them, the four characters, and the
+   celebration.
+
+   Two rules govern every animation here, and they are worth stating once at the
+   top rather than repeating at each keyframe:
+
+   1. **Motion is life, arrival, reaction, travel or celebration — never
+      decoration and never a wait.** Nothing a child has to read animates into
+      position, and nothing loops behind a question.
+
+   2. **Reduced motion stops loops rather than speeding them up.** The
+      `--kid-dur-*` tokens collapse to 1ms, which is correct for a transition
+      and catastrophic for a 24-second drift. So the block at the very bottom of
+      this section sets `animation: none` on every ambient loop by name, and
+      `--scene-parallax` resolves to 0, which flattens the parallax rig into a
+      still picture that still reads as a place.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Planes and parallax
+   -------------------------------------------------------------------------- */
+
+.kid-scene-world {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: linear-gradient(to bottom, var(--scene-sky-high) 0%, var(--scene-sky-low) 62%, var(--scene-haze) 100%);
+}
+
+/* Dusk changes the light and nothing else: no landmark moves, no layout
+   changes, so a child arriving in the evening is in the same place. */
+.kid-scene-world[data-light="dusk"] {
+  background: linear-gradient(to bottom, var(--kid-grape-200) 0%, var(--kid-sun-100) 74%, var(--scene-haze) 100%);
+}
+
+.kid-plane {
+  position: absolute;
+  inset: 0;
+  /* The parallax rig. One custom property is set by whatever is panning the
+     scene; each plane multiplies it by its own depth. `--scene-parallax` is the
+     off switch, and it lives in tokens.css so the preference is honoured without
+     a scroll listener that has to remember to check. */
+  translate: calc(var(--scene-pan, 0) * var(--scene-depth, 0) * var(--scene-parallax) * 1px) 0;
+  transition: translate var(--kid-dur-travel) var(--kid-ease-travel);
+  will-change: translate;
+}
+
+.kid-plane[data-plane="sky"] { --scene-depth: 0; z-index: 0; }
+.kid-plane[data-plane="far"] { --scene-depth: 14; z-index: 1; }
+.kid-plane[data-plane="mid"] { --scene-depth: 44; z-index: 2; }
+.kid-plane[data-plane="near"] { --scene-depth: 86; z-index: 3; }
+.kid-plane[data-plane="fore"] { --scene-depth: 150; z-index: 4; }
+
+/* The actors plane never parallaxes and never crops. A character has to be able
+   to stand anywhere without a leaf across her face, and a speech bubble must
+   never end up behind a tree. */
+.kid-plane[data-plane="actors"] {
+  --scene-depth: 0;
+  z-index: 5;
+  overflow: visible;
+  pointer-events: none;
+}
+.kid-plane[data-plane="actors"] > * { pointer-events: auto; }
+
+/* A plane holding real controls has to let them be touched; a decorative one
+   must never swallow a press meant for something behind it. */
+.kid-plane[aria-hidden="true"] { pointer-events: none; }
+
+/* --------------------------------------------------------------------------
+   Sky
+   -------------------------------------------------------------------------- */
+
+.kid-sky-wash { position: absolute; inset: 0; }
+
+.kid-sky-sun {
+  position: absolute;
+  top: 8%;
+  right: 12%;
+  display: grid;
+  place-items: center;
+  width: clamp(72px, 9vw, 132px);
+  aspect-ratio: 1;
+}
+.kid-sky-sun-glow,
+.kid-sky-sun-core {
+  grid-area: 1 / 1;
+  border-radius: var(--radius-pill);
+}
+.kid-sky-sun-core {
+  width: 62%;
+  height: 62%;
+  background: var(--scene-sun-core);
+}
+.kid-sky-sun-glow {
+  width: 100%;
+  height: 100%;
+  background: var(--scene-sun);
+  opacity: 0.55;
+  /* The one loop allowed this close to the top of the screen. Scale only, tiny
+     amplitude: a sun that pulses in brightness reads as a warning light. */
+  animation: kid-sun-breathe var(--kid-dur-ambient-slow) var(--kid-ease-ambient) infinite;
+}
+@keyframes kid-sun-breathe {
+  0%, 100% { scale: 1; opacity: 0.5; }
+  50% { scale: 1.08; opacity: 0.62; }
+}
+
+.kid-cloud {
+  position: absolute;
+  display: block;
+  /* Each cloud starts off the left edge and crosses. `--from`/`--to` are wider
+     than the viewport so a cloud is never seen popping into existence. */
+  animation: kid-cloud-drift var(--cloud-dur) linear infinite;
+  animation-delay: var(--cloud-delay);
+}
+.kid-cloud > svg { display: block; width: 100%; height: auto; }
+.kid-cloud-body { fill: var(--scene-cloud); }
+.kid-cloud-shade { fill: var(--scene-cloud-shade); }
+
+/* Three depths: the nearest cloud is biggest, lowest and fastest. This is the
+   cheapest parallax in the file and it costs nothing to run.
+
+   `left` is the resting position, not just a starting point. Under reduced
+   motion there is no drift, and a cloud with no `left` falls back to the start
+   of the line — which parked all three bunched against the left edge with one
+   of them clipped. These are where they sit when nothing is moving, and they
+   are spread across the sky because that is what the still picture has to look
+   like. With motion on, the offset only shifts each cloud's phase, which is
+   invisible. */
+.kid-cloud[data-depth="1"] { top: 9%; left: 8%; width: clamp(110px, 15vw, 210px); --cloud-dur: var(--kid-dur-ambient-slow); --cloud-delay: 0s; opacity: 0.96; }
+.kid-cloud[data-depth="2"] { top: 22%; left: 58%; width: clamp(80px, 11vw, 150px); --cloud-dur: calc(var(--kid-dur-ambient-slow) * 1.6); --cloud-delay: -8s; opacity: 0.8; }
+.kid-cloud[data-depth="3"] { top: 5%; left: 36%; width: clamp(60px, 8vw, 110px); --cloud-dur: calc(var(--kid-dur-ambient-slow) * 2.2); --cloud-delay: -16s; opacity: 0.66; }
+
+@keyframes kid-cloud-drift {
+  from { translate: -70vw 0; }
+  to { translate: 100vw 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Far — the horizon
+   -------------------------------------------------------------------------- */
+
+.kid-far-hills,
+.kid-far-canopy,
+.kid-ground-band {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  display: block;
+}
+.kid-far-hills { bottom: 30%; height: 34%; }
+.kid-far-canopy { bottom: 40%; height: 9%; }
+
+.kid-hill-back { fill: var(--scene-canopy-far); opacity: 0.68; }
+.kid-hill-front { fill: var(--scene-canopy-far); }
+.kid-hill-haze { fill: var(--scene-haze); opacity: 0.44; }
+.kid-canopy-far { fill: var(--scene-canopy-far); }
+
+/* --------------------------------------------------------------------------
+   Ground and water
+   -------------------------------------------------------------------------- */
+
+.kid-ground-band { bottom: 0; height: 46%; }
+.kid-ground-top { fill: var(--scene-ground); }
+.kid-ground-mid { fill: var(--scene-ground-deep); }
+.kid-ground-low { fill: var(--scene-ground-shade); }
+
+.kid-water { position: absolute; inset: auto 0 0 0; height: 24%; }
+.kid-water-body { display: block; width: 100%; height: 100%; }
+.kid-water-fill { fill: var(--scene-water); }
+.kid-water-deep { fill: var(--scene-water-deep); }
+
+.kid-water-glint {
+  position: absolute;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--scene-water-glint);
+  opacity: 0.85;
+  animation: kid-glint var(--kid-dur-ambient) var(--kid-ease-ambient) infinite;
+}
+.kid-water-glint[data-glint="1"] { top: 26%; left: 14%; width: 16%; }
+.kid-water-glint[data-glint="2"] { top: 52%; left: 52%; width: 11%; animation-delay: -4s; }
+@keyframes kid-glint {
+  0%, 100% { opacity: 0; translate: 0 0; }
+  40% { opacity: 0.85; }
+  100% { translate: 22px 0; }
+}
+
+/* --------------------------------------------------------------------------
+   Planting — the pieces that keep their proportions
+   -------------------------------------------------------------------------- */
+
+.kid-tree,
+.kid-bush,
+.kid-grass,
+.kid-bloom,
+.kid-rock {
+  display: block;
+  height: auto;
+  overflow: visible;
+}
+
+/* Shared materials, so a fifth plant needs no new rules. */
+.kid-contact { fill: var(--scene-contact); }
+.kid-bark { fill: var(--scene-bark); }
+.kid-bark-deep { fill: var(--scene-bark-deep); }
+.kid-leaf { fill: var(--scene-canopy-near); }
+.kid-leaf-deep { fill: var(--scene-canopy-deep); }
+.kid-leaf-lit { fill: var(--scene-canopy-mid); opacity: 0.7; }
+.kid-stone { fill: var(--scene-stone); }
+.kid-stone-deep { fill: var(--scene-stone-deep); }
+
+/* Distance desaturates. The same tree serves the treeline and the foreground. */
+.kid-tree[data-tone="mid"] .kid-leaf { fill: var(--scene-canopy-mid); }
+.kid-tree[data-tone="mid"] .kid-leaf-deep { fill: var(--scene-canopy-near); }
+.kid-tree[data-tone="far"] .kid-leaf,
+.kid-tree[data-tone="far"] .kid-leaf-deep,
+.kid-tree[data-tone="far"] .kid-leaf-lit { fill: var(--scene-canopy-far); }
+.kid-tree[data-tone="far"] .kid-bark,
+.kid-tree[data-tone="far"] .kid-bark-deep { fill: var(--scene-canopy-far); }
+.kid-tree[data-tone="far"] .kid-contact { fill: var(--scene-contact-soft); }
+
+/* The sway. Origin at the base, so the trunk stays planted and only the crown
+   moves — a tree that slides sideways as a whole reads as a sticker coming
+   unstuck. Each instance is offset so a row of trees is a breeze, not a chorus. */
+.kid-tree,
+.kid-bush {
+  transform-origin: 50% 100%;
+  animation: kid-sway var(--kid-dur-ambient) var(--kid-ease-ambient) infinite;
+}
+.kid-tree:nth-of-type(even) { animation-delay: -3s; animation-duration: calc(var(--kid-dur-ambient) * 1.3); }
+.kid-tree:nth-of-type(3n) { animation-delay: -6s; animation-duration: calc(var(--kid-dur-ambient) * 0.85); }
+.kid-bush { animation-duration: calc(var(--kid-dur-ambient) * 1.5); animation-delay: -2s; }
+
+@keyframes kid-sway {
+  0%, 100% { rotate: -0.7deg; }
+  50% { rotate: 0.7deg; }
+}
+
+.kid-grass-blade { fill: var(--scene-canopy-near); }
+.kid-grass {
+  transform-origin: 50% 100%;
+  animation: kid-sway calc(var(--kid-dur-ambient) * 0.7) var(--kid-ease-ambient) infinite;
+}
+
+.kid-bloom-stem,
+.kid-bloom-leaf { stroke: none; fill: var(--scene-canopy-near); }
+.kid-bloom-stem { stroke: var(--scene-canopy-near); stroke-width: 2.4; }
+.kid-bloom-petal { fill: var(--scene-bloom-a); }
+.kid-bloom-heart { fill: var(--scene-bloom-b); }
+.kid-bloom[data-tone="b"] .kid-bloom-petal { fill: var(--scene-bloom-b); }
+.kid-bloom[data-tone="b"] .kid-bloom-heart { fill: var(--scene-sun-core); }
+.kid-bloom[data-tone="c"] .kid-bloom-petal { fill: var(--scene-bloom-c); }
+.kid-bloom[data-tone="c"] .kid-bloom-heart { fill: var(--scene-bloom-b); }
+.kid-bloom {
+  transform-origin: 50% 100%;
+  animation: kid-sway calc(var(--kid-dur-ambient) * 0.6) var(--kid-ease-ambient) infinite;
+}
+
+/* --------------------------------------------------------------------------
+   Fore — the framing edge
+   -------------------------------------------------------------------------- */
+
+.kid-fore-leaves {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: clamp(120px, 18vw, 260px);
+  height: auto;
+  transform-origin: 0% 100%;
+  animation: kid-sway calc(var(--kid-dur-ambient) * 1.7) var(--kid-ease-ambient) infinite;
+}
+.kid-fore-leaves[data-side="end"] { left: auto; right: 0; scale: -1 1; transform-origin: 100% 100%; }
+.kid-fore-leaf { fill: var(--scene-canopy-deep); }
+.kid-fore-vein { fill: none; stroke: var(--scene-canopy-near); stroke-width: 3; stroke-linecap: round; opacity: 0.5; }
+
+/* --------------------------------------------------------------------------
+   The trail
+   -------------------------------------------------------------------------- */
+
+.kid-trail-path { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.kid-trail-shadow { fill: var(--scene-contact-soft); }
+.kid-trail-bed { fill: var(--scene-path-line); }
+.kid-trail-surface { fill: var(--scene-path); }
+
+/*
+ * A stone the child has actually reached.
+ *
+ * Warm rather than merely brighter: lit and unlit have to be tellable apart by a
+ * child who cannot see the difference between two similar greens, so the change
+ * is value *and* hue, and the stones also differ in position and size, which is
+ * a third channel. Colour is never the only one (§C6).
+ */
+.kid-trail-stone[data-lit] .kid-trail-surface { fill: var(--kid-sun-200); }
+.kid-trail-stone[data-lit] .kid-trail-bed { fill: var(--kid-sun-300); }
+
+/*
+ * The one piece of motion in the product that points somewhere.
+ *
+ * A highlight runs up the stones toward the next one the child has not reached.
+ * Everything else that moves is life; this is direction, and it is the only one,
+ * which is what keeps it meaningful. Stones already lit do not pulse — a child
+ * who has been there does not need to be called back.
+ */
+.kid-trail-stone:not([data-lit]) .kid-trail-surface {
+  animation: kid-trail-beckon calc(var(--kid-dur-ambient) * 0.9) var(--kid-ease-ambient) infinite;
+  animation-delay: calc(var(--stone-index, 0) * -140ms);
+}
+@keyframes kid-trail-beckon {
+  0%, 70%, 100% { fill: var(--scene-path); }
+  85% { fill: var(--scene-cloud); }
+}
+
+/* --------------------------------------------------------------------------
+   The cast
+   -------------------------------------------------------------------------- */
+
+.kid-cast {
+  display: inline-block;
+  width: var(--cast-size, 140px);
+  line-height: 0;
+}
+.kid-cast > svg { display: block; width: 100%; height: auto; overflow: visible; }
+.kid-cast[data-scale="small"] { --cast-size: 84px; }
+.kid-cast[data-scale="large"] { --cast-size: 220px; }
+.kid-cast[data-facing="left"] > svg { scale: -1 1; }
+
+/* ---- materials, per character ---- */
+[data-who="nova"] .cast-fur { fill: var(--cast-nova-fur); }
+[data-who="nova"] .cast-fur-deep { fill: var(--cast-nova-fur-deep); }
+[data-who="nova"] .cast-fur-lit { fill: var(--cast-nova-fur-lit); }
+[data-who="nova"] .cast-belly { fill: var(--cast-nova-belly); }
+[data-who="nova"] .cast-ear-inner { fill: var(--cast-nova-fur-deep); }
+[data-who="nova"] .cast-paw { fill: var(--cast-nova-paw); }
+[data-who="nova"] .cast-scarf { fill: var(--cast-nova-scarf); }
+[data-who="nova"] .cast-scarf-deep { fill: var(--cast-nova-scarf-deep); }
+[data-who="nova"] .cast-nose { fill: var(--cast-eye); }
+
+[data-who="pip"] .cast-shell { fill: var(--cast-pip-shell); }
+[data-who="pip"] .cast-shell-deep { fill: var(--cast-pip-shell-deep); }
+[data-who="pip"] .cast-screen { fill: var(--cast-pip-screen); }
+[data-who="pip"] .cast-glow { fill: var(--cast-pip-glow); }
+[data-who="pip"] .cast-antenna { stroke: var(--cast-pip-shell-deep); stroke-width: 6; stroke-linecap: round; fill: none; }
+[data-who="pip"] .cast-antenna-bulb {
+  fill: var(--cast-pip-glow);
+  animation: kid-bulb var(--kid-dur-ambient) var(--kid-ease-ambient) infinite;
+}
+@keyframes kid-bulb {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+[data-who="wren"] .cast-feather { fill: var(--cast-wren-feather); }
+[data-who="wren"] .cast-feather-deep { fill: var(--cast-wren-feather-deep); }
+[data-who="wren"] .cast-belly { fill: var(--cast-wren-belly); }
+[data-who="wren"] .cast-beak { fill: var(--cast-wren-beak); stroke: none; }
+[data-who="wren"] .cast-foot { stroke: var(--cast-wren-beak); stroke-width: 3.4; stroke-linecap: round; fill: none; }
+
+[data-who="bramble"] .cast-bramble { fill: var(--cast-bramble-body); }
+[data-who="bramble"] .cast-bramble-deep { fill: var(--cast-bramble-body-deep); }
+[data-who="bramble"] .cast-thorn { fill: var(--cast-bramble-thorn); }
+[data-who="bramble"] .cast-thorn-line { stroke: var(--cast-bramble-thorn); stroke-width: 3; stroke-linecap: round; fill: none; opacity: 0.8; }
+
+/* ---- shared features ---- */
+.cast-eye { fill: var(--cast-eye); }
+.cast-eye-shine { fill: var(--cast-eye-shine); }
+.cast-blush { fill: var(--cast-blush); opacity: 0.55; }
+.cast-mouth { stroke: var(--cast-mouth); stroke-width: 3.4; stroke-linecap: round; fill: none; }
+.cast-spark-mark { fill: var(--kid-sun-300); }
+
+/* ---- the rig: five loops, four of them almost invisible ---- */
+
+/* Breathing is what separates a drawing from a character. 2% of scale, four
+   seconds, origin at the feet. Any more and it reads as panting. */
+.cast-breathe {
+  transform-origin: 50% 100%;
+  animation: kid-breathe calc(var(--kid-dur-ambient) * 0.55) var(--kid-ease-ambient) infinite;
+}
+@keyframes kid-breathe {
+  0%, 100% { scale: 1 1; }
+  50% { scale: 1.015 1.025; }
+}
+
+/* A blink is 120ms in a 6-second cycle. Held open the rest of the time, which is
+   why the keyframes are so lopsided. */
+.cast-blink {
+  transform-origin: 50% 42%;
+  animation: kid-blink 6s steps(1, end) infinite;
+}
+@keyframes kid-blink {
+  0%, 96% { scale: 1 1; }
+  97%, 99% { scale: 1 0.1; }
+  100% { scale: 1 1; }
+}
+
+.cast-tail {
+  transform-origin: 78% 70%;
+  animation: kid-tail calc(var(--kid-dur-ambient) * 0.5) var(--kid-ease-ambient) infinite;
+}
+@keyframes kid-tail {
+  0%, 100% { rotate: -4deg; }
+  50% { rotate: 5deg; }
+}
+
+/* The mouth only moves while the voice is actually speaking. `useSpeakingCast`
+   drives `data-talking` from the speech lifecycle's onStart/onEnd, so a muted
+   device or a cancelled line leaves the mouth shut rather than miming. */
+.kid-cast[data-talking] .cast-mouth {
+  animation: kid-talk 260ms var(--ease-in-out) infinite;
+}
+@keyframes kid-talk {
+  0%, 100% { scale: 1 1; }
+  50% { scale: 1.1 1.5; }
+}
+
+.cast-spark { opacity: 0; }
+.cast-limb { transform-origin: 50% 20%; transition: rotate var(--dur-base) var(--ease-spring); }
+
+/* ---- states ---- */
+
+/* Pointing: one arm lifts. The arm that lifts is the one on the side the
+   character is facing, so she points into the scene rather than out of it. */
+.kid-cast[data-state="point"] .cast-limb[data-side="right"] { rotate: -38deg; }
+.kid-cast[data-state="explain"] .cast-limb[data-side="right"] { rotate: -16deg; }
+.kid-cast[data-state="listen"] .cast-limb[data-side="left"] { rotate: 14deg; }
+
+/* Wave and encourage are the same gesture at different amplitudes. */
+.kid-cast[data-state="wave"] .cast-limb[data-side="right"],
+.kid-cast[data-state="encourage"] .cast-limb[data-side="right"] {
+  animation: kid-wave 700ms var(--ease-in-out) 2;
+  transform-origin: 50% 20%;
+}
+@keyframes kid-wave {
+  0%, 100% { rotate: -20deg; }
+  50% { rotate: -48deg; }
+}
+
+/* Celebrate: one hop, sparks, and stop. Explicitly not infinite — this is the
+   beat that has to end before the next question arrives. */
+.kid-cast[data-state="celebrate"] .cast-breathe {
+  animation: kid-hop 620ms var(--ease-bounce) 1;
+}
+.kid-cast[data-state="celebrate"] .cast-spark {
+  animation: kid-spark 900ms var(--ease-out) 1;
+}
+.kid-cast[data-state="celebrate"] .cast-limb[data-side="left"] { rotate: 30deg; }
+.kid-cast[data-state="celebrate"] .cast-limb[data-side="right"] { rotate: -30deg; }
+@keyframes kid-hop {
+  0%, 100% { translate: 0 0; scale: 1 1; }
+  30% { translate: 0 -18px; scale: 0.98 1.04; }
+  70% { translate: 0 -4px; }
+}
+@keyframes kid-spark {
+  0% { opacity: 0; scale: 0.4; }
+  35% { opacity: 1; scale: 1.1; }
+  100% { opacity: 0; scale: 1.3; }
+}
+
+.kid-cast[data-state="dance"] .cast-breathe {
+  animation: kid-dance 900ms var(--ease-in-out) 3;
+  transform-origin: 50% 100%;
+}
+@keyframes kid-dance {
+  0%, 100% { rotate: -5deg; }
+  50% { rotate: 5deg; }
+}
+
+/* --------------------------------------------------------------------------
+   Celebration
+   -------------------------------------------------------------------------- */
+
+.kid-celebrate {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+}
+.kid-celebrate-object {
+  display: block;
+  width: clamp(120px, 22vw, 200px);
+  /* The object starts small and low — travelling from where the work happened —
+     and arrives at rest. It never starts at full size, because arriving is the
+     whole point of the beat. */
+  scale: 0.3;
+  opacity: 0;
+  translate: 0 40px;
+  transition:
+    scale var(--kid-dur-celebrate) var(--ease-bounce),
+    opacity var(--dur-base) var(--ease-out),
+    translate var(--kid-dur-celebrate) var(--ease-out);
+}
+.kid-celebrate[data-beat="grant"] .kid-celebrate-object,
+.kid-celebrate[data-beat="perform"] .kid-celebrate-object,
+.kid-celebrate[data-beat="rest"] .kid-celebrate-object {
+  scale: 1;
+  opacity: 1;
+  translate: 0 0;
+}
+.kid-celebrate-object > svg,
+.kid-celebrate-object > img { display: block; width: 100%; height: auto; }
+
+.kid-celebrate-cast { display: block; width: clamp(96px, 16vw, 150px); }
+
+.kid-celebrate-name {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-xl);
+  color: var(--kid-world-ink);
+  text-align: center;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-out);
+}
+.kid-celebrate[data-beat="perform"] .kid-celebrate-name,
+.kid-celebrate[data-beat="rest"] .kid-celebrate-name { opacity: 1; }
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   --------------------------------------------------------------------------
+
+   Every loop above, stopped by name rather than by a blanket `* { animation:
+   none }`, so adding a loop without thinking about this block is a visible
+   omission rather than a silent one.
+
+   What is deliberately *not* removed: the celebration's transitions, which
+   collapse to 1ms through `--kid-dur-*` and so still leave the reward object
+   present and named. The screen has to read as finished, not frozen (§C6).
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .kid-sky-sun-glow,
+  .kid-cloud,
+  .kid-water-glint,
+  .kid-tree,
+  .kid-bush,
+  .kid-grass,
+  .kid-bloom,
+  .kid-fore-leaves,
+  .kid-trail-stone:not([data-lit]) .kid-trail-surface,
+  .cast-breathe,
+  .cast-blink,
+  .cast-tail,
+  .cast-spark,
+  [data-who="pip"] .cast-antenna-bulb,
+  .kid-cast[data-talking] .cast-mouth,
+  .kid-cast[data-state="wave"] .cast-limb[data-side="right"],
+  .kid-cast[data-state="encourage"] .cast-limb[data-side="right"],
+  .kid-cast[data-state="celebrate"] .cast-breathe,
+  .kid-cast[data-state="celebrate"] .cast-spark,
+  .kid-cast[data-state="dance"] .cast-breathe {
+    animation: none;
+  }
+
+  /* The beckon is direction rather than decoration, so it is replaced rather
+     than simply dropped: every stone still ahead keeps a static outline, which
+     says "these are the ones left" without anything moving. The direction
+     itself was never carried by the animation — the stones recede in size and
+     position, and that is what a child reads first. */
+  .kid-trail-stone:not([data-lit]) .kid-trail-surface {
+    stroke: var(--scene-path-line);
+    stroke-width: 3;
+  }
+
+  /* A pointing arm is information, not decoration, so it stays. It simply
+     arrives instantly instead of swinging: the gesture still says "look there",
+     which is the part a child needs. */
+  .cast-limb { transition-duration: var(--kid-dur-tap); }
+}

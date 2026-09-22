@@ -504,12 +504,172 @@
   --kid-touch-primary: 84px;
 }
 
-/* Motion means travel and reaction, never decoration, so when it is switched
-   off the reduced path still has to feel finished rather than merely frozen. */
+/* The child layer's reduced-motion block is the last thing in this file, after
+   the scene tokens it also has to override. */
+
+/* ======================================================================
+   THE SCENE                                                     (WP-11)
+   ======================================================================
+
+   The child ramp above is six world hues and two surfaces. It can colour a
+   button, a marker and a card, and that is all it was asked to do.
+
+   A landscape needs materials those ramps do not contain. Bark is not a
+   desaturated leaf-600; water is not sky-300 with opacity; a path is not
+   sand-200. Painting them out of the world hues is what produced the map this
+   package is replacing — two flat bands and a CSS ellipse for a sun.
+
+   So the scene palette is a ramp of its own, deliberately *not* reachable from
+   `--kid-world-*`. A world recolours its landmarks and its fills; it never
+   recolours the ground, the sky or the trees, because a grove whose trunks turn
+   violet when the child walks into Story Harbour is not a place any more.
+
+   These are non-text fills. WCAG asks 3:1 of them rather than 4.5:1, and
+   `tests/tokens.test.mjs` checks the pairings that actually get painted
+   together — a canopy against the sky behind it, a path against the ground it
+   crosses — so a plane cannot quietly dissolve into the one behind it.
+   ====================================================================== */
+
+:root {
+  /* ---- Sky ------------------------------------------------------------
+     Two stops and a haze. The haze is what makes a horizon read as distance
+     rather than as a line where two colours meet. */
+  --scene-sky-high: #a9dcf4;
+  --scene-sky-low: #dcf0fa;
+  --scene-haze: #eef7fc;
+  --scene-sun: #ffe9a8;
+  --scene-sun-core: #ffd45e;
+  --scene-cloud: #ffffff;
+  --scene-cloud-shade: #e4eef6;
+
+  /* ---- Canopy ---------------------------------------------------------
+     Four depths. Distance desaturates and lightens; the deep step is the
+     shadow side of a near tree, never a fifth tree further away. */
+  --scene-canopy-far: #a6c9a8;
+  --scene-canopy-mid: #74ab7c;
+  --scene-canopy-near: #4f8c5b;
+  --scene-canopy-deep: #356b45;
+
+  /* ---- Ground and path ------------------------------------------------ */
+  /* The ground is a step deeper, and the path a step lighter, than they look
+     like they should be on paper. Chosen by measurement: a sand path on light
+     grass is one of the few pairings in a landscape where two colours a
+     designer reads as obviously different measure 1.05:1 and paint as one
+     surface. The trail is the thing a child is meant to follow, so it is the
+     pairing that could least afford to be wrong. */
+  --scene-ground: #c3dca4;
+  --scene-ground-deep: #9cc37e;
+  --scene-ground-shade: #85b06c;
+  --scene-path: #f7ebd2;
+  --scene-path-line: #d9c294;
+
+  /* ---- Structure: what a landmark is built out of --------------------- */
+  --scene-bark: #8a6a4a;
+  --scene-bark-deep: #674d36;
+  --scene-stone: #cfcabf;
+  --scene-stone-deep: #a59f95;
+  --scene-timber: #d8b284;
+  --scene-timber-deep: #ab8358;
+  --scene-roof: #c3705a;
+  --scene-roof-deep: #9a5342;
+
+  /* ---- Water ---------------------------------------------------------- */
+  --scene-water: #8ecfe1;
+  --scene-water-deep: #57a9c2;
+  --scene-water-glint: #e8f8fc;
+
+  /* ---- Blossom and small colour --------------------------------------
+     The three accents that stop a green valley reading as one colour. Used
+     sparingly and never as the only way to tell two things apart. */
+  --scene-bloom-a: #ef9cb3;
+  --scene-bloom-b: #f6ce65;
+  --scene-bloom-c: #b295de;
+
+  /* ---- Depth ----------------------------------------------------------
+     A landmark sits *on* the ground because of its contact shadow. Without
+     one it floats, which is the single biggest reason the current map reads as
+     a diagram rather than a place. */
+  --scene-contact: rgba(53, 107, 69, 0.22);
+  --scene-contact-soft: rgba(53, 107, 69, 0.12);
+
+  /* ======================================================================
+     THE CAST
+
+     A third ramp, for the same reason the scene needed a second one: fox orange
+     is in neither the world hues nor the materials, and painting Nova out of
+     `--kid-coral-*` would mean she changed colour when the child walked into
+     Number City. A character a four-year-old is meant to recognise has to look
+     the same in every room.
+
+     Four characters (§WP-11.1): Nova the guide, Pip the junior, Wren the peer,
+     and Bramble, who is friction with a face and never a villain.
+     ====================================================================== */
+  --cast-nova-fur: #e8843a;
+  --cast-nova-fur-deep: #c25f21;
+  --cast-nova-fur-lit: #f5a463;
+  --cast-nova-belly: #fdf3e2;
+  --cast-nova-scarf: #1f7a6a;
+  --cast-nova-scarf-deep: #155a4e;
+  --cast-nova-paw: #6b4327;
+
+  --cast-pip-shell: #e2eaf1;
+  --cast-pip-shell-deep: #b0c1d0;
+  --cast-pip-screen: #1c3a50;
+  --cast-pip-glow: #4fcada;
+
+  --cast-wren-feather: #bd8d5f;
+  --cast-wren-feather-deep: #92643c;
+  --cast-wren-belly: #f9edd9;
+  --cast-wren-beak: #e2a534;
+
+  --cast-bramble-body: #7d6293;
+  --cast-bramble-body-deep: #5b4270;
+  --cast-bramble-thorn: #cdb9dd;
+
+  /* Shared features. One eye colour and one mouth colour across all four, which
+     is most of what makes a cast read as one cast. */
+  --cast-eye: #2a2118;
+  --cast-eye-shine: #ffffff;
+  --cast-mouth: #8d3f37;
+  --cast-blush: #f0a293;
+
+  /* ======================================================================
+     SCENE MOTION
+
+     Ambient loops are slow on purpose. Anything under about four seconds
+     reads as a thing demanding attention rather than a thing that is alive,
+     and a child trying to decode a word does not need competition.
+     ====================================================================== */
+  --kid-dur-ambient: 9s;
+  --kid-dur-ambient-slow: 24s;
+  --kid-ease-ambient: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+
+  /* How far a plane moves against the one behind it. Each plane overrides
+     this; the scene multiplies it by the pan offset. Reduced motion sets it
+     to 0 and the whole parallax rig resolves to a flat picture. */
+  --scene-parallax: 1;
+}
+
+/*
+ * Motion means travel and reaction, never decoration, so when it is switched off
+ * the reduced path still has to feel finished rather than merely frozen.
+ *
+ * This is the last block in the file on purpose. It has to override both the
+ * child tokens and the scene tokens above it, and a custom property declared
+ * later at the same specificity would otherwise win.
+ *
+ * Transitions collapse to 1ms: they arrive instantly and are done. Ambient loops
+ * are deliberately *not* in this list and must never be added to it — a
+ * 24-second cloud drift compressed to 1ms is a strobe, which is the opposite of
+ * what the preference asked for. Loops are stopped outright in `app/kid.css`
+ * with `animation: none`; the parallax multiplier going to zero flattens the
+ * scene into a still picture that still reads as a place (§C6.4).
+ */
 @media (prefers-reduced-motion: reduce) {
   :root {
     --kid-dur-tap: 1ms;
     --kid-dur-travel: 1ms;
     --kid-dur-celebrate: 1ms;
+    --scene-parallax: 0;
   }
 }

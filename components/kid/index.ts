@@ -8,6 +8,12 @@
  * `scripts/check-tokens.mjs` plus `scripts/check-child-surfaces.mjs` keep it that way: no
  * raw colours, no px type, no `!important`, no emoji, no icon library.
  */
+export { Celebration, CELEBRATION_BEATS, type CelebrationBeat } from "./art/Celebration";
+export { CastFigure, type CastName, type CastRig } from "./art/cast";
+export { Scene, ScenePlane, SCENE_PLANES, type ScenePlaneName } from "./art/Scene";
+export {
+  Bloom, Bush, FarCanopy, FarHills, ForeLeaves, GrassTuft, GroundBand, Rock, SkyWash, TrailPath, Tree, WaterBody,
+} from "./art/backdrops";
 export { KidButton, type KidButtonState, type KidButtonTone } from "./KidButton";
 export { KidCard } from "./KidCard";
 export { ObjectSlot } from "./ObjectSlot";

@@ -1,0 +1,103 @@
+/*
+ * Layout for the development-only preview route.
+ *
+ * Colocated with the route rather than added to `app/`, for two reasons. It never ships —
+ * `page.tsx` returns a 404 in production — so it has no business inside the byte budget the
+ * sixteen legacy stylesheets are shrinking against. And it is adult chrome around the child
+ * layer, not part of it, so it is deliberately outside `app/kid.css` where the token
+ * discipline check applies.
+ *
+ * Nothing here is an example of anything. It positions scenery on a workbench.
+ */
+
+.preview-page {
+  padding: var(--space-4);
+  display: grid;
+  gap: var(--space-6);
+}
+
+.preview-bar {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+  font-family: var(--font-body);
+}
+.preview-bar label { display: flex; gap: var(--space-2); align-items: center; }
+
+/* The scene needs a real box to be a scene in. iPad landscape proportions, which is
+   the primary design target (§D8).
+
+   Phone portrait gets a squarer box rather than the same one narrower. A five-plane
+   composition in a 16/10 strip at 358px wide is 224px tall: the sky swallows the
+   horizon, the trail falls off the bottom and the character stands in front of the
+   sun. That is a real constraint on the map screen too — a scene needs height before
+   it needs width — and the workbench should show it honestly rather than hide it. */
+.preview-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-2xl);
+}
+
+@media (min-width: 768px) {
+  .preview-scene { aspect-ratio: 16 / 10; }
+}
+
+.preview-far-canopy { position: absolute; inset: auto 0 38% 0; display: block; }
+
+/* The trail lies on the ground and recedes to the horizon, so its box starts
+   below the skyline rather than at the top of the scene. */
+.preview-trail {
+  position: absolute;
+  inset: auto 0 -2% 0;
+  display: block;
+  width: 34%;
+  height: 62%;
+  margin-inline: auto;
+}
+
+/* Scenery is positioned as a percentage of the scene, so the composition survives
+   every viewport rather than only the one it was drawn at. */
+.preview-tree { position: absolute; display: block; bottom: 30%; width: 9%; }
+.preview-tree[data-at="1"] { left: 6%; bottom: 36%; width: 7%; }
+.preview-tree[data-at="2"] { left: 20%; bottom: 24%; width: 12%; }
+.preview-tree[data-at="3"] { right: 10%; bottom: 33%; width: 8%; }
+
+.preview-bush { position: absolute; display: block; width: 9%; }
+.preview-bush[data-at="1"] { left: 34%; bottom: 12%; }
+.preview-bush[data-at="2"] { right: 24%; bottom: 8%; width: 11%; }
+
+.preview-rock { position: absolute; display: block; left: 12%; bottom: 10%; width: 7%; }
+
+.preview-grass { position: absolute; display: block; width: 8%; }
+.preview-grass[data-at="1"] { left: 48%; bottom: 4%; }
+.preview-grass[data-at="2"] { right: 12%; bottom: 3%; }
+
+.preview-bloom { position: absolute; display: block; width: 2.6%; }
+.preview-bloom[data-at="1"] { left: 28%; bottom: 8%; }
+.preview-bloom[data-at="2"] { left: 58%; bottom: 6%; }
+.preview-bloom[data-at="3"] { right: 34%; bottom: 11%; }
+
+.preview-actor { position: absolute; display: block; left: 56%; bottom: 10%; width: 16%; }
+.preview-speech { position: absolute; left: 6%; bottom: 8%; max-width: 30ch; }
+
+.preview-grid {
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  align-items: flex-end;
+  padding: var(--space-4);
+  background: var(--kid-surface-sunk);
+  border-radius: var(--radius-xl);
+}
+.preview-cell { display: grid; justify-items: center; gap: var(--space-2); width: 140px; margin: 0; }
+.preview-cell figcaption { font-family: var(--font-body); color: var(--ink-soft); }
+
+.preview-celebrate {
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background: var(--kid-surface);
+  border-radius: var(--radius-xl);
+}

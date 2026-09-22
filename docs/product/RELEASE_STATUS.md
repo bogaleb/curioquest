@@ -262,6 +262,48 @@ two disagree.
   the same worklist and will prefer a recording the moment one exists. Preloading a
   lesson's clips is not built, because there are no clips to preload.
 
+- **WP-11 — Art direction and motion. Foundation shipped; no child screen wears it yet.**
+  Brought forward ahead of WP-08–WP-10 by a direct instruction in session. The plan is
+  `docs/product/WP-11-ART-AND-MOTION.md`, written against a measurement of the running app
+  rather than an opinion of it: seven image files in `public/` of which four are unmodified
+  Next.js starter assets, one real illustration used once as a marketing hero, eleven map
+  destinations drawn as eleven identical circles, and zero ambient motion anywhere.
+
+  What exists now is the layer every screen will be built from, and nothing else.
+  `app/tokens.css` gains two ramps it did not have: `--scene-*` for the materials a
+  landscape needs (bark, stone, water, path, four depths of canopy, cloud, blossom) and
+  `--cast-*` for the four characters. Both are deliberately unreachable from
+  `--kid-world-*`, and a test enforces it — a grove whose trunks turn violet when the child
+  walks into Story Harbour has stopped being a place. `components/kid/art/` holds the scene
+  grammar (five depth planes plus a separate actors plane, parallaxed by one custom
+  property), the scenery, the four cast rigs, and the celebration. `app/kid.css` animates
+  them.
+
+  Two things are worth naming because they are the parts most likely to rot. The cast share
+  one rig — `cast-breathe`, `cast-blink`, `cast-mouth`, `cast-limb` — so a fifth character
+  needs no new CSS. And every ambient loop is switched off by name under
+  `prefers-reduced-motion` rather than by a blanket reset, because the `--kid-dur-*` tokens
+  collapse to 1ms and a 24-second cloud drift at 1ms is a strobe.
+  `tests/scene-layer.test.mjs` fails the build if a loop is added without being added to
+  that block, which is the one defect in this package that cannot be caught by looking at
+  the screen.
+
+  Verified at iPad landscape, iPad portrait, phone portrait and desktop, with the motion
+  preference on and off; screenshots in `outputs/wp11-foundation-*`. 283 tests pass.
+  Ratchets unmoved: the new CSS is in `kid.css` and `tokens.css`, which sit outside the
+  legacy attrition budget by design, and the sixteen legacy sheets did not gain a byte.
+
+  One claim in an early draft of the plan was wrong and is corrected there: the dark badge
+  overlapping content in the bottom-left of every screenshot is the Next.js dev-tools
+  portal, not a product element, and no work is owed on it.
+
+  Still not true — and this is most of the package: **no child-facing screen uses any of
+  this yet.** The map, the activity player, Reading Grove, the treehouse, the chest and the
+  rooms are exactly as they were. The emoji on `/read` and `/play`, the ALL-CAPS kickers,
+  the parent-facing copy on child screens and the empty treehouse are all still there.
+  `components/kid/PlaceArt.tsx` still holds the provisional geometry it describes itself as.
+  The foundation is a means, and on its own it changes nothing a child sees.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { isLearningBandId, DEFAULT_BAND, type LearningBandId } from "@/lib/learning-bands";
 import type { KidWorld } from "@/components/kid";
 import { KidPreview } from "./KidPreview";
+import { ScenePreview } from "./ScenePreview";
+import "./preview.css";
 
 /**
  * The child component layer, on one page, in development only.
@@ -17,6 +19,7 @@ import { KidPreview } from "./KidPreview";
  *   /kid-preview?band=prek&world=grove          the primitives
  *   /kid-preview?screen=map&band=prek            the arrival map
  *   /kid-preview?screen=moves&band=prek          every teaching move (WP-04)
+ *   /kid-preview?screen=scene&band=prek          the scene grammar, cast and celebration (WP-11)
  */
 const WORLDS: KidWorld[] = ["grove", "city", "harbor", "workshop", "treehouse", "lab"];
 
@@ -29,6 +32,7 @@ export default async function KidPreviewPage({
   const params = await searchParams;
   const band: LearningBandId = isLearningBandId(params.band) ? params.band : DEFAULT_BAND;
   const world = WORLDS.find((name) => name === params.world) ?? "grove";
+  if (params.screen === "scene") return <ScenePreview band={band} world={world} />;
   const screen = params.screen === "map" ? "map" : params.screen === "moves" ? "moves" : "parts";
   return <KidPreview band={band} world={world} screen={screen} />;
 }
