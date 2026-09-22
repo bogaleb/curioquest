@@ -1763,3 +1763,458 @@
      which is the part a child needs. */
   .cast-limb { transition-duration: var(--kid-dur-tap); }
 }
+
+/* ==========================================================================
+   THE ACTIVITY                                                      (WP-11)
+   ==========================================================================
+
+   The screen every session is spent on, and the last one in the product still
+   wearing `app/globals.css` — one minified line, raw hex, 12px labels, and a
+   grey slab behind the letter a child was trying to read.
+
+   The legacy rules are deliberately *not* deleted: `components/studio/live-preview.tsx`
+   and `components/learning/parent-quests.tsx` still render `.activity` and
+   `.answers`, and the studio's whole job is to show an item exactly as the child
+   sees it. Those move together or not at all. What happens instead is that the
+   child's player uses its own container, and the rules below — loaded last —
+   restyle the engines from the outside without touching their markup.
+   ========================================================================== */
+
+.kid-activity {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  isolation: isolate;
+  overflow: auto;
+  overscroll-behavior: contain;
+  background: var(--kid-world-50);
+}
+
+/* The world, behind the work. */
+.kid-activity-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/*
+ * The veil.
+ *
+ * The scene keeps its own colours and is pushed back by one flat wash rather
+ * than by being drawn pale. That matters for a reason that is not aesthetic:
+ * with a veil of known opacity over a known palette, the contrast of everything
+ * in front of it is one number that can be measured once. Thirteen hand-paled
+ * backdrops would be thirteen separate contrast questions, and §C6 asks for
+ * contrast verified against the actually painted background.
+ */
+.kid-activity-veil {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: var(--kid-surface);
+  opacity: 0.74;
+}
+
+.kid-activity-frame {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  min-height: 100dvh;
+  max-width: 62rem;
+  margin-inline: auto;
+  padding: calc(var(--safe-top) + var(--space-4)) calc(var(--safe-right) + var(--space-5))
+    calc(var(--safe-bottom) + var(--space-5)) calc(var(--safe-left) + var(--space-5));
+}
+
+/* --------------------------------------------------------------------------
+   The top: one way out, the trail, and full screen
+   -------------------------------------------------------------------------- */
+
+.kid-activity-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+/* A drawn door rather than a back arrow: an arrow means "previous" to an adult
+   and nothing in particular to a four-year-old, while a door is a place you can
+   walk through. It is deliberately at the top, far from where the answering hand
+   rests, so leaving cannot happen by accident. */
+.kid-activity-door,
+.kid-activity-full {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: var(--kid-touch);
+  height: var(--kid-touch);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  color: var(--kid-world-ink);
+  cursor: pointer;
+  transition: translate var(--kid-dur-tap) var(--ease-out);
+}
+.kid-activity-door > svg { width: 56%; height: 56%; }
+.kid-activity-door:active:not(:disabled),
+.kid-activity-full:active { translate: 0 var(--kid-press); }
+.kid-activity-door:focus-visible,
+.kid-activity-full:focus-visible { outline: none; box-shadow: var(--kid-focus-ring); }
+.kid-activity-door:disabled { opacity: 0.5; cursor: default; }
+
+/* Full screen is an adult convenience on a child screen, so it is the quietest
+   thing here — present, reachable, and never competing with the work. */
+.kid-activity-full {
+  width: var(--touch-min);
+  height: var(--touch-min);
+  border-color: var(--line);
+  color: var(--ink-soft);
+}
+
+.kid-activity-top .kid-trail { flex: 1; justify-content: center; }
+
+/* --------------------------------------------------------------------------
+   The stage: the one thing happening
+   -------------------------------------------------------------------------- */
+
+.kid-activity-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-5);
+  text-align: center;
+}
+
+/* Nova asking the question. She is beside the bubble rather than above it, so
+   the tail points at someone and the words read as speech. */
+.kid-activity-ask {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  width: 100%;
+  max-width: 44rem;
+}
+.kid-activity-nova {
+  flex: none;
+  display: block;
+  width: clamp(64px, 11vw, 116px);
+  --cast-size: 100%;
+}
+.kid-activity-ask .kid-bubble-slot { flex: 1; }
+
+/* --------------------------------------------------------------------------
+   The engines, restyled from the outside
+   --------------------------------------------------------------------------
+
+   Their markup and their mechanics are untouched — they are the strongest
+   existing work in the repo. What changes is that an answer stops being a white
+   rectangle with a 2px border and becomes a thing with weight that gives under a
+   finger. On a tablet, a control that does not move when pressed reads as broken
+   rather than as calm, and the press is the only feedback that arrives before
+   the server's.
+   -------------------------------------------------------------------------- */
+
+.kid-activity .answers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--kid-gap);
+  margin-top: var(--space-4);
+}
+
+.kid-activity .answers button {
+  flex: 1 1 auto;
+  min-width: var(--kid-touch-primary);
+  min-height: var(--kid-touch-primary);
+  padding: var(--space-4) var(--space-5);
+  border: var(--kid-border) solid var(--kid-world-300);
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  font-weight: 700;
+  line-height: var(--kid-leading-tight);
+  box-shadow: var(--kid-shadow);
+  cursor: pointer;
+  /* Options arrive from the plane they will be answered on, one after another.
+     The stagger is small enough that a child does not wait for it. */
+  animation: kid-option-in var(--dur-base) var(--ease-spring) backwards;
+  transition:
+    translate var(--kid-dur-tap) var(--ease-out),
+    border-block-end-width var(--kid-dur-tap) var(--ease-out);
+}
+.kid-activity .answers button:nth-child(2) { animation-delay: 40ms; }
+.kid-activity .answers button:nth-child(3) { animation-delay: 80ms; }
+.kid-activity .answers button:nth-child(4) { animation-delay: 120ms; }
+.kid-activity .answers button:nth-child(5) { animation-delay: 160ms; }
+
+@keyframes kid-option-in {
+  from { opacity: 0; translate: 0 var(--space-5); }
+  to { opacity: 1; translate: 0 0; }
+}
+
+/* The press spends the lip. This is the whole of "it feels physical". */
+.kid-activity .answers button:active:not(:disabled) {
+  translate: 0 var(--kid-press);
+  border-block-end-width: var(--kid-border);
+}
+.kid-activity .answers button:focus-visible { outline: none; box-shadow: var(--kid-focus-ring); }
+
+.kid-activity .answers button.chosen {
+  border-color: var(--kid-sun-400);
+  background: var(--kid-sun-50);
+}
+
+/*
+ * Right. One pulse, and it stops.
+ *
+ * Carried from the reverted Aurora pass, which got this exactly right: a child
+ * who got it right is about to move on, and something still moving behind the
+ * next question competes with it.
+ */
+.kid-activity .answers button.correct {
+  border-color: var(--kid-leaf-400);
+  background: var(--kid-leaf-50);
+  animation: kid-answer-right var(--kid-dur-celebrate) var(--ease-spring) 1;
+}
+@keyframes kid-answer-right {
+  0%, 100% { scale: 1; }
+  40% { scale: 1.06; }
+}
+
+/*
+ * Wrong does not shake, flash red, or buzz.
+ *
+ * The chosen object settles back where it was and the teaching move from WP-04
+ * plays — a letter comparison for a visual confusion, a re-listen for a sound
+ * one. Nothing here performs failure at a five-year-old, and §A rules out
+ * loss-bearing feedback of every kind.
+ */
+.kid-activity .answers button:disabled { opacity: 0.6; cursor: default; }
+.kid-activity .answers button.correct:disabled { opacity: 1; }
+
+/* The grapheme under practice. A letter a child is decoding is a legibility
+   decision, not a hierarchy one, so it is sized from the reading scale and set
+   in the literacy face rather than being letter-spaced body text on a slab. */
+.kid-activity .activity-visual {
+  padding: var(--space-5);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-world-50);
+  color: var(--kid-world-ink);
+  font-family: var(--font-reading);
+  font-size: var(--kid-text-3xl);
+  letter-spacing: var(--kid-tracking-reading);
+  line-height: var(--kid-leading-tight);
+  overflow-wrap: anywhere;
+}
+
+/* --------------------------------------------------------------------------
+   The reach zone: what happened, and what to do next
+   --------------------------------------------------------------------------
+   Pinned to the bottom, where small hands rest on a tablet held in two hands.
+   -------------------------------------------------------------------------- */
+
+.kid-activity-reach {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.kid-activity-said {
+  width: 100%;
+  max-width: 44rem;
+  padding: var(--space-4) var(--space-5);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  text-align: start;
+}
+.kid-activity-said.positive {
+  border-color: var(--kid-leaf-300);
+  background: var(--kid-leaf-50);
+}
+.kid-activity-said-line {
+  font-family: var(--font-body);
+  font-size: var(--kid-text-min);
+  line-height: var(--kid-leading-body);
+}
+.kid-activity-said-line + .kid-activity-said-line { margin-block-start: var(--space-2); }
+
+.kid-activity-actions {
+  display: flex;
+  justify-content: center;
+  min-height: var(--kid-touch);
+}
+
+/* --------------------------------------------------------------------------
+   Finished
+   -------------------------------------------------------------------------- */
+
+.kid-activity-done {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  text-align: center;
+}
+.kid-activity-done-line {
+  max-width: 34ch;
+  font-family: var(--font-body);
+  font-size: var(--kid-text-min);
+  line-height: var(--kid-leading-body);
+  color: var(--kid-ink-soft);
+}
+/* Stars are a minor currency now, not the progress story (§D9). They are stated
+   once, here, at the end, and appear on no other child surface. */
+.kid-activity-stars {
+  padding: var(--space-2) var(--space-5);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-sun-100);
+  color: var(--kid-sun-ink);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+}
+
+/* --------------------------------------------------------------------------
+   Small screens
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .kid-activity-frame { gap: var(--space-4); }
+  .kid-activity-ask { flex-direction: column; align-items: stretch; }
+  .kid-activity-nova { width: clamp(56px, 18vw, 88px); }
+  .kid-activity .answers button { flex-basis: 100%; }
+}
+
+/* --------------------------------------------------------------------------
+   Reduced motion
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  /* The option stagger and the right-answer pulse are arrival and reaction, so
+     they collapse through `--dur-base` and `--kid-dur-celebrate` rather than
+     being removed — the options are simply there, and the right answer is simply
+     marked. Neither ever looped, so there is nothing here to switch off. */
+  .kid-activity .answers button { animation-delay: 0ms; }
+}
+
+/* --------------------------------------------------------------------------
+   Legacy rules the child player has to overrule
+   --------------------------------------------------------------------------
+
+   These live in the sixteen shrinking stylesheets and are still correct for the
+   surfaces that have not migrated — the studio's live preview, the parent-built
+   quests — so they are overridden here rather than deleted there. `kid.css` is
+   loaded last precisely so a migrated screen can win without an `!important`.
+   -------------------------------------------------------------------------- */
+
+/* `app/games.css` sets this 12px and ALL-CAPS. §C5 bans a shouted kicker on a
+   child surface, and 12px is below the floor for every band. */
+.kid-activity .game-mission-label {
+  margin: 0;
+  color: var(--kid-ink-soft);
+  font-family: var(--font-body);
+  font-size: var(--kid-text-min);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* --------------------------------------------------------------------------
+   The engines' own controls
+   --------------------------------------------------------------------------
+
+   Sixteen engines, each with its own markup and its own stylesheet rules, and
+   between them a few dozen things a child taps: letter tiles, matching cards,
+   sorting baskets, a direction pad, a ten-frame.
+
+   They are not rewritten here. What they get is the one property they all
+   lacked and all needed — weight. Every one of them was a flat rectangle with a
+   1–2px border that did not move when pressed, and on a tablet a control that
+   does not move under a finger reads as broken rather than as calm.
+
+   Deliberately scoped to `.kid-activity`, and deliberately touching only colour,
+   border, shadow and the press. No sizes, no layout, no grid columns: those
+   belong to each engine, several of them are load-bearing, and trading a
+   four-year-old's accuracy for a tidier card is not a trade to make.
+   -------------------------------------------------------------------------- */
+
+.kid-activity .matching-columns button,
+.kid-activity .letter-tray button,
+.kid-activity .letter-slots button,
+.kid-activity .memory-choices button,
+.kid-activity .ordered-path button,
+.kid-activity .direction-pad button,
+.kid-activity .sort-tray button,
+.kid-activity .sorting-baskets button,
+.kid-activity .counting-meadow button,
+.kid-activity .story-step-tray button,
+.kid-activity .ten-frame button {
+  border-color: var(--kid-world-200);
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-block-end-style: solid;
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  box-shadow: var(--kid-shadow);
+  transition:
+    translate var(--kid-dur-tap) var(--ease-out),
+    border-block-end-width var(--kid-dur-tap) var(--ease-out);
+}
+
+.kid-activity .matching-columns button:active:not(:disabled),
+.kid-activity .letter-tray button:active:not(:disabled),
+.kid-activity .letter-slots button:active:not(:disabled),
+.kid-activity .memory-choices button:active:not(:disabled),
+.kid-activity .ordered-path button:active:not(:disabled),
+.kid-activity .direction-pad button:active:not(:disabled),
+.kid-activity .sort-tray button:active:not(:disabled),
+.kid-activity .sorting-baskets button:active:not(:disabled),
+.kid-activity .counting-meadow button:active:not(:disabled),
+.kid-activity .story-step-tray button:active:not(:disabled),
+.kid-activity .ten-frame button:active:not(:disabled) {
+  translate: 0 var(--kid-press);
+  border-block-end-width: var(--kid-border);
+}
+
+/* The chosen state, shared. Each engine had its own near-miss of this — one
+   olive, one sage, one wheat — and none of them was the world's colour. */
+.kid-activity .matching-columns button.picked,
+.kid-activity .sort-tray button.picked,
+.kid-activity .counting-meadow button.counted,
+.kid-activity [aria-pressed="true"] {
+  border-color: var(--kid-sun-400);
+  background: var(--kid-sun-50);
+}
+
+/* One focus ring for every control in here, visible on the scene as well as on
+   paper. The engines variously had none, a default outline, or a colour that
+   vanished against their own background. */
+.kid-activity button:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+
+/* The small print inside an engine. `app/games.css` sets several of these at 9,
+   11 and 12px — below the floor for every band, on the labels that say what a
+   control does. */
+.kid-activity .engine-instruction,
+.kid-activity .matching-columns small,
+.kid-activity .sort-tray small,
+.kid-activity .story-step-tray button,
+.kid-activity .robot-controller p,
+.kid-activity .ordered-path strong {
+  font-size: var(--kid-text-min);
+  line-height: var(--kid-leading-body);
+  color: var(--kid-ink-soft);
+}

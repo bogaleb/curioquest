@@ -343,6 +343,54 @@ two disagree.
 
   Still not true: every other child screen. The activity player is next.
 
+- **WP-11 §3.2 — The activity screen. Shipped, with the engines' interiors still to do.**
+  The screen every session is spent on, and the last one in the product still styled by
+  `app/globals.css`: one minified line, raw hex, 12 and 13px labels, an ALL-CAPS category
+  kicker, and a grey slab behind the letter a child was trying to read.
+
+  The work now happens inside the world it belongs to — the same scene planes as the map,
+  behind a veil of one known opacity so the contrast of everything in front of it is a
+  single measurable number rather than thirteen hand-paled guesses. The prompt moved into
+  Nova's speech bubble and she is on screen saying it; she celebrates a right answer,
+  leans in to explain a wrong one, and offers help when a child has stalled. The progress
+  dots became the trail, and the drawn door replaced the back arrow.
+
+  Three things were removed from the child's view rather than restyled, because they were
+  written for an adult (§C5): the ALL-CAPS world kicker, `We are practising: <skill name>`,
+  and the round counter and star pill. Stars are stated once at the end of a run and appear
+  on no other child surface (§D9). All of it still exists for grown-ups on the parent side,
+  which is where a sentence about what a child is practising is actually useful.
+
+  The sixteen engines keep their mechanics untouched — they are the strongest existing work
+  in the repo. What they gained is weight: every tappable thing in the player now has a lip
+  that gives under a press, one focus ring that is visible on the scene as well as on paper,
+  and a shared chosen state in the world's colour instead of three near-misses of it. Their
+  small print — labels at 9, 11 and 12px in `app/games.css`, on the text that says what a
+  control does — is lifted to the band's floor.
+
+  A right answer pulses once and stops. A wrong answer does not shake, flash red or buzz:
+  the chosen option settles and WP-04's teaching move plays.
+
+  The legacy `.activity` and `.answers` rules are deliberately **not** deleted.
+  `components/studio/live-preview.tsx` and `components/learning/parent-quests.tsx` still
+  render them, and the studio's whole job is to show an item exactly as the child sees it —
+  those move together or not at all. `app/kid.css` loads last, so the child's player wins
+  without an `!important`.
+
+  Verified by playing: a matching mission and a multiple-choice mission from the Game Zone,
+  including the wrong-answer path. Screenshots in `outputs/wp11-activity-*`. 283 tests pass.
+
+  One test of this package's own was wrong and is fixed here: the reduced-motion check
+  sliced `app/kid.css` at the *last* occurrence of the media query, which worked until this
+  screen added a second one, after which it silently asked whether the scene's loops were
+  mentioned inside the activity's block. It matches braces now.
+
+  Still not true: the engines' interiors. The robot grid, the sorting trays and the pattern
+  strips still draw their objects as emoji, because the emoji are in the content rows rather
+  than in the components — replacing them needs a drawn object per item, which is a content
+  job and not a styling one. The reading slice does not use this player at all and is
+  unchanged.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

@@ -19,6 +19,45 @@ const root = resolve(import.meta.dirname, "..");
 const kidCss = readFileSync(join(root, "app/kid.css"), "utf8");
 const art = (name) => readFileSync(join(root, `components/kid/art/${name}`), "utf8");
 
+/**
+ * Separate every reduced-motion block from everything else.
+ *
+ * The obvious version of this slices the file at the *last* occurrence of the media
+ * query, and it worked right up until the activity screen appended a second one. Then
+ * the check silently started asking "are the scene's loops mentioned inside the
+ * activity's little block", which they are not, and reported the wrong thing.
+ *
+ * There can be any number of these blocks and they can appear anywhere, so the braces
+ * are actually matched rather than guessed at.
+ */
+function splitReducedMotion(css) {
+  const marker = "@media (prefers-reduced-motion: reduce)";
+  const blocks = [];
+  let rest = "";
+  let cursor = 0;
+  for (;;) {
+    const start = css.indexOf(marker, cursor);
+    if (start === -1) {
+      rest += css.slice(cursor);
+      break;
+    }
+    rest += css.slice(cursor, start);
+    const open = css.indexOf("{", start);
+    let depth = 0;
+    let index = open;
+    for (; index < css.length; index += 1) {
+      if (css[index] === "{") depth += 1;
+      else if (css[index] === "}") {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+    }
+    blocks.push(css.slice(open + 1, index));
+    cursor = index + 1;
+  }
+  return { blocks, rest };
+}
+
 test("the scene grammar names five planes and an actors layer", () => {
   const scene = art("Scene.tsx");
   // The order is the paint order and the meaning. A sixth plane is a design decision,
@@ -98,11 +137,10 @@ test("every ambient loop is stopped under prefers-reduced-motion", () => {
   // otherwise arrive here with the whole comment glued to the front of its selector,
   // and every selector in this file has one.
   const css = kidCss.replace(/\/\*[\s\S]*?\*\//g, "");
-  const marker = "@media (prefers-reduced-motion: reduce)";
-  const index = css.lastIndexOf(marker);
-  assert.ok(index > -1, "app/kid.css has no reduced-motion block");
-  const before = css.slice(0, index);
-  const reduced = css.slice(index);
+  const { blocks, rest } = splitReducedMotion(css);
+  assert.ok(blocks.length, "app/kid.css has no reduced-motion block");
+  const reduced = blocks.join("\n");
+  const before = rest;
 
   // Every rule that starts an endless animation, and the selector that owns it.
   const looping = [];
@@ -132,8 +170,7 @@ test("every ambient loop is stopped under prefers-reduced-motion", () => {
 test("reduced motion stops loops rather than speeding them up", () => {
   // A 24-second cloud drift compressed to 1ms is a strobe. The transition tokens collapse;
   // the ambient ones must not, and the loops are switched off instead.
-  const index = kidCss.lastIndexOf("@media (prefers-reduced-motion: reduce)");
-  const reduced = kidCss.slice(index);
+  const reduced = splitReducedMotion(kidCss.replace(/\/\*[\s\S]*?\*\//g, "")).blocks.join("\n");
   assert.match(reduced, /animation:\s*none/, "no loop is actually switched off");
   assert.ok(
     !/--kid-dur-ambient[\w-]*:\s*1ms/.test(reduced),
