@@ -6,7 +6,6 @@ import {normalizeExplorer} from '@/lib/explorers';
 import {scheduleMessage} from '@/lib/learning-controls';
 import {quizSchema,artSchema,publicAssignment,type Quiz,type Assignment,type Artwork} from '@/lib/workspace-content';
 import {createItem,itemById,itemsFor,updateItem,deleteItem} from '@/lib/workspace-store';
-import {experiments} from '@/lib/science-lab';
 import {parentActivityDraft} from '@/lib/parent-activity-draft';
 const reply=(data:unknown,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 async function get(request:Request){
@@ -81,13 +80,6 @@ async function post(request:Request){
       if(!profile.controls.faith)return reply({error:'Faith & Bible is not enabled.'},403);
       if(typeof input.text!=='string'||!input.text.trim()||input.text.length>1200)return reply({error:'Write a prayer of up to 1200 characters.'},400);
       return reply({item:await createItem(profile.id,'prayer',{text:input.text.trim()})},201);
-    }
-    if(action==='save-observation'){
-      const data=input.data as {experiment?:string;item?:string;prediction?:string;reflection?:string}|undefined;
-      const experiment=experiments.find(e=>e.id===data?.experiment);
-      if(!experiment||!experiment.items.some(i=>i.id===data?.item)||!experiment.outcomes.includes(String(data?.prediction))||typeof data?.reflection!=='string'||data.reflection.length>500)return reply({error:'Choose an experiment, object, and prediction.'},400);
-      if((await itemsFor(profile.id,'observation')).length>=100)return reply({error:'Your notebook is full. Ask a grown-up to export and manage it.'},409);
-      return reply({item:await createItem(profile.id,'observation',{experiment:experiment.id,item:data.item,prediction:data.prediction,reflection:data.reflection})},201);
     }
     if(action==='save-art'){
       const result=artSchema.safeParse(input.data);if(!result.success)return reply({error:'Check the artwork title, tools, and canvas size.'},400);

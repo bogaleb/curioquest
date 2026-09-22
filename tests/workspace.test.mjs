@@ -4,7 +4,6 @@ import {loadTs} from './load-typescript.mjs';
 const {controlsSchema,scheduleMessage}=loadTs('lib/learning-controls');
 const {quizSchema,artSchema,publicAssignment}=loadTs('lib/workspace-content');
 const {stories,prayers}=loadTs('lib/story-library');
-const {experiments}=loadTs('lib/science-lab');
 const {tracePaths,traceLetters,traceNumbers,traceShapes}=loadTs('lib/handwriting');
 const {parentActivityDraft}=loadTs('lib/parent-activity-draft');
 
@@ -16,11 +15,10 @@ test('handwriting paths are bounded and include each capital, number, and warm-u
 test('parent curriculum drafts are valid question sets in both learning tracks',()=>{
   for(const grade of ['prek','grade1'])for(const subject of ['reading','math','logic'])for(const level of [1,2,3]){const draft=parentActivityDraft(grade,subject,level,10);assert.equal(quizSchema.safeParse(draft).success,true);assert.ok(draft.questions.length<=10);assert.equal(new Set(draft.questions.map(q=>q.prompt)).size,draft.questions.length);}
 });
-test('story and science packs have complete unique scenes and valid outcomes',()=>{
+test('story packs have complete unique scenes and valid outcomes',()=>{
   assert.equal(new Set(stories.map(s=>s.id)).size,stories.length);
   for(const story of stories){assert.ok(story.scenes.length>=3);assert.ok(story.lesson);for(const scene of story.scenes){assert.ok(scene.text&&scene.prompt&&scene.emoji);assert.ok(scene.choices.length>=2);assert.ok(scene.choices.every(c=>c.label&&c.response));}}
   assert.equal(stories.filter(s=>s.category==='faith').length,14);assert.equal(prayers.length,9);
-  for(const e of experiments){assert.ok(e.items.length>=3);assert.ok(e.items.every(i=>e.outcomes.includes(i.result)&&i.observation));}
 });
 test('parent schedules use the selected time zone and reject invalid settings',()=>{
   const c=controlsSchema.parse({allowedDays:[1],bedtime:'19:00',timeZone:'America/New_York'});

@@ -30,17 +30,22 @@ const root = resolve(import.meta.dirname, "..");
  * WP-11 took it to 206,664B: the Reading Grove replaced the reading hero and its five
  * emoji stage cards, so `.reading-hero*` and `.reading-map*` left `app/reading.css`
  * — 2,418 bytes, 16 raw colours and 11 px font sizes with them.
+ *
+ * The Wonder Lab rebuild took it to 199,355B. The Discovery Lab's thirty rules — the
+ * hero, the bench, the emoji "experiment stage" and its transforms, the notebook grid —
+ * left `app/stories.css` and `app/polish.css` for the child layer, with 20 raw colours
+ * and 11 px font sizes.
  */
 export const BUDGETS = {
-  legacyCssBytes: 202_512,
+  legacyCssBytes: 199_355,
   important: 25,
   /**
    * Raw colours and px font sizes still sitting in the sixteen legacy sheets. The blueprint
    * bans both in new CSS; in old CSS they are a debt with a number on it. A screen that moves
    * to the child layer takes its share of them with it.
    */
-  legacyRawHex: 878,
-  legacyFontPx: 498,
+  legacyRawHex: 858,
+  legacyFontPx: 487,
 };
 
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;

@@ -203,9 +203,8 @@ async function finish(profile,{mistake=false}={}) {
   assert.ok(shelfBefore.stories.every(s=>s.category!=='faith'));assert.equal(shelfBefore.prayers.length,0);
   const blockedStory=await fetch(base+'/api/stories',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({profile:owner.id,story:'creation',scene:1})});assert.equal(blockedStory.status,403);
   await workspace({action:'save-prayer',profile:owner.id,text:'Thank you for today.'},403);
-  const observation=(await workspace({action:'save-observation',profile:owner.id,data:{experiment:'float',item:'cork',prediction:'Sink',reflection:'The cork floated. My prediction changed.'}},201)).item;
-  assert.equal(observation.data.prediction,'Sink');
-  await workspace({action:'save-observation',profile:owner.id,data:{experiment:'float',item:'fake',prediction:'Float',reflection:''}},400);
+  // Lab notebook entries moved to /api/lab with the Wonder Lab rebuild; the workspace
+  // route no longer judges science content, only stores what the lab route validated.
   const setData={title:'Parent adventure',questions:[{prompt:'What is 2 plus 3?',answer:'5',choices:['4','5','6'],hint:'Count on from two.',explanation:'Two and three make five.'}]};
   await workspace({action:'draft-set',profile:profiles[0].id,subject:'reading',level:1,count:5},403,'');
   const generated=await workspace({action:'draft-set',profile:profiles[0].id,subject:'reading',level:1,count:5});assert.equal(generated.draft.questions.length,5);

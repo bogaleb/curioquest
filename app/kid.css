@@ -3036,3 +3036,831 @@
 @media (prefers-reduced-motion: reduce) {
   .app-intro { transition: none; }
 }
+
+/* ==========================================================================
+   THE WONDER LAB
+   ==========================================================================
+
+   The Discovery Lab, rebuilt. Everything here belongs to `components/kid/lab/`
+   and replaces the `.science-lab`, `.experiment-*`, `.lab-*` and `.notebook-*`
+   rules that used to live in `app/stories.css` and `app/polish.css` — raw hex,
+   px type and emoji-sized glyphs, now deleted.
+
+   Three things this section has to do that the old one did not:
+
+     - paint an apparatus, not a card. A tank, a ramp, a beam of light and a
+       drum, all from the scene ramp in `app/tokens.css`;
+     - move it honestly. The motions are physical (`rise`, `fall`, `travel`) and
+       every one of them has a finished resting position, so the reduced-motion
+       path shows the *result* rather than a picture stuck at the start;
+     - hold the C6 floor everywhere. Every control is at least `--kid-touch`,
+       every focus ring is the standard halo, and nothing is carried by colour.
+
+   Layout target is iPad landscape first, phone portrait second (D8).
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   The room
+   -------------------------------------------------------------------------- */
+
+.lab-room {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 68rem;
+  margin-inline: auto;
+  padding-block-end: var(--space-12);
+  color: var(--kid-ink);
+  font-family: var(--font-body);
+  font-size: var(--kid-text-body);
+  line-height: var(--kid-leading-body);
+}
+
+.lab-room h1 {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-xl);
+  line-height: var(--kid-leading-tight);
+  color: var(--kid-world-ink);
+}
+.lab-room h2 {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  color: var(--kid-world-ink);
+}
+.lab-room h3 {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink);
+}
+
+/* The one place a sentence is allowed to be quiet: a count, a status, a gate. */
+.lab-gate,
+.lab-station-done {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+
+.lab-trouble {
+  padding: var(--space-4) var(--space-5);
+  border: var(--kid-border) solid var(--kid-coral-300);
+  border-radius: var(--kid-radius);
+  background: var(--kid-coral-50);
+  color: var(--kid-coral-ink);
+  font-size: var(--kid-text-min);
+}
+
+/* Nova, wherever she stands in the lab. */
+.lab-guide {
+  display: block;
+  flex: none;
+  width: clamp(4.5rem, 11vw, 8.5rem);
+  --cast-size: 100%;
+}
+
+.lab-welcome,
+.lab-shelf-head,
+.lab-findings {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+.lab-welcome > div,
+.lab-shelf-head > div,
+.lab-findings > div {
+  flex: 1 1 18rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lab-question {
+  font-size: var(--kid-text-body);
+  color: var(--kid-ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   The shelves
+
+   One hue per strand, held from the shelf card into the station and the
+   findings panel, so a child knows they are still in the same part of the lab
+   without reading anything. Same principle as the world hues on the map.
+   -------------------------------------------------------------------------- */
+
+[data-strand="life"] { --lab-strand-soft: var(--kid-leaf-50); --lab-strand-line: var(--kid-leaf-200); --lab-strand-deep: var(--kid-leaf-500); --lab-strand-ink: var(--kid-leaf-ink); }
+[data-strand="earth"] { --lab-strand-soft: var(--kid-sky-50); --lab-strand-line: var(--kid-sky-200); --lab-strand-deep: var(--kid-sky-500); --lab-strand-ink: var(--kid-sky-ink); }
+[data-strand="matter"] { --lab-strand-soft: var(--kid-grape-50); --lab-strand-line: var(--kid-grape-200); --lab-strand-deep: var(--kid-grape-500); --lab-strand-ink: var(--kid-grape-ink); }
+[data-strand="forces"] { --lab-strand-soft: var(--kid-coral-50); --lab-strand-line: var(--kid-coral-200); --lab-strand-deep: var(--kid-coral-500); --lab-strand-ink: var(--kid-coral-ink); }
+[data-strand="energy"] { --lab-strand-soft: var(--kid-sun-50); --lab-strand-line: var(--kid-sun-200); --lab-strand-deep: var(--kid-sun-500); --lab-strand-ink: var(--kid-sun-ink); }
+[data-strand="body"] { --lab-strand-soft: var(--kid-berry-50); --lab-strand-line: var(--kid-berry-200); --lab-strand-deep: var(--kid-berry-500); --lab-strand-ink: var(--kid-berry-ink); }
+
+.lab-shelves,
+.lab-stations,
+.lab-notes ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.lab-shelves {
+  display: grid;
+  gap: var(--kid-gap);
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+
+.lab-shelf,
+.lab-station,
+.lab-bin,
+.lab-stage,
+.lab-variable,
+.lab-clue {
+  font: inherit;
+  color: var(--kid-ink);
+  text-align: start;
+  cursor: pointer;
+  background: var(--kid-surface);
+  border: var(--kid-border) solid var(--lab-strand-line, var(--kid-world-200));
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius);
+  transition:
+    transform var(--kid-dur-tap) var(--ease-out),
+    border-color var(--kid-dur-tap) var(--ease-out),
+    background-color var(--kid-dur-tap) var(--ease-out);
+}
+.lab-shelf:active,
+.lab-station:active,
+.lab-bin:active,
+.lab-stage:active,
+.lab-variable:active,
+.lab-clue:active {
+  transform: translateY(var(--kid-press));
+  border-block-end-width: var(--kid-border);
+}
+.lab-shelf:focus-visible,
+.lab-station:focus-visible,
+.lab-bin:focus-visible,
+.lab-stage:focus-visible,
+.lab-variable:focus-visible,
+.lab-clue:focus-visible,
+.lab-hotspot:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+.lab-shelf[disabled],
+.lab-station[disabled],
+.lab-bin[disabled],
+.lab-stage[disabled],
+.lab-variable[disabled],
+.lab-clue[disabled] {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.lab-shelf {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  width: 100%;
+  min-height: calc(var(--kid-touch) * 3);
+  padding: var(--space-5) var(--space-4);
+  background: var(--lab-strand-soft, var(--kid-world-50));
+  text-align: center;
+}
+.lab-shelf-art {
+  display: grid;
+  place-items: center;
+  width: clamp(4rem, 9vw, 6rem);
+}
+.lab-shelf-name {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  line-height: var(--kid-leading-tight);
+  color: var(--lab-strand-ink, var(--kid-world-ink));
+}
+.lab-shelf-question {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+
+/* Finished: a band of the strand's own colour along the top, and a heavier
+   border. Never a tick on its own — a shelf is finished, not correct. */
+.lab-shelf[data-complete] {
+  border-color: var(--lab-strand-deep);
+  box-shadow: inset 0 var(--space-2) 0 var(--lab-strand-deep);
+}
+
+/* --------------------------------------------------------------------------
+   One shelf
+   -------------------------------------------------------------------------- */
+
+.lab-stations {
+  display: grid;
+  gap: var(--kid-gap);
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+}
+.lab-station {
+  display: grid;
+  gap: var(--space-2);
+  width: 100%;
+  min-height: var(--kid-touch-primary);
+  padding: var(--space-5);
+}
+.lab-station-name {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-body);
+  color: var(--lab-strand-ink, var(--kid-world-ink));
+}
+.lab-station-kind {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+.lab-station[data-done] {
+  background: var(--lab-strand-soft, var(--kid-world-50));
+  border-color: var(--lab-strand-deep);
+}
+
+.lab-notes {
+  padding: var(--space-5);
+  border: var(--kid-border) dashed var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+}
+.lab-notes li {
+  padding-block: var(--space-3);
+  border-block-end: 1px solid var(--line-soft);
+  font-size: var(--kid-text-min);
+}
+.lab-notes li:last-child { border-block-end: 0; }
+
+/* --------------------------------------------------------------------------
+   The station
+   -------------------------------------------------------------------------- */
+
+.lab-station-title {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-xl);
+  color: var(--lab-strand-ink, var(--kid-world-ink));
+}
+
+.lab-engine {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.lab-instruction {
+  font-size: var(--kid-text-lg);
+  line-height: var(--kid-leading-body);
+}
+.lab-step-heading {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  color: var(--kid-world-ink);
+}
+
+/* The clue list: the observing step, made structural. */
+.lab-clues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.lab-clue {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--kid-touch);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--kid-text-min);
+}
+.lab-clue-mark {
+  flex: none;
+  width: var(--space-6);
+  height: var(--space-6);
+  color: var(--lab-strand-deep, var(--kid-world-500));
+}
+.lab-clues li[data-open] .lab-clue {
+  background: var(--lab-strand-soft, var(--kid-world-50));
+  border-color: var(--lab-strand-deep, var(--kid-world-400));
+}
+.lab-clue-detail {
+  margin-block-start: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-inline-start: var(--kid-border) solid var(--lab-strand-deep, var(--kid-world-400));
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+  animation: lab-unfold var(--kid-dur-tap) var(--ease-out) both;
+}
+@keyframes lab-unfold {
+  from { opacity: 0; transform: translateY(calc(var(--space-2) * -1)); }
+  to { opacity: 1; transform: none; }
+}
+
+.lab-choices,
+.lab-commit {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kid-gap);
+}
+.lab-commit { margin-block-start: var(--space-2); }
+
+/* --------------------------------------------------------------------------
+   Sorting, sequencing, fair tests
+   -------------------------------------------------------------------------- */
+
+.lab-bench-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--kid-radius);
+  background: var(--kid-world-50);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+}
+.lab-bench-item[data-settled] { opacity: 0.6; }
+
+.lab-bins,
+.lab-stages,
+.lab-variables {
+  display: grid;
+  gap: var(--kid-gap);
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+}
+.lab-bin,
+.lab-stage,
+.lab-variable {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  min-height: calc(var(--kid-touch) * 2);
+  padding: var(--space-4);
+  text-align: center;
+  font-size: var(--kid-text-min);
+}
+.lab-bin[data-chosen],
+.lab-variable[data-chosen] {
+  background: var(--lab-strand-soft, var(--kid-world-50));
+  border-color: var(--lab-strand-deep, var(--kid-world-500));
+  box-shadow: inset 0 0 0 var(--space-1) var(--lab-strand-deep, var(--kid-world-500));
+}
+
+.lab-trail {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: var(--space-3);
+  min-height: calc(var(--kid-touch) * 2);
+  border: var(--kid-border) dashed var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface-sunk);
+}
+.lab-trail li {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: center;
+  flex: 1 1 8rem;
+  padding: var(--space-3);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  animation: lab-land var(--kid-dur-tap) var(--ease-spring) both;
+}
+@keyframes lab-land {
+  from { opacity: 0; transform: scale(0.82); }
+  to { opacity: 1; transform: none; }
+}
+.lab-trail-number {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  color: var(--lab-strand-ink, var(--kid-world-ink));
+}
+.lab-trail-label { font-size: var(--kid-text-min); text-align: center; }
+.lab-trail-empty {
+  flex: 1 1 100%;
+  background: none;
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+/* A life cycle is a loop, and a row of four pictures quietly denies it. */
+.lab-trail[data-cyclical]::after {
+  content: "";
+  flex: 1 1 100%;
+  height: var(--space-4);
+  border-block-end: var(--kid-border) dashed var(--lab-strand-deep, var(--kid-world-400));
+  border-radius: 0 0 var(--kid-radius) var(--kid-radius);
+}
+
+/* --------------------------------------------------------------------------
+   The diagram and its hotspots
+   -------------------------------------------------------------------------- */
+
+.lab-diagram {
+  position: relative;
+  width: min(100%, 26rem);
+  margin-inline: auto;
+  aspect-ratio: 1;
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-world-50);
+}
+.lab-diagram-art { display: block; width: 100%; height: 100%; }
+
+.lab-ask {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--kid-radius);
+  background: var(--lab-strand-soft, var(--kid-world-50));
+  font-size: var(--kid-text-lg);
+}
+
+.lab-hotspot {
+  position: absolute;
+  left: var(--lab-x);
+  top: var(--lab-y);
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  gap: var(--space-1);
+  min-width: var(--kid-touch);
+  min-height: var(--kid-touch);
+  padding: var(--space-1);
+  border: 0;
+  background: none;
+  color: var(--kid-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.lab-hotspot-dot {
+  width: var(--space-6);
+  height: var(--space-6);
+  border: var(--kid-border) solid var(--kid-surface);
+  border-radius: var(--kid-radius-pill);
+  background: var(--lab-strand-deep, var(--kid-world-500));
+  box-shadow: var(--kid-shadow);
+}
+.lab-hotspot-name {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  white-space: nowrap;
+}
+.lab-hotspot[data-found] { cursor: default; }
+.lab-hotspot[data-found] .lab-hotspot-dot { background: var(--kid-leaf-400); }
+
+/* A miss shakes the whole drawing once, rather than marking the wrong spot in
+   red: nothing here should tell a child that a part of a body is a mistake. */
+.lab-diagram[data-missed] { animation: lab-nudge var(--dur-slow) var(--ease-out) 1; }
+@keyframes lab-nudge {
+  0%, 100% { transform: none; }
+  25% { transform: translateX(calc(var(--space-2) * -1)); }
+  75% { transform: translateX(var(--space-2)); }
+}
+
+/* --------------------------------------------------------------------------
+   Findings and the notebook
+   -------------------------------------------------------------------------- */
+
+.lab-findings {
+  padding: var(--space-5);
+  border-radius: var(--kid-radius-lg);
+  background: var(--lab-strand-soft, var(--kid-world-50));
+  animation: lab-unfold var(--dur-base) var(--ease-out) both;
+}
+.lab-observation {
+  font-size: var(--kid-text-body);
+  line-height: var(--kid-leading-body);
+}
+
+.lab-conclusion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border: var(--kid-border) solid var(--lab-strand-line, var(--kid-world-200));
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-surface);
+}
+.lab-explain { font-size: var(--kid-text-lg); }
+
+.lab-words {
+  display: grid;
+  gap: var(--space-3);
+  margin: 0;
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface-sunk);
+}
+.lab-words dt {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-body);
+  color: var(--lab-strand-ink, var(--kid-world-ink));
+}
+.lab-words dd {
+  margin: 0;
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+
+.lab-notebook {
+  display: grid;
+  gap: var(--space-3);
+  font-size: var(--kid-text-body);
+}
+.lab-notebook textarea {
+  min-height: calc(var(--kid-touch) * 2);
+  padding: var(--space-4);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  font: inherit;
+  font-size: var(--kid-text-min);
+  resize: vertical;
+}
+.lab-notebook textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+
+.lab-offscreen {
+  padding: var(--space-5);
+  border-inline-start: calc(var(--kid-border) * 2) solid var(--kid-sun-300);
+  border-radius: var(--kid-radius);
+  background: var(--kid-sun-50);
+}
+.lab-offscreen p { font-size: var(--kid-text-min); }
+
+/* ==========================================================================
+   THE APPARATUS
+
+   Every model is one inline SVG on a 200x130 stage, plus one object that the
+   motion moves. The scenery never moves; only the thing being investigated
+   does, which is what makes the movement readable as a result.
+   ========================================================================== */
+
+.lab-model {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 200 / 130;
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-world-50);
+  overflow: hidden;
+}
+.lab-model-scene { display: block; width: 100%; height: 100%; }
+
+.lab-model-object {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 20%;
+  transform: translate(-50%, -50%);
+}
+.lab-model-object .lab-object { width: 100%; height: auto; }
+
+/* Where the thing under investigation starts, per apparatus. */
+.lab-model[data-model="tank"] .lab-model-object { top: 40%; }
+.lab-model[data-model="ramp"] .lab-model-object { left: 20%; top: 26%; }
+.lab-model[data-model="magnet"] .lab-model-object { left: 74%; top: 68%; }
+.lab-model[data-model="beam"] .lab-model-object { left: 52%; top: 46%; width: 24%; }
+.lab-model[data-model="pot"] .lab-model-object { top: 20%; width: 16%; }
+.lab-model[data-model="warmth"] .lab-model-object { top: 62%; }
+.lab-model[data-model="sky"] .lab-model-object { top: 28%; }
+.lab-model[data-model="drum"] .lab-model-object { top: 18%; width: 16%; }
+.lab-model[data-model="bench"] .lab-model-object { top: 48%; }
+
+/* ---- the scenery ------------------------------------------------------- */
+
+.lab-glass { fill: var(--scene-water-glint); stroke: var(--scene-water-deep); stroke-width: 3; opacity: 0.85; }
+.lab-water { fill: var(--scene-water); }
+.lab-water-line { stroke: var(--scene-water-deep); stroke-width: 3; fill: none; }
+.lab-water-glint { stroke: var(--scene-water-glint); stroke-width: 3; fill: none; }
+.lab-bench,
+.lab-bench-top { fill: var(--scene-timber); }
+.lab-bench-leg { fill: var(--scene-timber-deep); }
+.lab-timber { fill: var(--scene-timber); }
+.lab-timber-deep { fill: var(--scene-timber-deep); }
+.lab-floor-marks { stroke: var(--scene-path-line); stroke-width: 3; stroke-linecap: round; fill: none; }
+
+.lab-magnet-body { fill: var(--kid-coral-400); }
+.lab-magnet-pole { fill: var(--kid-sky-300); }
+.lab-field { stroke: var(--kid-sky-400); stroke-width: 2.4; stroke-dasharray: 5 6; fill: none; opacity: 0; transition: opacity var(--dur-base) var(--ease-out); }
+
+.lab-lamp { fill: var(--kid-sun-300); }
+.lab-beam-cone { fill: var(--kid-sun-100); opacity: 0.75; }
+.lab-screen { fill: var(--scene-stone); }
+.lab-shadow-patch { fill: var(--scene-stone-deep); opacity: 0; transition: opacity var(--dur-slow) var(--ease-out); }
+
+.lab-pot { fill: var(--scene-roof); }
+.lab-soil { fill: var(--scene-bark-deep); }
+.lab-stalk { stroke: var(--kid-leaf-500); stroke-width: 4; stroke-linecap: round; fill: none; }
+.lab-foliage { fill: var(--kid-leaf-300); }
+.lab-plant-growth { transform-origin: 50% 80%; transition: transform var(--kid-dur-travel) var(--ease-out); }
+
+.lab-heat { stroke: var(--kid-coral-200); stroke-width: 3; stroke-linecap: round; fill: none; opacity: 0.8; }
+.lab-plate { fill: var(--scene-stone); }
+.lab-plate-well { fill: var(--scene-stone-deep); }
+.lab-puddle { fill: var(--scene-water); opacity: 0; transition: opacity var(--kid-dur-travel) var(--ease-out); }
+
+.lab-sky-wash { fill: var(--scene-sky-low); }
+.lab-hill-far { fill: var(--scene-canopy-far); }
+.lab-hill-near { fill: var(--scene-ground); }
+.lab-cloud-far { fill: var(--scene-cloud); }
+
+.lab-skin { fill: var(--scene-cloud-shade); }
+.lab-skin-rim { fill: none; stroke: var(--scene-timber-deep); stroke-width: 3; }
+.lab-grains { fill: var(--scene-path-line); }
+
+/* ---- what the apparatus does once the test is run ----------------------- */
+
+.lab-model[data-phase="run"] .lab-field { opacity: 1; }
+.lab-model[data-model="beam"][data-phase="run"][data-motion="block"] .lab-shadow-patch { opacity: 1; }
+.lab-model[data-model="warmth"][data-phase="run"][data-motion="grow"] .lab-puddle { opacity: 1; }
+.lab-model[data-model="pot"][data-phase="run"][data-motion="grow"] .lab-plant-growth { transform: scale(1.25); }
+.lab-model[data-model="pot"][data-phase="run"][data-motion="wilt"] .lab-plant-growth { transform: rotate(14deg) scale(0.88); }
+
+/* Ambient life. Slow on purpose: under about four seconds a loop reads as a
+   thing demanding attention rather than a thing that is alive. */
+.lab-water-sway { animation: lab-sway var(--kid-dur-ambient) var(--kid-ease-ambient) infinite; }
+.lab-drift { animation: lab-drift var(--kid-dur-ambient-slow) linear infinite; }
+@keyframes lab-sway {
+  0%, 100% { transform: translateX(calc(var(--space-1) * -1)); }
+  50% { transform: translateX(var(--space-1)); }
+}
+@keyframes lab-drift {
+  from { transform: translateX(calc(var(--space-16) * -1)); }
+  to { transform: translateX(var(--space-20)); }
+}
+
+/* ---- the motions --------------------------------------------------------
+   Percentages are of the object's own box, so one keyframe set works on every
+   apparatus. Each one is `forwards`, because the end position *is* the result
+   and a model that springs back has un-run the experiment. */
+
+.lab-model-object[data-phase="run"] {
+  animation-duration: var(--kid-dur-travel);
+  animation-timing-function: var(--kid-ease-travel);
+  animation-fill-mode: forwards;
+}
+.lab-model-object[data-phase="run"][data-motion="rise"] { animation-name: lab-rise; }
+.lab-model-object[data-phase="run"][data-motion="fall"] { animation-name: lab-fall; }
+.lab-model-object[data-phase="run"][data-motion="travel"] { animation-name: lab-travel; }
+.lab-model-object[data-phase="run"][data-motion="stop"] { animation-name: lab-stop; }
+.lab-model-object[data-phase="run"][data-motion="grow"] { animation-name: lab-grow; }
+.lab-model-object[data-phase="run"][data-motion="wilt"] { animation-name: lab-wilt; }
+.lab-model-object[data-phase="run"][data-motion="shine"] { animation-name: lab-shine; }
+.lab-model-object[data-phase="run"][data-motion="shake"] { animation-name: lab-shake; animation-iteration-count: 3; }
+.lab-model-object[data-phase="run"][data-motion="still"] { animation-name: lab-settle; }
+.lab-model-object[data-phase="run"][data-motion="block"] { animation-name: lab-settle; }
+
+/* The magnet is the one apparatus where "travel" means leftwards: the object
+   is drawn at the far end of the bench and the magnet is the thing pulling. */
+.lab-model[data-model="magnet"] .lab-model-object[data-phase="run"][data-motion="travel"] { animation-name: lab-travel-back; }
+
+@keyframes lab-rise { to { transform: translate(-50%, -190%); } }
+@keyframes lab-fall { to { transform: translate(-50%, 120%); } }
+@keyframes lab-travel { to { transform: translate(230%, 60%); } }
+@keyframes lab-travel-back { to { transform: translate(-260%, -50%); } }
+@keyframes lab-stop { to { transform: translate(30%, 60%); } }
+@keyframes lab-grow { to { transform: translate(-50%, -50%) scale(1.4); } }
+@keyframes lab-wilt { to { transform: translate(-50%, -20%) rotate(24deg); } }
+@keyframes lab-shine {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.18); }
+}
+@keyframes lab-shake {
+  0%, 100% { transform: translate(-50%, -50%); }
+  25% { transform: translate(-62%, -54%); }
+  75% { transform: translate(-38%, -46%); }
+}
+@keyframes lab-settle {
+  0% { transform: translate(-50%, -50%); }
+  40% { transform: translate(-50%, -42%); }
+  100% { transform: translate(-50%, -50%); }
+}
+
+/* ==========================================================================
+   THE OBJECTS
+
+   Three painted roles — body, shadow side, distinguishing mark — resolved from
+   one `data-tone`. A new tone is three declarations rather than a new drawing.
+   ========================================================================== */
+
+.lab-object {
+  display: block;
+  width: var(--kid-touch);
+  height: auto;
+  overflow: visible;
+}
+.lab-object-large { width: 100%; }
+
+.lab-object .lab-fill { fill: var(--lab-fill); }
+.lab-object .lab-shade { fill: var(--lab-shade); }
+.lab-object .lab-mark {
+  fill: none;
+  stroke: var(--lab-mark);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* A mark drawn as a solid — a crater, a seed case, a grain of sand — rather
+   than as a line. Circles are the only shape used this way. */
+.lab-object .lab-mark circle { fill: var(--lab-mark); stroke: none; }
+.lab-object .lab-rays { stroke-width: 3.2; }
+
+.lab-object[data-tone="bark"] { --lab-fill: var(--scene-bark); --lab-shade: var(--scene-bark-deep); --lab-mark: var(--scene-timber); }
+.lab-object[data-tone="stone"] { --lab-fill: var(--scene-stone); --lab-shade: var(--scene-stone-deep); --lab-mark: var(--kid-surface); }
+.lab-object[data-tone="metal"] { --lab-fill: var(--kid-sky-100); --lab-shade: var(--kid-sky-300); --lab-mark: var(--kid-sky-600); }
+.lab-object[data-tone="water"] { --lab-fill: var(--scene-water); --lab-shade: var(--scene-water-deep); --lab-mark: var(--scene-water-glint); }
+.lab-object[data-tone="paper"] { --lab-fill: var(--kid-sun-50); --lab-shade: var(--scene-cloud-shade); --lab-mark: var(--kid-sky-400); }
+.lab-object[data-tone="timber"] { --lab-fill: var(--scene-timber); --lab-shade: var(--scene-timber-deep); --lab-mark: var(--scene-bark-deep); }
+.lab-object[data-tone="roof"] { --lab-fill: var(--scene-roof); --lab-shade: var(--scene-roof-deep); --lab-mark: var(--kid-sun-100); }
+.lab-object[data-tone="path"] { --lab-fill: var(--scene-path); --lab-shade: var(--scene-path-line); --lab-mark: var(--scene-bark); }
+.lab-object[data-tone="leaf"] { --lab-fill: var(--kid-leaf-300); --lab-shade: var(--kid-leaf-500); --lab-mark: var(--kid-leaf-ink); }
+.lab-object[data-tone="sun"] { --lab-fill: var(--kid-sun-200); --lab-shade: var(--kid-sun-400); --lab-mark: var(--kid-sun-ink); }
+.lab-object[data-tone="coral"] { --lab-fill: var(--kid-coral-200); --lab-shade: var(--kid-coral-400); --lab-mark: var(--kid-coral-ink); }
+.lab-object[data-tone="grape"] { --lab-fill: var(--kid-grape-200); --lab-shade: var(--kid-grape-400); --lab-mark: var(--kid-grape-ink); }
+.lab-object[data-tone="night"] { --lab-fill: var(--kid-sky-500); --lab-shade: var(--kid-sky-ink); --lab-mark: var(--kid-sky-100); }
+.lab-object[data-tone="quiet"] { --lab-fill: var(--kid-placeholder); --lab-shade: var(--kid-placeholder-line); --lab-mark: var(--kid-surface); }
+
+/* ==========================================================================
+   THE DIAGRAMS
+   ========================================================================== */
+
+.lab-diagram-art .lab-dia-ground { fill: var(--scene-ground-deep); }
+.lab-diagram-art .lab-dia-root { stroke: var(--scene-bark); stroke-width: 4; stroke-linecap: round; fill: none; }
+.lab-diagram-art .lab-dia-stem { stroke: var(--kid-leaf-500); stroke-width: 6; stroke-linecap: round; fill: none; }
+.lab-diagram-art .lab-dia-leaf { fill: var(--kid-leaf-300); }
+.lab-diagram-art .lab-dia-bloom { fill: var(--kid-sun-300); }
+.lab-diagram-art .lab-dia-bloom-core { fill: var(--scene-bark-deep); }
+
+.lab-diagram-art .lab-dia-body { fill: var(--kid-sun-100); stroke: var(--scene-bark); stroke-width: 3; }
+.lab-diagram-art .lab-dia-brain { fill: var(--kid-grape-200); }
+.lab-diagram-art .lab-dia-brain-fold { stroke: var(--kid-grape-500); stroke-width: 2.4; fill: none; stroke-linecap: round; }
+.lab-diagram-art .lab-dia-heart { fill: var(--kid-coral-400); }
+.lab-diagram-art .lab-dia-lung { fill: var(--kid-sky-200); }
+.lab-diagram-art .lab-dia-bone { stroke: var(--kid-surface); stroke-width: 7; stroke-linecap: round; fill: none; }
+.lab-diagram-art .lab-dia-muscle { stroke: var(--kid-coral-300); stroke-width: 7; stroke-linecap: round; fill: none; }
+
+.lab-diagram-art .lab-dia-sky { fill: var(--scene-sky-low); }
+.lab-diagram-art .lab-dia-bank { fill: var(--scene-ground); }
+.lab-diagram-art .lab-dia-pondwater { fill: var(--scene-water); }
+.lab-diagram-art .lab-dia-surface { stroke: var(--scene-water-glint); stroke-width: 4; fill: none; }
+.lab-diagram-art .lab-dia-mud { fill: var(--scene-bark-deep); }
+.lab-diagram-art .lab-dia-reed { stroke: var(--kid-leaf-500); stroke-width: 4; stroke-linecap: round; fill: none; }
+.lab-diagram-art .lab-dia-ripple { stroke: var(--scene-water-glint); stroke-width: 3; stroke-linecap: round; fill: none; }
+
+.lab-diagram-art .lab-dia-funnel { fill: var(--kid-coral-200); }
+.lab-diagram-art .lab-dia-canal { fill: var(--kid-coral-100); }
+.lab-diagram-art .lab-dia-canal-line { stroke: var(--kid-coral-400); stroke-width: 3; fill: none; }
+.lab-diagram-art .lab-dia-drum { fill: var(--scene-cloud-shade); stroke: var(--scene-bark); stroke-width: 3; }
+.lab-diagram-art .lab-dia-drum-shake { stroke: var(--kid-coral-400); stroke-width: 3; fill: none; stroke-linecap: round; }
+.lab-diagram-art .lab-dia-nerve { stroke: var(--kid-grape-400); stroke-width: 5; fill: none; stroke-linecap: round; }
+.lab-diagram-art .lab-dia-nerve-branch { stroke: var(--kid-grape-400); stroke-width: 3; fill: none; stroke-linecap: round; }
+
+/* ==========================================================================
+   SMALLER SCREENS AND STILLER SCREENS
+   ========================================================================== */
+
+@media (max-width: 767px) {
+  .lab-shelves { grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); }
+  .lab-stations { grid-template-columns: 1fr; }
+  .lab-bins,
+  .lab-stages,
+  .lab-variables { grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr)); }
+  .lab-conclusion { padding: var(--space-4); }
+  .lab-guide { width: clamp(3.5rem, 18vw, 5rem); }
+}
+
+/*
+ * Reduced motion.
+ *
+ * The travel animations are switched off and the *finished* transform is
+ * applied directly, so the cork is already at the surface and the car already
+ * at the far end. That is the difference between a reduced path and a broken
+ * one: the child still sees the result of the experiment, they simply do not
+ * watch it happen. Ambient loops stop outright rather than being compressed —
+ * a 24-second cloud drift at 1ms is a strobe.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .lab-water-sway,
+  .lab-drift,
+  .lab-trail li,
+  .lab-clue-detail,
+  .lab-findings,
+  .lab-diagram[data-missed] { animation: none; }
+
+  .lab-model-object[data-phase="run"] { animation: none; }
+  .lab-model-object[data-phase="run"][data-motion="rise"] { transform: translate(-50%, -190%); }
+  .lab-model-object[data-phase="run"][data-motion="fall"] { transform: translate(-50%, 120%); }
+  .lab-model-object[data-phase="run"][data-motion="travel"] { transform: translate(230%, 60%); }
+  .lab-model[data-model="magnet"] .lab-model-object[data-phase="run"][data-motion="travel"] { transform: translate(-260%, -50%); }
+  .lab-model-object[data-phase="run"][data-motion="stop"] { transform: translate(30%, 60%); }
+  .lab-model-object[data-phase="run"][data-motion="grow"] { transform: translate(-50%, -50%) scale(1.4); }
+  .lab-model-object[data-phase="run"][data-motion="wilt"] { transform: translate(-50%, -20%) rotate(24deg); }
+}

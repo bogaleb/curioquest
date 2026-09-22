@@ -128,6 +128,27 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("SCI.G1.PHYS.MAGNET_01", "science", "physical-science", "Predict what a magnet attracts", "Use evidence about materials to predict whether a magnet attracts an object.", ["grade1"], 2.5, ["SCI.PK.PHYS.SINK_FLOAT_01"], 5, true),
   skill("SCI.G1.PHYS.LIGHT_01", "science", "physical-science", "Compare how light passes through", "Sort materials by whether light passes through them clearly, partly, or not at all.", ["grade1"], 2.6, [], 5, true),
 
+  // Added with the Wonder Lab rebuild. Science was thirteen skills against twenty-one
+  // topic areas in Wave 07, so most of the lab's stations had nowhere to file their
+  // evidence and the strongest of them — designing a fair test — was not a skill at all.
+  //
+  // These are ordinary skill nodes, not lab-only ones: a station records against the same
+  // graph the daily quest does, so a child who reasons about friction in the lab and a
+  // child who meets it in a quest are building one record rather than two.
+  skill("SCI.PK.LIFE.PLANTPARTS_01", "science", "life-science", "Name what a plant's parts do", "Match root, stem, leaf and flower to the job each one does.", ["prek", "grade1"], 1.5, ["SCI.PK.LIFE.NEEDS_01"], 5, true),
+  skill("SCI.PK.BODY.PARTS_01", "science", "human-body", "Know what body parts do", "Match a body part with the job it does, from the heart to the bones.", ["prek", "grade1"], 1.4, ["SCI.PK.SENSE.FIVE_01"], 5, true),
+  skill("SCI.G1.LIFE.FOODCHAIN_01", "science", "life-science", "Follow a food chain", "Order a simple food chain from the plant upwards and say why it starts there.", ["grade1"], 2.7, ["SCI.PK.LIFE.HABITAT_01"], 6, true),
+  skill("SCI.G1.LIFE.ADAPT_01", "science", "life-science", "Read a body for its habitat", "Use an animal's features as evidence for where it lives.", ["grade1"], 2.8, ["SCI.PK.LIFE.HABITAT_01"], 6, true),
+  skill("SCI.G1.BODY.SYSTEM_01", "science", "human-body", "Connect body systems", "Explain how breathing and circulation work together during exercise.", ["grade1"], 2.8, ["SCI.PK.BODY.PARTS_01"], 5, true),
+  skill("SCI.G1.EARTH.ROCKS_01", "science", "earth-science", "Compare rocks and soil", "Sort Earth materials by how far water and wind have worn them.", ["grade1"], 2.3, [], 5, true),
+  skill("SCI.G1.EARTH.WATERCYCLE_01", "science", "earth-science", "Follow the water cycle", "Order evaporation, condensation, precipitation and collection as one closed loop.", ["grade1"], 2.7, ["SCI.G1.PHYS.MATTER_01"], 6, true),
+  skill("SCI.G1.EARTH.PLANETS_01", "science", "earth-science", "Tell a star from a reflector", "Sort objects in the sky by whether they make their own light.", ["grade1"], 2.6, ["SCI.G1.EARTH.SPACE_01"], 5, true),
+  skill("SCI.G1.PHYS.SOUND_01", "science", "physical-science", "Explain sound as vibration", "Connect a sound to the vibration making it, and loudness to how big that vibration is.", ["grade1"], 2.5, [], 5, true),
+  skill("SCI.G1.PHYS.MACHINE_01", "science", "physical-science", "Match a simple machine to its job", "Identify which simple machine makes a given job easier, and how.", ["grade1"], 2.6, ["SCI.G1.PHYS.FORCE_01"], 5, true),
+  // The inquiry skill the whole lab is really aiming at. It has no content pool of its own
+  // in the quest bank yet; the lab's fair-test stations are its only evidence today.
+  skill("SCI.G1.SCI.FAIRTEST_01", "science", "scientific-inquiry", "Design a fair test", "Choose the one variable to change and say why the rest are held still.", ["grade1"], 2.9, ["SCI.G1.PHYS.FORCE_01"], 6, true),
+
   // Our world: community, geography, time, invention
   skill("WORLD.PK.COMM.HELPERS_01", "world", "community", "Know community helpers", "Match a helper in the community with the work they do.", ["prek", "grade1"], 1.2, [], 5, true),
   skill("WORLD.PK.TRANS.VEHICLES_01", "world", "transportation", "Sort how we travel", "Group vehicles by where they travel: land, water, or air.", ["prek", "grade1"], 1.4, [], 5, true),
