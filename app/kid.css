@@ -2974,3 +2974,113 @@
   height: 100%;
   object-fit: cover;
 }
+
+/* ==========================================================================
+   THE TITLE SEQUENCE                                                (WP-11)
+   ==========================================================================
+
+   Ten seconds with sound, over the sign-in screen, once per session. It sits
+   above everything, and the sign-in fades up underneath it as it leaves.
+
+   The one thing this must never be is a wall. A parent who wants their password
+   can leave at any moment — the Skip button is the first thing focused, Escape
+   works, and a file that fails to load removes the whole overlay rather than
+   leaving a black rectangle in front of a form.
+   ========================================================================== */
+
+.app-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  /* Deep enough that the letterboxing around a 16/9 film on a tall phone reads
+     as a cinema rather than as a broken layout. */
+  background: var(--green-900);
+  opacity: 1;
+  transition: opacity var(--kid-dur-travel) var(--ease-out);
+}
+.app-intro[data-leaving] {
+  opacity: 0;
+  /* Once it is on its way out it must not swallow a press meant for the form
+     underneath, which is already visible through it. */
+  pointer-events: none;
+}
+
+.app-intro-film {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* `contain` rather than `cover`: this is a composed shot, and cropping a title
+     sequence to fill a phone cuts the thing it was composed around. */
+  object-fit: contain;
+}
+
+/* --------------------------------------------------------------------------
+   The way out, and the way to sound
+   --------------------------------------------------------------------------
+   Bottom-end corner, clear of the film's own composition, and both controls are
+   full-sized targets rather than the small grey "skip" a phone app usually
+   hides in a corner.
+   -------------------------------------------------------------------------- */
+
+.app-intro-controls {
+  position: absolute;
+  inset-block-end: calc(var(--safe-bottom) + var(--space-6));
+  inset-inline-end: calc(var(--safe-right) + var(--space-6));
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.app-intro-skip,
+.app-intro-sound {
+  min-height: var(--touch-min);
+  padding: var(--space-3) var(--space-6);
+  border: 2px solid var(--sand-100);
+  border-radius: var(--radius-pill);
+  background: rgba(12, 53, 41, 0.55);
+  color: var(--sand-50);
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+.app-intro-skip:hover,
+.app-intro-sound:hover { background: rgba(12, 53, 41, 0.8); }
+.app-intro-skip:focus-visible,
+.app-intro-sound:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--green-900), 0 0 0 7px var(--sun-300);
+}
+
+/* Sound is the offer, so it leads; Skip is the exit and stays quieter. */
+.app-intro-sound {
+  background: var(--sun-400);
+  border-color: var(--sun-300);
+  color: var(--green-900);
+}
+.app-intro-sound:hover { background: var(--sun-300); }
+
+@media (max-width: 767px) {
+  .app-intro-controls {
+    inset-inline: var(--space-4);
+    inset-block-end: calc(var(--safe-bottom) + var(--space-4));
+    justify-content: center;
+  }
+  .app-intro-skip,
+  .app-intro-sound { flex: 1; justify-content: center; }
+}
+
+/*
+ * Reduced motion never reaches this stylesheet — `AppIntro` does not render at
+ * all for a viewer who has asked for less movement, because skipping a ten
+ * second film is a behaviour rather than an animation and CSS cannot decline to
+ * play a video. The rule below is the belt to that braces: if the component is
+ * ever mounted anyway, the fade does not animate.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .app-intro { transition: none; }
+}

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 /**
@@ -176,4 +176,66 @@ test("reduced motion stops loops rather than speeding them up", () => {
     !/--kid-dur-ambient[\w-]*:\s*1ms/.test(reduced),
     "an ambient duration was collapsed to 1ms, which turns a slow drift into a strobe",
   );
+});
+
+// ---------------------------------------------------------------------------
+// The title sequence (WP-11)
+// ---------------------------------------------------------------------------
+
+test("the opening film is skippable, and never traps anyone on the way to signing in", () => {
+  const intro = readFileSync(join(root, "components/auth/app-intro.tsx"), "utf8");
+  // Three ways out. This sits between a parent and their password, so every one of
+  // them matters: the film ending, the button, and the key people reach for.
+  assert.match(intro, /onEnded=\{finish\}/, "the film does not end itself");
+  assert.match(intro, /app-intro-skip/, "there is no skip control");
+  assert.match(intro, /useDialogFocus\(open, finish\)/, "Escape does not leave the film");
+  // A file that fails to load must not leave a dead rectangle over the form.
+  assert.match(intro, /onError=\{finish\}/, "a broken video would block the sign-in screen");
+});
+
+test("the opening film asks for sound and survives being refused", () => {
+  const intro = readFileSync(join(root, "components/auth/app-intro.tsx"), "utf8");
+  // Browsers block audio until the viewer has interacted with the site. An intro that
+  // assumes sound is silent for most people; one that gives up is dead air.
+  assert.match(intro, /element\.muted = false;\s*\n\s*element\.play\(\)\.catch/,
+    "it does not try for sound first");
+  assert.match(intro, /element\.muted = true;/, "it has no muted fallback");
+  assert.match(intro, /app-intro-sound/, "there is no way to turn sound back on");
+});
+
+test("the opening film is skipped entirely for reduced motion, and shown once a session", () => {
+  const intro = readFileSync(join(root, "components/auth/app-intro.tsx"), "utf8");
+  assert.match(intro, /const open = !reduced && !seen && !dismissed;/,
+    "the open condition is not derived from the preference and the session");
+  // Both reads are behavioural rather than visual — CSS cannot decline to play a video
+  // or cancel a timer — so they have to be in JavaScript.
+  assert.match(intro, /usePrefersReducedMotion\(\)/);
+  assert.match(intro, /sessionStorage/);
+});
+
+test("the opening film only greets someone who is signing in", () => {
+  // Not on sign-up, not on password reset, and never inside the app: a signed-in family
+  // goes straight to the map, and a ten second film in front of a child who came to
+  // learn is the regression §0 of the blueprint is named after.
+  const form = readFileSync(join(root, "components/auth/auth-form.tsx"), "utf8");
+  assert.match(form, /\{mode === 'sign-in' && <AppIntro \/>\}/);
+  const shell = readFileSync(join(root, "components/shell/KidShell.tsx"), "utf8");
+  assert.ok(!/AppIntro/.test(shell), "the child shell must never mount the intro");
+});
+
+test("shipped media stays small enough to be worth shipping", () => {
+  // Both clips arrived as 5 MB and 13 MB. Re-encoding is a step someone has to remember,
+  // so the budget is the thing that remembers it.
+  const dir = join(root, "public/media");
+  let files;
+  try {
+    files = readdirSync(dir);
+  } catch {
+    return; // nothing shipped yet
+  }
+  for (const name of files) {
+    const bytes = statSync(join(dir, name)).size;
+    assert.ok(bytes <= 2_500_000,
+      `public/media/${name} is ${(bytes / 1048576).toFixed(2)} MB — re-encode it before shipping`);
+  }
 });

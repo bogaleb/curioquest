@@ -99,34 +99,65 @@ Decided in session over painted rasters, because vector:
 
 `game-zone.png` stays as the one painted establishing image it already is. No new rasters.
 
-### The one film, and why it is the only one
+### The two films, and where each one is allowed
 
-`public/media/welcome-nova.mp4` is nine seconds of 3D animation on the sign-in page: an
-empty stone path under floating books, planets and numbers, then Nova walks in, waves, and
-stands. It is cut from a thirty-second clip the product owner generated with Gemini and
-added to the repository, trimmed to 21.0s–30.0s and re-encoded from 13 MB to 1.7 MB.
+Both clips the product owner generated are now in use, on the two signed-out surfaces and
+nowhere else. The placement of each was decided by the owner; the boundary around them is
+this package's.
 
-**It is the only moving image in the product, and it is on a parent-facing surface only.**
-Two reasons, and both are rules this package has been applying everywhere else:
+| Clip | Where | Sound |
+| --- | --- | --- |
+| `curioquest-intro.mp4` (10s, cut from `89DDDAB4`) | The title sequence, over the sign-in screen, once per session | Yes |
+| `welcome-nova.mp4` (9s, cut from `D2C577D1` 21.0–30.0s) | The sign-in page's hero | No — muted, looping |
 
-- **Register.** The clip is rendered in 3D; everything else here is flat vector. Those can
-  share a *marketing* surface — a poster has never had to look like the thing it
-  advertises — but not a child's screen.
-- **Cast.** The source clip's first twenty seconds feature a yellow robot and a purple
-  monster who are not Pip and not Bramble. Putting them in front of a four-year-old would
-  teach a second cast alongside the authored four (§2.3), which is the confusion the
-  one-cast rule exists to prevent. The cut contains neither of them — only Nova.
+**The line that still holds: no film is ever shown inside the app.** Both are 3D and the
+product is flat vector; both live on the signed-out entrance; a signed-in family goes
+straight to the map and never sees either. The title sequence is skippable from its first
+frame, does not appear for anyone who has asked for less movement, and plays once per
+session rather than on every navigation.
 
-The second clip the owner supplied (`gemini_generated_video_89DDDAB4.mp4`, ten seconds) is
-**not used**: apart from about a second and a half of character-free rainbow arches, it is
-the robot and the monster throughout, and rainbow arches are not in this product's visual
-world either. Using it as decoration would break §4's first rule.
+**One thing to keep an eye on.** The title sequence features a yellow robot and a purple
+monster who are not Pip and not Bramble, and the authored cast is four (§2.3). On the
+signed-out entrance that is a title card rather than a lesson — but a child sitting next to
+a parent at sign-in will see it, so if the two casts ever start to read as one product,
+this is the thing to change. The obvious swap is already cut and on the same page:
+`welcome-nova.mp4` has no character in it but Nova.
 
-Provenance is worth recording rather than hiding: the asset is generative-model output,
-it carries the generator's visible watermark in the lower-right corner, and the watermark
-is deliberately left in place. Note that blueprint §A bans **live** generative output shown
-to a child — this is neither live nor shown to a child, but it is close enough to the line
-that it should be a decision someone made on purpose rather than one that drifted in.
+### Why the flat-vector rule still stands everywhere else
+
+A film can carry a *brand moment* — a title card, a hero on a sign-in page — because those
+are the two places in any product where a different register is expected. Neither is a
+place where a child is learning anything, and neither is a place a child returns to.
+
+Inside the app the rule is unchanged and absolute: **flat vector, one cast of four, drawn
+not filmed.** Every child surface in §3 is built that way, and a child who has signed in
+sees no video at all. The reason is not taste. A four-year-old learning that the fox with
+the green vest is the one who explains things cannot be shown two foxes drawn two ways, and
+a 3D robot that is not Pip is a second cast whether or not anyone intended one.
+
+### Trimming without ffmpeg
+
+There is no `ffmpeg` on the build machine, so both cuts were made by running the source in
+a real browser and recording it: `video.captureStream()` hands back both tracks, and Chrome
+can record H.264 with AAC into MP4. That last part matters more than it sounds — WebM would
+have been smaller and would have been the wrong choice, because iPadOS is a primary target
+and older Safari will not play it.
+
+13 MB → 1.7 MB and 4.9 MB → 1.6 MB, with the voice intact.
+`tests/scene-layer.test.mjs` holds anything in `public/media/` to 2.5 MB, because
+re-encoding is a step someone has to remember and a budget is the thing that remembers it.
+
+### Provenance
+
+Worth recording rather than hiding: both assets are generative-model output, both carry
+the generator's visible watermark in the lower-right corner, and the watermark is
+deliberately left in place.
+
+Blueprint §A bans **live** generative output shown to a child. Neither of these is live,
+and neither is shown to a signed-in child — but the title sequence does play on the
+signed-out entrance, where a child may well be sitting beside the parent typing the
+password. That is close enough to the line that it belongs on the record as a decision
+somebody made, rather than something that drifted in.
 
 ---
 

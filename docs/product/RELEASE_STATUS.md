@@ -587,6 +587,50 @@ two disagree.
   283 tests pass, build clean. `outputs/wp11-auth-film.png`,
   `outputs/wp11-auth-film-reduced.png`.
 
+- **WP-11 — The title sequence. Shipped.** Opening the app now opens the world: ten
+  seconds of animation **with sound**, full screen, before the sign-in screen fades up
+  underneath it. The second of the two clips the product owner generated, cut from 4.9 MB
+  to 1.6 MB with its audio intact.
+
+  Launching at `/` redirects to `/auth/sign-in`, so the film is genuinely the first thing
+  on screen rather than something bolted onto a later page.
+
+  **Sound is the part browsers make hard.** A page cannot start audio on its own — Chrome,
+  Safari and Firefox all block it until the viewer has interacted with the site, which is a
+  rule native apps do not have. So it asks and then degrades: play unmuted, and if the
+  browser refuses, start muted and offer one obvious control to turn the sound on. Either
+  way the film plays; nobody sees a dead frame waiting for permission. Both paths are
+  verified by driving a real browser with the autoplay policy on and off.
+
+  **Three ways out**, because this sits between a parent and their password: the film
+  ending, a full-size Skip button focused the moment it appears, and Escape. A file that
+  fails to load removes the overlay rather than leaving a black rectangle over the form.
+  It plays once per browser session, never for anyone who has asked for less movement, and
+  never inside the app — a signed-in family goes straight to the map, because a ten-second
+  film in front of a child who came to learn is the regression §0 of the blueprint is
+  named after.
+
+  A real bug was found by watching it rather than reading it. `seen` is read from
+  `sessionStorage` on every render, so writing it at the start of `finish()` flipped the
+  derived `open` to false on the very next render and tore the overlay out of the DOM
+  before the fade could run. The write now waits for the transition to finish. Traced
+  frame by frame: opacity 1 → 0.70 → 0.25 → 0.02, then unmount.
+
+  **Both clips are now in use, and both are signed-out only.** The title sequence contains
+  a yellow robot and a purple monster who are not Pip and not Bramble; that is a title card
+  rather than a lesson, but a child sitting beside a parent at sign-in will see it, and it
+  is recorded in the plan as the thing to change if the two casts ever start reading as one
+  product. The swap is already cut and on the same page: `welcome-nova.mp4` contains no
+  character but Nova.
+
+  Five new tests pin the rules that a screenshot cannot: skippable, escapable, survives a
+  broken file, asks for sound and survives refusal, gated on the preference and the
+  session, mounted only on sign-in and never in `KidShell` — plus a 2.5 MB ceiling on
+  anything in `public/media/`, since both source clips arrived at 5 MB and 13 MB.
+
+  288 tests pass, build clean. `outputs/wp11-intro.png`,
+  `outputs/wp11-intro-transition.png`.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

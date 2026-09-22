@@ -6,6 +6,7 @@ import { Scene, ScenePlane } from '@/components/kid/art/Scene';
 import { Bush, FarHills, GroundBand, SkyWash, Tree } from '@/components/kid/art/backdrops';
 import { CastFigure } from '@/components/kid/art/cast';
 import { WelcomeFilm } from './welcome-film';
+import { AppIntro } from './app-intro';
 import {
   expiredLinkState,
   idleState,
@@ -107,6 +108,10 @@ export function AuthForm({ mode, initialError = '' }: { mode: Mode; initialError
 
   return (
     <main className="auth-page">
+      {/* The title sequence, before anything else, on the way in. It removes itself
+          after one play per session and never appears for a viewer who asked for
+          less movement. */}
+      {mode === 'sign-in' && <AppIntro />}
       <div className="auth-layout">
         <section className="auth-card">
           <Link className="brand auth-brand" href="/">
