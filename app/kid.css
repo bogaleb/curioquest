@@ -2467,3 +2467,279 @@
   width: clamp(88px, 14vw, 140px);
   margin-inline: auto;
 }
+
+/* ==========================================================================
+   MY TREEHOUSE                                                      (WP-11)
+   ==========================================================================
+
+   The screen that is meant to *be* a child's progress (§D9, WP-09), and the one
+   that showed the least of it: two colour bands, a white ellipse for a cloud,
+   Nova in a void, three text cards. A child who had earned nothing and a child
+   who had earned everything saw very nearly the same screen.
+
+   It is a room now, and the three places a child can put something are places
+   in that room rather than cards under it.
+   ========================================================================== */
+
+.kid-room {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/*
+ * The room keeps the drawing's own proportions.
+ *
+ * The slots are positioned as percentages of this box and the artwork is drawn
+ * at 1000x620, so the box has to be 1000x620 or the shelf a child is aiming at
+ * and the button they are pressing drift apart as the window resizes. `meet`
+ * rather than `slice` for the same reason: cropping moves the furniture.
+ */
+.kid-room-scene {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 50 / 31;
+  border-radius: var(--kid-radius-lg);
+  overflow: hidden;
+  background: var(--scene-timber);
+}
+.kid-room-art { display: block; width: 100%; height: 100%; }
+
+/* ---- the room's materials ---- */
+.kid-room-wall { fill: var(--scene-timber); }
+.kid-room-plank { stroke: var(--scene-timber-deep); stroke-width: 3; opacity: 0.55; fill: none; }
+.kid-room-beam { fill: var(--scene-bark); }
+.kid-room-beam-deep { fill: var(--scene-bark-deep); }
+.kid-room-timber { fill: var(--scene-bark); }
+.kid-room-timber-deep { fill: var(--scene-bark-deep); }
+.kid-room-floor { fill: var(--scene-timber-deep); }
+.kid-room-board { stroke: var(--scene-bark); stroke-width: 4; opacity: 0.4; fill: none; }
+.kid-room-rug { fill: var(--kid-coral-200); }
+.kid-room-rug-deep { fill: var(--kid-coral-100); }
+
+/* The window, and the valley through it — the same hills and canopy as the map,
+   so a child can see their room is in the world they have been walking around. */
+.kid-room-sky { fill: var(--scene-sky-low); }
+.kid-room-hill-far { fill: var(--scene-canopy-far); }
+.kid-room-hill { fill: var(--scene-ground-deep); }
+.kid-room-sun { fill: var(--scene-sun); }
+.kid-room-frame { fill: none; stroke: var(--scene-bark); stroke-width: 16; }
+.kid-room-frame-bar { stroke: var(--scene-bark); stroke-width: 10; fill: none; }
+
+/* Dust in the window light. The only loop in the room. */
+.kid-room-motes circle {
+  fill: var(--scene-sun);
+  opacity: 0.5;
+  animation: kid-mote var(--kid-dur-ambient-slow) var(--kid-ease-ambient) infinite;
+}
+.kid-room-motes circle:nth-child(2) { animation-delay: -7s; }
+.kid-room-motes circle:nth-child(3) { animation-delay: -14s; }
+@keyframes kid-mote {
+  0%, 100% { translate: 0 0; opacity: 0.18; }
+  50% { translate: -14px -26px; opacity: 0.55; }
+}
+
+.kid-room-nova {
+  position: absolute;
+  inset-block-end: 4%;
+  inset-inline-start: 74%;
+  width: 14%;
+  --cast-size: 100%;
+}
+
+/* --------------------------------------------------------------------------
+   The three places something can go
+   --------------------------------------------------------------------------
+   Positioned over the drawing: the wall above the shelf, the shelf itself, and
+   the desk. Percentages match the coordinates the room is drawn at.
+   -------------------------------------------------------------------------- */
+
+.kid-room-spot {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  z-index: 2;
+}
+.kid-room-spot.spot-wall { inset-block-start: 11%; inset-inline-start: 24%; }
+.kid-room-spot.spot-shelf { inset-block-end: 60%; inset-inline-start: 15%; }
+.kid-room-spot.spot-desk { inset-block-end: 37%; inset-inline-start: 45%; }
+
+.kid-room-place {
+  display: grid;
+  place-items: center;
+  min-width: var(--kid-touch);
+  min-height: var(--kid-touch);
+  padding: var(--space-1);
+  border: var(--kid-border) dashed var(--scene-bark-deep);
+  border-radius: var(--kid-radius);
+  background: transparent;
+  cursor: pointer;
+  transition: scale var(--kid-dur-tap) var(--ease-spring);
+}
+/* A filled spot is the object and nothing else. The dashed outline is a hole
+   waiting to be filled; once something is in it, a border around a child's own
+   thing is just a box round a possession. */
+.kid-room-place[data-filled] { border-color: transparent; }
+/* Something is picked up and this spot could take it. */
+.kid-room-place[data-ready] {
+  border-style: solid;
+  border-color: var(--kid-sun-400);
+  background: var(--kid-sun-50);
+}
+.kid-room-place:active:not(:disabled) { scale: 0.94; }
+.kid-room-place:focus-visible { outline: none; box-shadow: var(--kid-focus-ring); }
+.kid-room-place:disabled { cursor: default; }
+
+/* The empty shape. Drawn rather than a plus sign, which is a control from an
+   adult interface — what belongs here is the outline of a thing. */
+.kid-room-empty {
+  display: block;
+  width: calc(var(--kid-touch) * 0.6);
+  height: calc(var(--kid-touch) * 0.6);
+  border: 2px dashed var(--scene-bark-deep);
+  border-radius: var(--kid-radius-pill);
+  opacity: 0.5;
+}
+
+.kid-room-return {
+  padding: var(--space-1) var(--space-2);
+  min-height: var(--touch-min);
+  border: 1px solid var(--scene-bark);
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface);
+  color: var(--kid-ink-soft);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.kid-room-return:focus-visible { outline: none; box-shadow: var(--kid-focus-ring); }
+
+/* --------------------------------------------------------------------------
+   What Nova says, and the bag
+   -------------------------------------------------------------------------- */
+
+.kid-room-said {
+  min-height: var(--space-6);
+  font-family: var(--font-body);
+  font-size: var(--kid-text-min);
+  line-height: var(--kid-leading-body);
+  color: var(--kid-ink-soft);
+}
+
+.kid-room-bag h3 {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  color: var(--kid-world-ink);
+  margin-block-end: var(--space-3);
+}
+.kid-room-bag-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kid-gap);
+}
+.kid-room-bag-items > button {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  min-width: var(--kid-touch-primary);
+  min-height: var(--kid-touch-primary);
+  padding: var(--space-3);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  box-shadow: var(--kid-shadow);
+  cursor: pointer;
+  transition:
+    translate var(--kid-dur-tap) var(--ease-out),
+    border-block-end-width var(--kid-dur-tap) var(--ease-out);
+}
+.kid-room-bag-items > button:active:not(:disabled) {
+  translate: 0 var(--kid-press);
+  border-block-end-width: var(--kid-border);
+}
+.kid-room-bag-items > button.selected {
+  border-color: var(--kid-sun-400);
+  background: var(--kid-sun-50);
+}
+.kid-room-bag-items > button:focus-visible { outline: none; box-shadow: var(--kid-focus-ring); }
+.kid-room-bag-empty {
+  padding: var(--space-5);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface-sunk);
+  color: var(--kid-ink-soft);
+  font-family: var(--font-body);
+  font-size: var(--kid-text-min);
+}
+
+.kid-room-guide {
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+}
+.kid-room-guide summary { min-height: var(--touch-min); cursor: pointer; font-weight: 700; }
+.kid-room-guide p { margin-block-start: var(--space-2); color: var(--ink-soft); }
+
+/* --------------------------------------------------------------------------
+   The objects themselves
+   --------------------------------------------------------------------------
+   `app/experience.css` framed every one in a gold rounded box with a dashed
+   inner border and a star in the corner — a frame that existed because the
+   thing inside it was a 24px toolbar icon and needed help reading as treasure.
+   The drawings do not, and a box around a child's own possession is just a box.
+   -------------------------------------------------------------------------- */
+
+.item-art {
+  display: inline-grid;
+  place-items: center;
+  width: var(--kid-touch-primary);
+  height: var(--kid-touch-primary);
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+.kid-object-art { display: block; width: 100%; height: auto; overflow: visible; }
+
+.kid-object-rest { fill: var(--scene-contact-soft); }
+.kid-object-paper { fill: var(--kid-sun-50); }
+.kid-object-paper-deep { fill: var(--kid-sun-100); }
+.kid-object-ink { fill: none; stroke: var(--scene-bark-deep); stroke-width: 3; stroke-linecap: round; opacity: 0.7; }
+.kid-object-gold { fill: var(--kid-sun-300); }
+.kid-object-gold-deep { fill: var(--kid-sun-400); }
+.kid-object-cover { fill: var(--kid-grape-400); }
+.kid-object-cover-deep { fill: var(--kid-grape-500); }
+.kid-object-leaf { fill: var(--scene-canopy-near); }
+.kid-object-leaf-deep { fill: var(--scene-canopy-deep); }
+.kid-object-stem { fill: none; stroke: var(--scene-canopy-deep); stroke-width: 5; stroke-linecap: round; }
+.kid-object-clay { fill: var(--scene-roof); }
+.kid-object-clay-deep { fill: var(--scene-roof-deep); }
+.kid-object-wood { fill: var(--scene-bark); }
+.kid-object-water { fill: var(--scene-water); }
+.kid-object-water-deep { fill: var(--scene-water-deep); }
+.kid-object-stone { fill: var(--scene-stone); }
+.kid-object-stone-deep { fill: var(--scene-stone-deep); }
+.kid-object-fur { fill: var(--kid-berry-300); }
+.kid-object-fur-deep { fill: var(--kid-berry-400); }
+.kid-object-belly { fill: var(--kid-berry-50); }
+.kid-object-eye { fill: var(--cast-eye); }
+.kid-object-shine { fill: var(--cast-eye-shine); }
+.kid-object-metal { fill: var(--cast-pip-shell); }
+.kid-object-metal-deep { fill: var(--cast-pip-shell-deep); }
+.kid-object-screen { fill: var(--cast-pip-screen); }
+.kid-object-glow { fill: var(--cast-pip-glow); }
+
+@media (max-width: 767px) {
+  .kid-room-spot.spot-wall { inset-inline-start: 22%; }
+  .kid-room-spot.spot-shelf { inset-inline-start: 10%; }
+  .kid-room-spot.spot-desk { inset-inline-start: 44%; }
+  .kid-room-nova { width: 18%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kid-room-motes circle { animation: none; }
+}

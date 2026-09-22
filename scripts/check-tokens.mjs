@@ -32,15 +32,15 @@ const root = resolve(import.meta.dirname, "..");
  * — 2,418 bytes, 16 raw colours and 11 px font sizes with them.
  */
 export const BUDGETS = {
-  legacyCssBytes: 206_664,
+  legacyCssBytes: 202_512,
   important: 25,
   /**
    * Raw colours and px font sizes still sitting in the sixteen legacy sheets. The blueprint
    * bans both in new CSS; in old CSS they are a debt with a number on it. A screen that moves
    * to the child layer takes its share of them with it.
    */
-  legacyRawHex: 932,
-  legacyFontPx: 509,
+  legacyRawHex: 878,
+  legacyFontPx: 498,
 };
 
 const HEX = /#[0-9a-fA-F]{3,8}\b/g;

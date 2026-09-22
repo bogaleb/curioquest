@@ -441,6 +441,47 @@ two disagree.
   Studio, the Game Zone's help panels, the story passages and the discovery invitation; they
   go with the rooms pass.
 
+- **WP-11 §3.4 — My Treehouse, and the reward objects. Shipped.** This was the biggest
+  emotional miss in the product. The screen that is meant to *be* a child's progress (§D9,
+  WP-09) was two flat colour bands, one white ellipse for a cloud, Nova standing in a void
+  and three text cards: a child who had earned nothing and a child who had earned everything
+  saw very nearly the same screen.
+
+  It is a room now — plank walls, roof beams, floorboards, a rug, a shelf, a desk, and a
+  window onto the same valley the map is set in, drawn with the same hills and canopy
+  colours so a child can see their room is *in* the world they have been walking around.
+  The three places something can go are places in that room rather than cards under it, and
+  an empty one reads as empty: a drawn outline of the shape that would sit there, with no
+  padlock and no number.
+
+  **The eight reward objects are drawn.** They were Lucide icons — a 1.6px grey stroke in a
+  24px box, the same weight as the glyphs in a settings menu — inside a gold frame that
+  existed to help them read as treasure. A rolled map tied with a ribbon, a book with a
+  ribbon marker, a seedling in a pot, a globe on a stand, a stone bridge, a small creature,
+  a crescent moon, a little robot. The frame is gone with them: a box around a child's own
+  possession is just a box.
+
+  There are still three slots — wall, shelf, desk — because that is what the server accepts
+  and what every existing family's saved placements refer to. Whether a treehouse should
+  fill with more than three things is WP-09's decision; adding slots here would be a data
+  change wearing a paint job.
+
+  A real bug fell out of the migration. The legacy `.spot-desk` rule set `right: 13%` while
+  the new rule set `inset-inline-start`, so the desk's slot was positioned by both at once
+  and landed off the desk entirely. Deleting the dead rules fixed it — which is the argument
+  for attrition rather than for layering new CSS on top of old.
+
+  **Ratchet:** legacy stylesheets 206,664B → **202,512B**, raw colours 932 → 878, px font
+  sizes 509 → 498. `app/experience.css` lost 51 rules with the screens that used them.
+
+  Verified at iPad landscape; `outputs/wp11-treehouse.png`. 283 tests pass, build clean.
+
+  Still not true: the filled state is verified only by reading the code, because the
+  verification account has no earned objects and seeding one is a content change. The
+  Treasure Chest (§3.5) is untouched — still eight white cards with grey Lucide icons and
+  "0 of 20" — and the Central Plaza tab above the treehouse is still the old card layout.
+  Both go with the rooms.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.
