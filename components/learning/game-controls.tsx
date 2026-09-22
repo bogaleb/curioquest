@@ -105,7 +105,7 @@ function HowToPlay({
     <div className="game-sheet" role="dialog" aria-modal="true" aria-labelledby="how-to-play-title">
       <section className="game-sheet-card">
         <button className="close" aria-label="Close" onClick={onClose}><X /></button>
-        <span className="eyebrow">HOW TO PLAY</span>
+        
         <h2 id="how-to-play-title">{title}</h2>
         <p className="game-goal">{design.goal}</p>
         <ol className="how-to-play">
@@ -178,7 +178,7 @@ function ConfirmRestart({
   return (
     <div className="game-sheet" role="dialog" aria-modal="true" aria-labelledby="restart-title">
       <section className="game-sheet-card">
-        <span className="eyebrow">START OVER</span>
+        
         <h2 id="restart-title">Play this mission again from the start?</h2>
         <p>
           You will go back to the first discovery. The stars you have already earned stay

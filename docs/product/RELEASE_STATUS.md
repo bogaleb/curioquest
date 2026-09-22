@@ -482,6 +482,48 @@ two disagree.
   "0 of 20" — and the Central Plaza tab above the treehouse is still the old card layout.
   Both go with the rooms.
 
+- **WP-11 §3.5–§3.6 — The rooms and the Treasure Chest. Shipped, with a named tail.**
+  The eight secondary rooms are on the freeze list (§F) and receive no new investment;
+  what they get here is the visual floor.
+
+  **One change covers all of them.** `KidShell` now paints the world behind every child
+  route — sky, hills and ground in the destination's own hue, behind a veil of one known
+  opacity. A child who touches the harbour on the map and lands on a white page with cards
+  on it has not gone anywhere; landing in the harbour's own light is the colour telling a
+  pre-reader where they are before they can read where they are. Surfaces that compose the
+  full five planes themselves — the map, the Reading Grove, the activity player — skip it.
+
+  **Twenty-five ALL-CAPS kickers are gone** from sixteen child components, along with the
+  marketing lines above them: `THE CURIOSITY PLAYGROUND`, `MIRA'S CREATIVE STUDIO`,
+  `NOVA'S STORY ADVENTURE`, `CURIOQUEST ORIGINAL · INTERACTIVE STORY`, `HOW TO PLAY`,
+  `SOUND BRIDGE`, `WORD WORKSHOP` and the rest. The ones that survive are real labels on
+  rooms that have not been redesigned, and `.eyebrow` inside `KidShell` is now quietened
+  rather than shouted: sentence case, no tracking, and at the band's type floor instead of
+  12px. `app/motion.css` was uppercasing all of them in CSS, which is why several looked
+  like shouting that was not in the source.
+
+  **The Treasure Chest is a chest.** It was eight white cards with grey Lucide strokes,
+  two dashboard stat tiles and "0 of 20". The head of the screen is now a drawn chest,
+  open, with its own light coming out of it — which does the job the kicker, the heading
+  and the sentence were doing between them. The seventeen achievement icons are six drawn
+  award marks (a medal, a wreath, a key, a gem, a feather, a summit flag) mapped by what
+  each achievement is about. That is a deliberate trade: every card already carries its own
+  name and sentence, and six good marks beat seventeen thin ones until there is an
+  illustrator. Unearned ones are the same drawing drained of colour — never a padlock,
+  which says "withheld" rather than "not yet".
+
+  Verified: `/play`, `/create`, `/science`, `/stories` and `/rewards` at iPad landscape.
+  `outputs/wp11-chest.png`, `outputs/wp11-room-create.png`. 283 tests pass, build clean.
+
+  **Still not true, counted rather than hand-waved.** Roughly 650 emoji remain in the
+  *content* files — `lib/reading/content.ts` alone has 143, `lib/content/science-investigations.ts`
+  127, `lib/story-library.ts` 93 — and about 30 remain in components where they are
+  functional rather than decorative: the Creative Studio's stamp palette, the robot grid's
+  pieces, the per-game icons the Game Zone reads from `lib/arcade.ts`. Replacing those
+  needs a drawn asset per content row, which is a content project and not a styling one.
+  §A's ban on emoji as artwork is therefore **not yet met**, and saying otherwise because
+  the obvious ones are gone would be the kind of claim §G exists to prevent.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.

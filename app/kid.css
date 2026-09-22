@@ -2743,3 +2743,143 @@
 @media (prefers-reduced-motion: reduce) {
   .kid-room-motes circle { animation: none; }
 }
+
+/* --------------------------------------------------------------------------
+   The world behind every room                                       (WP-11)
+   --------------------------------------------------------------------------
+
+   Fixed, so it does not scroll away under a long room, and behind everything,
+   so no room has to know it is there. The veil keeps the contrast of every
+   room's own content a single known quantity rather than eight separate
+   questions — the same argument as the activity player's, for the same reason.
+   -------------------------------------------------------------------------- */
+
+.kid-shell-world {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.kid-shell-world > .kid-scene-world { position: absolute; inset: 0; }
+
+.kid-shell-veil {
+  position: absolute;
+  inset: 0;
+  background: var(--kid-surface);
+  opacity: 0.8;
+}
+
+/* The rooms sit above it. They were painting their own backgrounds onto the
+   page; those are still there and still fine, and this simply stops the page
+   itself being white behind them. */
+.kid-shell-main,
+.kid-shell-door { position: relative; z-index: 1; }
+
+/* The drawn mark on the reading invitation, which used to be a pair of emoji
+   sized by the platform font. */
+.reading-invitation-mark { display: block; width: clamp(56px, 8vw, 88px); flex: none; }
+.reading-invitation-mark > svg { display: block; width: 100%; height: auto; }
+
+/* ==========================================================================
+   THE ROOMS                                                         (WP-11)
+   ==========================================================================
+
+   The eight secondary rooms are on the freeze list (§F): they keep working and
+   receive no new investment. What they get here is the visual floor — the
+   world behind them from `KidShell`, type that meets the band, and no shouting.
+   ========================================================================== */
+
+/*
+ * The kicker, un-shouted.
+ *
+ * `app/motion.css` sets `.eyebrow` to 12px, uppercase, with 1.7px of letter
+ * spacing. §C5 bans a shouted eyebrow on a child surface, and 12px is below the
+ * floor for every band — it is also, on most of these screens, the label saying
+ * what the screen *is*.
+ *
+ * Twenty-five of them were deleted outright along with the screens' marketing
+ * lines. The rest are real labels on rooms that have not been redesigned, so they
+ * are quietened rather than removed: sentence case, no tracking, and readable.
+ */
+.kid-shell .eyebrow {
+  font-size: var(--kid-text-min);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--kid-ink-soft);
+}
+
+/* --------------------------------------------------------------------------
+   The Treasure Chest
+   -------------------------------------------------------------------------- */
+
+.kid-chest-mark {
+  display: block;
+  flex: none;
+  width: clamp(150px, 22vw, 260px);
+}
+.kid-chest-art { display: block; width: 100%; height: auto; overflow: visible; }
+
+.kid-chest-rest { fill: var(--scene-contact-soft); }
+.kid-chest-lid { fill: var(--scene-timber); }
+.kid-chest-lid-deep { fill: var(--scene-timber-deep); }
+.kid-chest-body { fill: var(--scene-timber); }
+.kid-chest-body-deep { fill: var(--scene-timber-deep); }
+.kid-chest-band { fill: var(--kid-sun-400); }
+.kid-chest-lock { fill: var(--kid-sun-300); }
+.kid-chest-line { stroke: var(--scene-timber-deep); stroke-width: 4; fill: none; opacity: 0.7; }
+/* The light out of the chest: what makes it read as open and as holding
+   something, without drawing anything specific inside it. */
+.kid-chest-glow { fill: var(--kid-sun-100); }
+
+.kid-shell .cq-chest-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  text-align: start;
+}
+
+/* --------------------------------------------------------------------------
+   Award marks
+   -------------------------------------------------------------------------- */
+
+.kid-award-art { display: block; width: 100%; height: 100%; overflow: visible; }
+
+.kid-award-face { fill: var(--kid-sun-300); }
+.kid-award-rim { fill: none; stroke: var(--kid-sun-500); stroke-width: 3; }
+.kid-award-mark { fill: var(--kid-sun-50); }
+.kid-award-ribbon { fill: var(--kid-coral-300); }
+.kid-award-leaf { fill: var(--scene-canopy-near); }
+.kid-award-hole { fill: var(--kid-sun-50); }
+.kid-award-shaft { stroke: var(--kid-sun-500); stroke-width: 6; stroke-linecap: round; fill: none; }
+.kid-award-facet { fill: var(--kid-sun-200); }
+.kid-award-shine { fill: var(--kid-sun-50); opacity: 0.8; }
+.kid-award-hill { fill: var(--scene-ground-deep); }
+
+/* The badge box the card already had, sized for a drawing rather than a glyph. */
+.kid-shell .cq-trophy-badge {
+  display: grid;
+  place-items: center;
+  width: var(--kid-touch);
+  height: var(--kid-touch);
+  background: none;
+  border: 0;
+  box-shadow: none;
+}
+
+/*
+ * Unearned.
+ *
+ * The same drawing, drained of colour and dimmed — not a padlock and not a
+ * different picture. A padlock says something is being withheld; this says
+ * "not collected yet", which is what is actually true. The card's own name and
+ * sentence carry the rest, and `aria-label` already states the progress.
+ */
+.kid-shell .cq-trophy:not(.is-earned) .cq-trophy-badge {
+  filter: grayscale(1);
+  opacity: 0.45;
+}
+
+/* Nova on the discovery invitation, where a 🦊 glyph used to stand. */
+.kid-shell .discovery-buddy { display: block; width: clamp(72px, 10vw, 120px); --cast-size: 100%; }

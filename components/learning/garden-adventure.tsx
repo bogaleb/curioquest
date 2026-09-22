@@ -10,7 +10,7 @@ export function StoryTrail({progress,busy,onStart,onGarden}:Props) {
   const chapter=campaignChapters.find((_,i)=>!progress.chapters.includes(i));
   return <section className="story-trail">
     <div className="story-heading"><span className="story-medallion" aria-hidden="true">🌱</span><div>
-      <div className="eyebrow">NOVA’S STORY ADVENTURE</div><h2>The Mystery of the Missing Seeds</h2>
+      <h2>The Mystery of the Missing Seeds</h2>
       <p>{chapter?.story??"Mystery solved! The seeds are safe, and a garden of possibilities is yours."}</p>
     </div></div>
     <ol className="chapter-path">{campaignChapters.map((item,i)=><li key={item.id} className={progress.chapters.includes(i)?"complete":chapter===item?"current":""}>
@@ -33,7 +33,7 @@ export function GardenLab({progress,busy,onSave,onOffline,offline=true}:{
   const unlocked=progress.chapters.includes(2);
   const checklist=gardenChallenge(garden);
   return <div className="garden-lab">
-    <div className="eyebrow">MAKE A LITTLE WONDER</div><h1>Your CurioGarden</h1>
+    <h1>Your CurioGarden</h1>
     <p className="lead">A home for plants, a path for friends. What will you create?</p>
     <div className="garden-layout"><section className="garden-workbench">
       <div className="garden-sky"><span>☁️</span><strong>Build. Notice. Try another way.</strong><span>☀️</span></div>
@@ -55,7 +55,7 @@ export function GardenLab({progress,busy,onSave,onOffline,offline=true}:{
       <ul>{checklist.map(c=><li key={c.label}><span>{checked&&c.done?"✓":"○"}</span>{c.label}</li>)}</ul>
       {checked&&<p role="status">{checklist.every(c=>c.done)?"Plants, water, and a path! Tell a grown-up how you planned your garden.":"Engineers try ideas. What would you like to add next?"}</p>}
       <p className="form-note">Your design is yours. Creativity does not get a score.</p>
-    </section>{unlocked&&offline&&<section className="panel offline-card"><div className="eyebrow">YOUR NEXT ADVENTURE IS REAL</div><h2>Grow a seed together</h2>
+    </section>{unlocked&&offline&&<section className="panel offline-card"><h2>Grow a seed together</h2>
       <p>With a grown-up, put a seed in a small pot of soil. Add a little water. Find a bright spot and check it each day.</p>
       <p>Draw what you notice. What do you predict will happen next?</p>
       <button className="secondary" disabled={busy||!!progress.offline.requestedAt} onClick={onOffline}><Check size={18}/>

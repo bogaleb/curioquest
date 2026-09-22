@@ -10,7 +10,7 @@ type Props = { question: PublicQuestion; busy: boolean; correct: boolean; onAnsw
 export function StoryPage({ passage }: {passage: NonNullable<PublicQuestion["passage"]>}) {
   return <section className="story-book" aria-label={passage.title}>
     <div className="story-book-art" aria-hidden="true">{passage.emoji}<span>✦</span></div>
-    <div><span className="eyebrow">A STORY FROM CURIOQUEST</span><h2>{passage.title}</h2><p>{passage.text}</p>
+    <div><h2>{passage.title}</h2><p>{passage.text}</p>
       <button className="text-button" onClick={()=>readAloud(`${passage.title}. ${passage.text}`)}><Volume2 size={19}/>Listen to the story</button></div>
   </section>;
 }

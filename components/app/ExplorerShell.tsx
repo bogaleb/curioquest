@@ -261,6 +261,9 @@ function ShellFrame({ children }: { children: ReactNode }) {
           narration={narration}
           reducedMotion={reducedMotion}
           atMap={view === "adventure"}
+          // The Reading Grove composes all five planes itself (WP-11 §3.3); the shell's
+          // backdrop underneath it would be paint nobody ever sees.
+          backdrop={view !== "reading"}
           inert={blocking}
           onHome={() => navigate("adventure")}
         >

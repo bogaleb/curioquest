@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Compass, Volume2 } from "lucide-react";
+import { CastFigure } from "@/components/kid/art/cast";
 import type { PublicExplorer } from "@/lib/explorer-view";
 
 export function DiscoveryInvitation({ profile, busy, onStart, onListen }: {
@@ -13,11 +14,11 @@ export function DiscoveryInvitation({ profile, busy, onStart, onListen }: {
   if (active && !profile.session?.discovery) return null;
   const message = `Hello ${profile.name}! I’m Nova. Let’s find three paths together. We’ll listen, count, and solve little puzzles. You can ask for help any time.`;
   return <section className="discovery-invitation" aria-labelledby="discovery-title">
-    <span className="discovery-buddy" aria-hidden="true">🦊</span>
-    <div className="discovery-copy"><div className="eyebrow">YOUR FIRST TRAIL WITH NOVA</div>
+    <span className="discovery-buddy"><CastFigure who="nova" state="wave" /></span>
+    <div className="discovery-copy">
       <h2 id="discovery-title">A little hello. A world to discover.</h2>
       <p>Six little discoveries help Nova find a comfortable path for you. No rush, and help is always welcome.</p>
-      <div className="discovery-paths"><span>🌳 Listen</span><span>🌻 Count</span><span>🔎 Wonder</span></div>
+      <div className="discovery-paths"><span>Listen</span><span>Count</span><span>Wonder</span></div>
       <div className="discovery-actions"><button className="primary" disabled={busy} onClick={onStart}>
         <Compass size={19}/>{inProgress || active ? "Continue with Nova" : "Meet Nova"}<ArrowRight size={18}/>
       </button><button className="text-button" onClick={() => onListen(message)}><Volume2 size={19}/>Listen</button></div>
