@@ -73,9 +73,11 @@ function Body() {
       />
       <path className="lab-dia-brain" d="M100 16c9 0 15 6 15 13s-6 13-15 13-15-6-15-13 6-13 15-13Z" />
       <g className="lab-dia-brain-fold"><path d="M92 22c4 4 4 8 0 12M108 22c-4 4-4 8 0 12M100 20v22" /></g>
-      <path className="lab-dia-heart" d="M88 72c-7-7 1-17 8-11 7-6 15 4 8 11l-8 9Z" />
+      {/* Lungs first, then the heart on top of them: the heart sits between and slightly
+          in front of the two, and painting it underneath hid half of it. */}
       <path className="lab-dia-lung" d="M112 62c8 0 13 8 13 18s-4 16-11 16-8-6-8-14 0-20 6-20Z" />
       <path className="lab-dia-lung" d="M84 62c-8 0-13 8-13 18s4 16 11 16 8-6 8-14 0-20-6-20Z" />
+      <path className="lab-dia-heart" d="M88 72c-7-7 1-17 8-11 7-6 15 4 8 11l-8 9Z" />
       <g className="lab-dia-bone">
         <path d="M66 112h68" />
         <path d="M74 126h52" />

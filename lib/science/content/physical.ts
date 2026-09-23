@@ -224,7 +224,7 @@ export const physicalTopics: LabTopic[] = [
             {
               id: "boat",
               name: t2("Steel boat", "Steel hull"),
-              art: "wood",
+              art: "boat",
               clues: [
                 {
                   id: "material",
@@ -603,7 +603,7 @@ export const physicalTopics: LabTopic[] = [
             {
               id: "smooth",
               name: t3("A smooth floor", "A smooth wooden floor", "Polished floor at the base"),
-              art: "wood",
+              art: "wheel",
               clues: [
                 { id: "feel", label: t3("Feel the floor", "Feel the floor", "Feel the surface"), detail: t3("It is smooth and slippy.", "Your hand slides across it easily.", "Very little resistance when a hand is dragged across it.") },
                 { id: "fair", label: t3("Same car", "Keep it fair", "Check the controls"), detail: t3("It is the same car as before.", "Same car, same ramp, same starting place.", "Car, ramp angle and release point are all unchanged.") },
@@ -620,7 +620,7 @@ export const physicalTopics: LabTopic[] = [
             {
               id: "rug",
               name: t3("A fluffy rug", "A rough rug at the bottom", "Rough rug at the base"),
-              art: "curtain",
+              art: "wheel",
               clues: [
                 { id: "feel", label: t3("Feel the rug", "Feel the rug", "Feel the surface"), detail: t3("It is rough and fluffy.", "Rough and fluffy. Your hand drags when you push it along.", "High resistance when a hand is dragged across it.") },
                 { id: "fair", label: t3("Same car", "Keep it fair", "Check the controls"), detail: t3("Same car, same ramp.", "Only the surface has changed. Everything else is the same.", "Surface is the only variable that has changed.") },
@@ -637,7 +637,7 @@ export const physicalTopics: LabTopic[] = [
             {
               id: "steeper",
               name: t3("A steeper ramp", "A steeper ramp, smooth floor", "Steeper ramp, same smooth floor"),
-              art: "ramp-art",
+              art: "wheel",
               clues: [
                 { id: "angle", label: t3("Look at the ramp", "Look at the slope", "Measure the slope"), detail: t3("The ramp is much higher at the top.", "The ramp is raised higher, so the slope is steeper.", "A greater angle means a larger component of gravity acts along the slope.") },
                 { id: "floor", label: t3("Feel the floor", "Feel the floor", "Check the surface"), detail: t3("Still the smooth floor.", "The smooth floor is back. No rug this time.", "Surface returned to the smooth control condition.") },
@@ -1026,7 +1026,7 @@ export const physicalTopics: LabTopic[] = [
             {
               id: "soft",
               name: t3("A gentle tap", "A gentle tap", "A gentle strike"),
-              art: "drum",
+              art: "hand",
               clues: [
                 { id: "hear", label: t3("Listen", "Listen", "Listen"), detail: t3("A small quiet sound.", "A quiet sound, and it fades fast.", "Low amplitude, short duration.") },
                 { id: "touch", label: t3("Touch the skin", "Touch the skin", "Touch the skin"), detail: t3("It tickles your finger a tiny bit.", "You can just feel it buzzing under your finger.", "A faint, rapid movement is detectable by touch.") },
@@ -1043,7 +1043,7 @@ export const physicalTopics: LabTopic[] = [
             {
               id: "hard",
               name: t3("A big bang", "A firm hit", "A firm strike"),
-              art: "drum",
+              art: "hand",
               clues: [
                 { id: "hear", label: t3("Listen", "Listen", "Listen"), detail: t3("A big loud sound!", "A much louder sound, and it lasts longer.", "Much greater amplitude, and it rings for longer.") },
                 { id: "touch", label: t3("Touch the skin", "Touch the skin", "Touch the skin"), detail: t3("It buzzes your finger a lot.", "It buzzes strongly under your finger.", "A strong vibration, easily felt.") },

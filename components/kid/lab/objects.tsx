@@ -102,6 +102,7 @@ const ART: Record<LabObjectArt, ArtSpec> = {
 
   /* --- liquids and what holds them ---------------------------------------- */
   water: { shape: "vessel", tone: "water", accent: "wave" },
+  boat: { shape: "vessel", tone: "metal", accent: "wave" },
   milk: { shape: "vessel", tone: "paper", accent: "wave" },
   honey: { shape: "vessel", tone: "sun", accent: "drop" },
   ocean: { shape: "land", tone: "water", accent: "wave" },
@@ -137,7 +138,7 @@ const ART: Record<LabObjectArt, ArtSpec> = {
   octopus: { shape: "creature", tone: "grape", accent: "arms" },
   camel: { shape: "creature", tone: "path", accent: "hump" },
   frog: { shape: "creature", tone: "leaf", accent: "legs" },
-  beetle: { shape: "creature", tone: "grape", accent: "shine" },
+  beetle: { shape: "creature", tone: "grape", accent: "legs" },
 
   /* --- life-cycle stages ---------------------------------------------------- */
   egg: { shape: "grub", tone: "paper" },
@@ -381,17 +382,17 @@ const Grub: Silhouette = ({ accent }) => (
   <>
     {accent === "wings" && (
       <g className="lab-shade">
-        <path d="M30 32C20 18 8 18 6 26c-2 9 10 16 24 12Z" />
-        <path d="M34 32c10-14 22-14 24-6 2 9-10 16-24 12Z" />
+        <path d="M30 32C18 12 4 12 3 24c-1 13 12 22 27 14Z" />
+        <path d="M34 32c12-20 26-20 27-8 1 13-12 22-27 14Z" />
       </g>
     )}
-    {accent === "tail" && <path className="lab-shade" d="M44 32c8-6 12-10 16-10-4 8-4 14 0 22-6-2-10-6-16-12Z" />}
-    <rect className="lab-fill" x="14" y="24" width="34" height="18" rx="9" />
-    <circle className="lab-fill" cx="20" cy="33" r="10" />
-    <path className="lab-shade" d="M48 33a9 9 0 0 1-9 9h-6c7-2 10-5 10-9s-3-7-10-9h6a9 9 0 0 1 9 9Z" />
-    {accent === "legs" && <g className="lab-mark"><path d="M22 42v6M30 42v6M38 42v6" /></g>}
-    {accent === "grain" && <g className="lab-mark"><circle cx="22" cy="33" r="2" /><circle cx="31" cy="33" r="2" /><circle cx="40" cy="33" r="2" /></g>}
-    {accent === "shine" && <path className="lab-mark" d="M20 26c8-2 16-2 24 0" />}
+    {accent === "tail" && <path className="lab-shade" d="M44 32c9-9 14-14 20-15-5 10-5 20 0 30-8-3-13-8-20-15Z" />}
+    <rect className="lab-fill" x="10" y="19" width="42" height="26" rx="13" />
+    <circle className="lab-fill" cx="18" cy="32" r="14" />
+    <path className="lab-shade" d="M52 32a13 13 0 0 1-13 13h-8c9-3 13-7 13-13s-4-10-13-13h8a13 13 0 0 1 13 13Z" />
+    {accent === "legs" && <g className="lab-mark"><path d="M20 45v8M30 45v8M40 45v8" /></g>}
+    {accent === "grain" && <g className="lab-mark"><circle cx="20" cy="32" r="3" /><circle cx="31" cy="32" r="3" /><circle cx="42" cy="32" r="3" /></g>}
+    {accent === "shine" && <path className="lab-mark" d="M16 22c10-3 22-3 32 0" />}
   </>
 );
 

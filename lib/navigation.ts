@@ -87,7 +87,7 @@ export const destinations: Destination[] = [
     place: { x: 72, y: 10, world: "harbor", childName: "The theatre", size: "small" } },
   { id: "worlds", href: "/worlds", label: "My worlds", shortLabel: "Worlds", icon: MapIcon, title: "My worlds", group: "secondary",
     place: { x: 44, y: 10, world: "grove", childName: "The far hills", size: "small" } },
-  { id: "garden", href: "/build", label: "Build Lab", shortLabel: "Build", icon: Leaf, title: "Build Lab", group: "secondary",
+  { id: "garden", href: "/build", label: "Build Yard", shortLabel: "Build", icon: Leaf, title: "Build Yard", group: "secondary",
     place: { x: 16, y: 10, world: "workshop", childName: "Build yard", size: "small" } },
   { id: "team", href: "/team", label: "Team Quest", shortLabel: "Team", icon: Users, title: "Team Quest", group: "secondary",
     place: { x: 70, y: 36, world: "city", childName: "Team camp", size: "small" } },

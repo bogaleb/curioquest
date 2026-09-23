@@ -58,6 +58,13 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("LIT.PK.PA.BLEND_01", "reading", "phonemic-awareness", "Blend two sound parts", "Combine an onset and rime to make a spoken word.", ["prek", "grade1"], 1.7, ["LIT.PK.PA.INITIAL_01"]),
   skill("LIT.PK.ALPH.NAME_01", "reading", "alphabet-knowledge", "Name common letters", "Recognize and name frequently encountered uppercase letters.", ["prek", "grade1"], 1.2, [], 5, true),
   skill("LIT.PK.ALPH.CASE_01", "reading", "alphabet-knowledge", "Match letter partners", "Match uppercase letters with their lowercase forms.", ["prek", "grade1"], 1.6, ["LIT.PK.ALPH.NAME_01"], 6, true),
+  // Added with the Making Place rebuild. Handwriting had no skill of its own, so the
+  // writing room could record nothing and a child's letter formation was invisible to
+  // the parent report — the one thing a grown-up asks about first at this age.
+  skill("LIT.PK.WRITE.STROKE_01", "reading", "writing", "Control a writing stroke", "Draw the lines and curves every letter is built from, starting in the right place.", ["prek", "grade1"], 1.1, [], 5, true),
+  skill("LIT.PK.WRITE.LETTER_01", "reading", "writing", "Form letters correctly", "Write a letter with the right starting point, direction and height.", ["prek", "grade1"], 1.8, ["LIT.PK.WRITE.STROKE_01", "LIT.PK.ALPH.NAME_01"], 6, true),
+  skill("LIT.G1.WRITE.WORD_01", "reading", "writing", "Write a word from its sounds", "Hear the sounds in a short word and write the letters for them.", ["grade1"], 2.5, ["LIT.PK.WRITE.LETTER_01", "LIT.G1.PH.CVC_01"], 6, true),
+  skill("LIT.G1.WRITE.SENTENCE_01", "reading", "writing", "Write a sentence", "Finish a sentence with a capital at the start and a full stop at the end.", ["grade1"], 2.8, ["LIT.G1.WRITE.WORD_01"], 6, true),
   skill("LIT.PK.PRINT.DIRECTION_01", "reading", "print-concepts", "Follow print direction", "Track words from left to right during shared reading.", ["prek", "grade1"], 1.3),
 
   // Grade 1 literacy progression
@@ -156,6 +163,21 @@ skill("LIT.PK.ORAL.WORD_01", "reading", "oral-language", "Understand familiar wo
   skill("WORLD.G1.GEO.LAND_WATER_01", "world", "geography", "Tell land from water", "Identify land and water features on a simple map.", ["grade1"], 2.3, ["WORLD.PK.PLACE.HOME_01"], 5, true),
   skill("WORLD.G1.TIME.THEN_NOW_01", "world", "history", "Compare then and now", "Notice how an everyday object has changed over time.", ["grade1"], 2.5, [], 5, true),
   skill("WORLD.G1.INVENT.TOOLS_01", "world", "invention", "Match tools to jobs", "Choose the tool that solves a stated problem.", ["grade1"], 2.4, ["WORLD.PK.COMM.HELPERS_01"], 5, true),
+  // The Build Yard. Each skill is exercised by building something and testing it, so its
+  // evidence arrives with the `build`, `fix` and `predict` verbs rather than `choose`.
+  skill("WORLD.PK.MAP.LANDWATER_01", "world", "geography", "Make land and water features", "Build an island, a lake and a river on a simple map.", ["prek", "grade1"], 1.6, ["WORLD.PK.PLACE.HOME_01"], 5, true),
+  skill("WORLD.G1.MAP.DIRECTION_01", "world", "geography", "Use compass directions", "Place things north, south, east or west of a landmark on a map.", ["grade1"], 2.4, ["WORLD.PK.MAP.LANDWATER_01"], 5, true),
+  skill("WORLD.G1.MAP.GRID_01", "world", "geography", "Use a grid reference", "Find and mark a square on a map from a letter-number reference.", ["grade1"], 2.6, ["WORLD.G1.MAP.DIRECTION_01"], 5, true),
+  skill("WORLD.G1.MAP.ROUTE_01", "world", "geography", "Plan a route on a map", "Join two places with a connected road, crossing water by bridge.", ["prek", "grade1"], 2.0, ["WORLD.PK.MAP.LANDWATER_01"], 5, true),
+  skill("LOGIC.PK.CODE.SEQUENCE_01", "logic", "computing", "Give step-by-step instructions", "Program a robot with an ordered sequence of moves to reach a goal.", ["prek", "grade1"], 1.5, ["LOGIC.PK.SEQUENCE.ROUTINE_01"], 5, true),
+  skill("LOGIC.G1.CODE.DEBUG_01", "logic", "computing", "Find and fix a bug", "Run a program, find the first step that goes wrong, and correct it.", ["grade1"], 2.4, ["LOGIC.PK.CODE.SEQUENCE_01"], 5, true),
+  skill("LOGIC.G1.CODE.LOOP_01", "logic", "computing", "Use a repeat loop", "Shorten a program by repeating a step, and steer a robot with turns.", ["grade1"], 2.8, ["LOGIC.PK.CODE.SEQUENCE_01"], 5, true),
+  skill("SCI.PK.PHYS.BALANCE_01", "science", "physical-science", "Build something that stands", "Predict and test whether a stack of blocks will balance or fall.", ["prek", "grade1"], 1.5, [], 5, true),
+  skill("SCI.G1.PHYS.STRUCTURE_01", "science", "physical-science", "Support a bridge", "Build a bridge or overhang that is held up at its supports.", ["grade1"], 2.6, ["SCI.PK.PHYS.BALANCE_01"], 5, true),
+  skill("MATH.PK.GEO.COMPOSE_01", "math", "geometry", "Build with squares and patterns", "Continue colour patterns, count out squares and compose squares and rectangles.", ["prek", "grade1"], 1.4, ["MATH.PK.GEO.SHAPE_01"], 5, true),
+  skill("MATH.G1.GEO.SYMMETRY_01", "math", "geometry", "Complete a symmetrical picture", "Mirror a pattern across a line so both halves match.", ["grade1"], 2.4, ["MATH.PK.GEO.COMPOSE_01"], 5, true),
+  skill("MATH.G1.GEO.FRACTION_01", "math", "geometry", "Split a shape into equal parts", "Colour a half or a quarter of a shape made of equal squares.", ["grade1"], 2.6, ["MATH.PK.GEO.COMPOSE_01"], 5, true),
+  skill("MATH.G1.MEASURE.AREA_01", "math", "measurement", "Area and perimeter by counting", "Build a shape with a given number of squares inside and edges around it.", ["grade1"], 3.0, ["MATH.PK.GEO.COMPOSE_01"], 5, true),
 
   // Feelings and friendship: naming, perspective, choices
   skill("WELL.PK.EMOTION.NAME_01", "wellbeing", "emotions", "Name a feeling", "Match a face or situation to the feeling it shows.", ["prek", "grade1"], 1.2, [], 5, true),

@@ -1,12 +1,16 @@
 'use client';
 import {useEffect,useRef,useState,useCallback} from 'react';
-import {ArrowRight,RefreshCw} from 'lucide-react';
+import {ArrowRight,Heart,RefreshCw} from 'lucide-react';
 import type {ReadingView,ReadingActivity} from '@/lib/reading/types';
 import {AudioButton} from './AudioButton';
 import {LetterCatch} from './LetterCatch';
 import {BlendTrain} from './BlendTrain';
 import {SoundBoxes} from './SoundBoxes';
 import {DecodableReader} from './DecodableReader';
+import {GrownUpCoach} from './GrownUpCoach';
+import {SoundWarmup} from './SoundWarmup';
+import {SoundHunt} from './SoundHunt';
+import {LetterTrace} from './LetterTrace';
 import {celebrate} from '@/lib/audio';
 import {Scene,ScenePlane} from '@/components/kid/art/Scene';
 import {Bloom,Bush,FarHills,ForeLeaves,GrassTuft,GroundBand,SkyWash,Tree} from '@/components/kid/art/backdrops';
@@ -42,17 +46,21 @@ import type {LearningBandId} from '@/lib/learning-bands';
 async function fetchReading(profileId:string,signal?:AbortSignal):Promise<ReadingView>{const r=await fetch(`/api/reading?profile=${encodeURIComponent(profileId)}`,{signal:signal?AbortSignal.any([signal,AbortSignal.timeout(20000)]):AbortSignal.timeout(20000)});const d=await r.json() as ReadingView;if(!r.ok)throw Error(d.error);return d;}
 
 export function ReadingAdventure({profileId,name,paused,offline,onStars,band='prek',narration=true}:{profileId:string;name:string;paused:boolean;offline:boolean;onStars:(stars:number)=>void;band?:LearningBandId;narration?:boolean}){
-  const [data,setData]=useState<ReadingView|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[playing,setPlaying]=useState(false),[success,setSuccess]=useState<{activity:ReadingActivity;text:string}|null>(null);
+  const [data,setData]=useState<ReadingView|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[playing,setPlaying]=useState(false),[success,setSuccess]=useState<{activity:ReadingActivity;text:string}|null>(null),[warmedFor,setWarmedFor]=useState<string|null>(null),[practice,setPractice]=useState<'hunt'|'write'|null>(null);
   const lock=useRef(false),stage=useRef<HTMLDivElement>(null);
   const refresh=useCallback(async()=>{try{setData(await fetchReading(profileId));setError('');}catch(e){setError(e instanceof Error?e.message:'Try again.');}},[profileId]);
   useEffect(()=>{const controller=new AbortController();fetchReading(profileId,controller.signal).then(d=>{if(!controller.signal.aborted){setData(d);setError('');}}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return()=>{controller.abort();window.speechSynthesis?.cancel();};},[profileId]);
   async function act(action:string,response?:string){if(!data||lock.current)return;lock.current=true;setBusy(true);setError('');const previous=data.session?.activity;
-    try{const r=await fetch('/api/reading',{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(20000),body:JSON.stringify({action,profile:profileId,revision:data.revision,session:data.session?.id,activity:previous?.id,response})});const next=await r.json() as ReadingView;if(!r.ok)throw Error(next.error);setData(next);onStars(next.stars);if(action==='start'){setPlaying(true);setSuccess(null);requestAnimationFrame(()=>stage.current?.scrollIntoView({block:'start',behavior:'instant'}));}if(action==='answer'&&next.correct&&previous){setSuccess({activity:previous,text:next.feedback??'A new discovery!'});celebrate(!!next.session?.completedAt&&next.session.kind==='quest');}if(action==='skip')setSuccess(null);
+    try{const r=await fetch('/api/reading',{method:'POST',headers:{'Content-Type':'application/json'},signal:AbortSignal.timeout(20000),body:JSON.stringify({action,profile:profileId,revision:data.revision,session:data.session?.id,activity:previous?.id,response})});const next=await r.json() as ReadingView;if(!r.ok)throw Error(next.error);setData(next);onStars(next.stars);if(action==='start'){setPlaying(true);setSuccess(null);requestAnimationFrame(()=>stage.current?.scrollIntoView({block:'start',behavior:'instant'}));}if(action==='answer'&&next.correct&&previous){setSuccess({activity:previous,text:next.feedback??'A new discovery!'});setPractice(previous.kind==='letter-catch'&&previous.reason==='new'?'hunt':null);celebrate(!!next.session?.completedAt&&next.session.kind==='quest');}if(action==='skip')setSuccess(null);
     }catch(e){setError(e instanceof Error?e.message:'Try again.');}finally{lock.current=false;setBusy(false);}}
 
   const session=data?.session,activity=session?.activity;
   const skill=data?.catalog.skills.find(s=>s.id===activity?.skillId),word=data?.catalog.words.find(w=>w.id===activity?.target),story=data?.catalog.stories.find(s=>s.id===activity?.target);
   const help=session?.helpLevel??0;
+  // The sounds this child already knows, most recent first, for the warm-up. Offered once
+  // per session, at its start, and only when there are enough sounds to be worth reviewing.
+  const warmSkills=(data?.profile.introduced??[]).slice(-6).reverse().map(l=>data?.catalog.skills.find(k=>k.letter===l)).filter((k):k is NonNullable<typeof k>=>!!k);
+  const warmingUp=!!session&&session.kind==='quest'&&!session.completedAt&&session.index===0&&warmedFor!==session.id&&warmSkills.length>=2&&!success;
   const prompt=activity?.kind==='letter-catch'?`Listen to ${skill?.example}. Find the letter for its first sound.`:activity?.kind==='blend-train'?'Say the sounds and slide the train cars together. Then read the word.':activity?.kind==='sound-boxes'?'Listen to the word and put one letter in each sound box.':'Try reading each little word. Then tell us about the story.';
   function helpedText(){if(!activity)return '';if(activity.kind==='letter-catch')return `${skill?.cue} The letter is ${activity.target}.`;if(activity.kind==='story')return help>=4?story?.pages[session?.storyPage??0]??story?.pages.join(' ')??'':'Look at every letter. Say each sound and slide the sounds together.';if(help>=4)return word?.word??'';return help>=3?`Say the sounds slowly, without a gap: ${word?.word}.`:`${word?.graphemes.map(l=>data?.catalog.skills.find(s=>s.letter===l)?.cue).join(' ')}`;}
 
@@ -131,7 +139,7 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
               <div className="reading-word-shelf">
                 {data.readyWords.length?data.readyWords.map(w=>(
                   <details key={w.id}>
-                    <summary>{w.word}</summary>
+                    <summary>{w.pattern==='tricky'&&<Heart size={14} aria-label="Heart word" fill="currentColor"/>}{w.word}</summary>
                     <span aria-hidden="true">{w.emoji}</span>
                     <p>{w.meaning}</p>
                     <AudioButton kind="word" audioKey={w.word} text={w.word} src={w.audioSrc}/>
@@ -165,7 +173,16 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
                 <span className="kid-activity-spacer" />
               </header>
 
-              {success?(
+              {success&&practice&&success.activity.kind==='letter-catch'?(
+                /* A new letter caught: hear it in words, then write it (Reading.com's lesson order). */
+                <div className="kid-activity-stage">
+                  {(()=>{const caught=data.catalog.skills.find(k=>k.id===success.activity.skillId);
+                    if(!caught)return null;
+                    return practice==='hunt'
+                      ?<SoundHunt key={success.activity.id} skill={caught} seed={session?.index??0} onDone={()=>setPractice('write')}/>
+                      :<LetterTrace key={success.activity.id} letter={success.activity.target} band={band} onDone={()=>setPractice(null)}/>;})()}
+                </div>
+              ):success?(
                 <div className="kid-activity-done">
                   <h2>{success.activity.kind==='letter-catch'?success.activity.target:success.activity.kind==='story'?'A little story, understood.':data.catalog.words.find(w=>w.id===success.activity.target)?.word}</h2>
                   {['blend-train','sound-boxes'].includes(success.activity.kind)&&(
@@ -190,6 +207,10 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
                   )}
                   <button className="primary" disabled={busy||paused} onClick={()=>session.kind==='placement'?act('start'):setPlaying(false)}>{session.kind==='placement'?'Meet my first sound':'Back to the grove'}<ArrowRight size={20}/></button>
                 </div>
+              ):warmingUp?(
+                <div className="kid-activity-stage">
+                  <SoundWarmup skills={warmSkills} onDone={()=>setWarmedFor(session!.id)}/>
+                </div>
               ):activity&&(
                 <>
                   <div className="kid-activity-stage">
@@ -205,10 +226,11 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
                     {activity.kind==='letter-catch'&&skill&&<LetterCatch key={session!.id+activity.id} activity={activity} skill={skill} needsTeaching={activity.taught&&!data.profile.introduced.includes(activity.target)} busy={busy||paused} onTeach={()=>act('teach')} onAnswer={answer=>act('answer',answer)}/>}
                     {activity.kind==='blend-train'&&word&&<BlendTrain key={session!.id+activity.id} activity={activity} word={word} busy={busy||paused} onAnswer={answer=>act('answer',answer)}/>}
                     {activity.kind==='sound-boxes'&&word&&<SoundBoxes key={session!.id+activity.id} activity={activity} word={word} busy={busy||paused} onAnswer={answer=>act('answer',answer)}/>}
-                    {activity.kind==='story'&&story&&<DecodableReader story={story} page={session?.storyPage??0} busy={busy||paused} onPage={()=>act('story-page')} onAnswer={answer=>act('answer',answer)} onHelp={()=>act('help')}/>}
+                    {activity.kind==='story'&&story&&<DecodableReader story={story} page={session?.storyPage??0} words={data.catalog.words} busy={busy||paused} onPage={()=>act('story-page')} onAnswer={answer=>act('answer',answer)} onHelp={()=>act('help')}/>}
                   </div>
 
                   <div className="kid-activity-reach">
+                    <GrownUpCoach activity={activity} skill={skill} word={word} band={band} teaching={activity.kind==='letter-catch'&&activity.taught&&!data.profile.introduced.includes(activity.target)}/>
                     {help>0&&(
                       <aside className={`reading-help help-${help}`}>
                         <strong>{['','Look at the letters','Try each sound','Slide the sounds','Try it together'][help]}</strong>

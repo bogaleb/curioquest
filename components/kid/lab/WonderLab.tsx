@@ -145,10 +145,10 @@ export function WonderLab({
   }
 
   if (topic) {
-    return <Shelf topic={topic} onOpen={setStationId} onLeave={() => setTopicId("")} notes={data.notes} />;
+    return <LabShelf topic={topic} onOpen={setStationId} onLeave={() => setTopicId("")} notes={data.notes} />;
   }
 
-  return <Shelves topics={data.topics} band={band} onOpen={setTopicId} noteCount={data.notes.length} />;
+  return <LabShelves topics={data.topics} band={band} onOpen={setTopicId} noteCount={data.notes.length} />;
 }
 
 /* ==========================================================================
@@ -158,12 +158,15 @@ export function WonderLab({
 /**
  * Every topic this child's tier has something to say about.
  *
+ * Exported so `/kid-preview?screen=lab` can render it without a signed-in family — the
+ * two navigation screens are the hardest part of the lab to look at otherwise.
+ *
  * Fixed order, never sorted by progress or recommendation. The same reason the map's
  * places never move (§WP-03): a child learns "the floating one is at the top left" long
  * before they can read "Floating and sinking", and a shelf that rearranges itself takes
  * that away.
  */
-function Shelves({
+export function LabShelves({
   topics,
   band,
   onOpen,
@@ -229,7 +232,7 @@ function Shelves({
 }
 
 /** The stations on one shelf, with the finished ones marked. */
-function Shelf({
+export function LabShelf({
   topic,
   notes,
   onOpen,

@@ -239,7 +239,7 @@ export type LabActivityKind = LabActivity["kind"];
  * artwork.
  */
 export type LabObjectArt =
-  | "ball" | "beetle" | "bell" | "bird" | "blank" | "brick"
+  | "ball" | "beetle" | "bell" | "bird" | "blank" | "boat" | "brick"
   | "butterfly" | "camel" | "card" | "cat" | "caterpillar" | "chrysalis"
   | "clip" | "cloud" | "coin" | "cork" | "crystal" | "curtain"
   | "darkness" | "desert" | "drum" | "ear" | "earth" | "egg"
@@ -266,7 +266,7 @@ export type LabDiagram = "plant" | "body" | "pond-habitat" | "sound-ear";
  * grey square in production.
  */
 export const labObjectArt: LabObjectArt[] = [
-  "ball", "beetle", "bell", "bird", "blank", "brick",
+  "ball", "beetle", "bell", "bird", "blank", "boat", "brick",
   "butterfly", "camel", "card", "cat", "caterpillar", "chrysalis",
   "clip", "cloud", "coin", "cork", "crystal", "curtain",
   "darkness", "desert", "drum", "ear", "earth", "egg",

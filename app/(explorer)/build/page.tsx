@@ -1,18 +1,24 @@
 "use client";
-import { GardenLab } from "@/components/learning/garden-adventure";
+import { useMemo } from "react";
+import { BuildYard, apiSource } from "@/components/kid/build/BuildYard";
 import { useExplorer } from "@/components/app/explorer-context";
 
-export default function BuildLabPage() {
-  const { profile, busy, action } = useExplorer();
-  if (!profile) return null;
+/**
+ * The Build Yard: coding, maps, towers and shapes, built and then tested.
+ *
+ * A mount point and nothing else, like the Wonder Lab's. Band and narration come from
+ * `KidShell` above it; the yard reads the child's tier from the server with its content.
+ */
+export default function BuildYardPage() {
+  const { profile, setProfiles } = useExplorer();
+  const source = useMemo(() => (profile ? apiSource(profile.id) : null), [profile?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!profile || !source) return null;
   return (
-    <GardenLab
+    <BuildYard
       key={profile.id}
-      progress={profile.adventure}
-      offline={profile.controls.offline}
-      busy={busy || profile.preferences.paused}
-      onSave={async (garden) => !!(await action({ action: "save-garden", garden }))}
-      onOffline={async () => !!(await action({ action: "offline-request" }))}
+      source={source}
+      paused={profile.preferences.paused}
+      onStars={(stars) => setProfiles((all) => all.map((p) => (p.id === profile.id ? { ...p, stars } : p)))}
     />
   );
 }

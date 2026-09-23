@@ -144,6 +144,26 @@ test("no clue gives away the outcome it is a clue to", () => {
   }
 });
 
+test("a labelled part is never named in the question that asks for it", () => {
+  // The whole point of an unlabelled diagram is that the child works out where the job
+  // happens. A question that says "the stem holds the plant up" has already answered
+  // itself, and can be solved by matching a word rather than by understanding anything.
+  for (const station of allLabStations) {
+    if (station.activity.kind !== "label") continue;
+    for (const part of station.activity.parts) {
+      for (const tier of station.tiers) {
+        const name = part.label[tier].toLowerCase().replace(/^the /, "");
+        const singular = name.endsWith("s") ? name.slice(0, -1) : name;
+        const job = part.job[tier].toLowerCase();
+        assert.ok(
+          !job.includes(singular),
+          `${station.id}/${part.id} names "${part.label[tier]}" in the question asking for it (${tier})`,
+        );
+      }
+    }
+  }
+});
+
 /* ------------------------------------------------------------------- the answers */
 
 test("the public lab carries no answer, no observation and no explanation", () => {

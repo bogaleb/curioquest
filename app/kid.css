@@ -3382,6 +3382,13 @@
   font-size: var(--kid-text-lg);
 }
 .lab-bench-item[data-settled] { opacity: 0.6; }
+/* The thing on the bench is a picture beside a word, not a poster. `lab-object-large`
+   fills its container, and its container here is a flex row — without a cap it took the
+   whole row and pushed the bins off the side of the screen. */
+.lab-bench-item .lab-object {
+  flex: none;
+  width: clamp(3.5rem, 14vw, 6rem);
+}
 
 .lab-bins,
 .lab-stages,
@@ -3606,10 +3613,14 @@
 
 .lab-model {
   position: relative;
-  width: 100%;
+  /* Capped, and capped low. At full width on a laptop the tank filled the viewport and
+     pushed the clues — the part a child actually has to read — below the fold. The
+     apparatus is the evidence, not the screen. */
+  width: min(100%, 34rem);
+  margin-inline: auto;
   aspect-ratio: 200 / 130;
   border-radius: var(--kid-radius-lg);
-  background: var(--kid-world-50);
+  background: var(--lab-strand-soft, var(--kid-world-50));
   overflow: hidden;
 }
 .lab-model-scene { display: block; width: 100%; height: 100%; }
@@ -3722,11 +3733,18 @@
    is drawn at the far end of the bench and the magnet is the thing pulling. */
 .lab-model[data-model="magnet"] .lab-model-object[data-phase="run"][data-motion="travel"] { animation-name: lab-travel-back; }
 
-@keyframes lab-rise { to { transform: translate(-50%, -190%); } }
-@keyframes lab-fall { to { transform: translate(-50%, 120%); } }
-@keyframes lab-travel { to { transform: translate(230%, 60%); } }
-@keyframes lab-travel-back { to { transform: translate(-260%, -50%); } }
-@keyframes lab-stop { to { transform: translate(30%, 60%); } }
+/*
+ * The end positions are measured against the apparatus they run in, not chosen to look
+ * like movement: `rise` leaves the cork straddling the surface with most of it above,
+ * `fall` puts the stone on the floor of the tank, and `travel` carries the car the length
+ * of the bench. A cork that ends up hovering in the air over the water is a prettier
+ * animation and a worse model.
+ */
+@keyframes lab-rise { to { transform: translate(-50%, -72%); } }
+@keyframes lab-fall { to { transform: translate(-50%, 95%); } }
+@keyframes lab-travel { to { transform: translate(250%, 98%); } }
+@keyframes lab-travel-back { to { transform: translate(-295%, -85%); } }
+@keyframes lab-stop { to { transform: translate(60%, 98%); } }
 @keyframes lab-grow { to { transform: translate(-50%, -50%) scale(1.4); } }
 @keyframes lab-wilt { to { transform: translate(-50%, -20%) rotate(24deg); } }
 @keyframes lab-shine {
@@ -3799,12 +3817,18 @@
 .lab-diagram-art .lab-dia-bloom { fill: var(--kid-sun-300); }
 .lab-diagram-art .lab-dia-bloom-core { fill: var(--scene-bark-deep); }
 
-.lab-diagram-art .lab-dia-body { fill: var(--kid-sun-100); stroke: var(--scene-bark); stroke-width: 3; }
-.lab-diagram-art .lab-dia-brain { fill: var(--kid-grape-200); }
-.lab-diagram-art .lab-dia-brain-fold { stroke: var(--kid-grape-500); stroke-width: 2.4; fill: none; stroke-linecap: round; }
+/*
+ * The body's parts are measured against the body they are drawn on, not against the
+ * page. Every one of these was a step lighter to begin with and several came in under
+ * 2:1 on the cream — a diagram whose parts you cannot tell apart is a decoration (§C6).
+ * Measured on `--kid-sun-50`: brain 3.4:1, heart 3.4:1, lungs 3.1:1, bone 6.0:1.
+ */
+.lab-diagram-art .lab-dia-body { fill: var(--kid-sun-50); stroke: var(--scene-bark); stroke-width: 3; }
+.lab-diagram-art .lab-dia-brain { fill: var(--kid-grape-400); }
+.lab-diagram-art .lab-dia-brain-fold { stroke: var(--kid-grape-50); stroke-width: 2.4; fill: none; stroke-linecap: round; }
 .lab-diagram-art .lab-dia-heart { fill: var(--kid-coral-400); }
-.lab-diagram-art .lab-dia-lung { fill: var(--kid-sky-200); }
-.lab-diagram-art .lab-dia-bone { stroke: var(--kid-surface); stroke-width: 7; stroke-linecap: round; fill: none; }
+.lab-diagram-art .lab-dia-lung { fill: var(--kid-sky-400); }
+.lab-diagram-art .lab-dia-bone { stroke: var(--sand-700); stroke-width: 7; stroke-linecap: round; fill: none; }
 .lab-diagram-art .lab-dia-muscle { stroke: var(--kid-coral-300); stroke-width: 7; stroke-linecap: round; fill: none; }
 
 .lab-diagram-art .lab-dia-sky { fill: var(--scene-sky-low); }
@@ -3856,11 +3880,1193 @@
   .lab-diagram[data-missed] { animation: none; }
 
   .lab-model-object[data-phase="run"] { animation: none; }
-  .lab-model-object[data-phase="run"][data-motion="rise"] { transform: translate(-50%, -190%); }
-  .lab-model-object[data-phase="run"][data-motion="fall"] { transform: translate(-50%, 120%); }
-  .lab-model-object[data-phase="run"][data-motion="travel"] { transform: translate(230%, 60%); }
-  .lab-model[data-model="magnet"] .lab-model-object[data-phase="run"][data-motion="travel"] { transform: translate(-260%, -50%); }
-  .lab-model-object[data-phase="run"][data-motion="stop"] { transform: translate(30%, 60%); }
+  .lab-model-object[data-phase="run"][data-motion="rise"] { transform: translate(-50%, -72%); }
+  .lab-model-object[data-phase="run"][data-motion="fall"] { transform: translate(-50%, 95%); }
+  .lab-model-object[data-phase="run"][data-motion="travel"] { transform: translate(250%, 98%); }
+  .lab-model[data-model="magnet"] .lab-model-object[data-phase="run"][data-motion="travel"] { transform: translate(-295%, -85%); }
+  .lab-model-object[data-phase="run"][data-motion="stop"] { transform: translate(60%, 98%); }
   .lab-model-object[data-phase="run"][data-motion="grow"] { transform: translate(-50%, -50%) scale(1.4); }
   .lab-model-object[data-phase="run"][data-motion="wilt"] { transform: translate(-50%, -20%) rotate(24deg); }
+}
+
+/* ==========================================================================
+   THE MAKING PLACE
+   ==========================================================================
+
+   Colouring, drawing and writing. Everything here belongs to
+   `components/kid/studio/` and replaces the `.creative-*`, `.studio-*`,
+   `.drawing-canvas`, `.template-grid`, `.trace-*` and `.handwriting-*` rules
+   that used to live in `app/studio.css` and `app/(explorer)/craft.css`.
+
+   The three rooms share a paint box and a voice but not a layout: a colouring
+   page wants to be as large as the screen allows, a drawing board wants a
+   fixed-ratio canvas with its tools under the hand, and a writing page wants to
+   be square and ruled. One layout for all three is how the old studio ended up
+   with a brush as its colouring tool.
+
+   Design target is iPad landscape first, phone portrait second (D8).
+   ========================================================================== */
+
+.studio-room {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 72rem;
+  margin-inline: auto;
+  padding-block-end: var(--space-12);
+  color: var(--kid-ink);
+  font-family: var(--font-body);
+  font-size: var(--kid-text-body);
+  line-height: var(--kid-leading-body);
+}
+
+.studio-room h1 {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-xl);
+  line-height: var(--kid-leading-tight);
+  color: var(--kid-world-ink);
+}
+.studio-room h2 {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  color: var(--kid-world-ink);
+}
+.studio-room h3 {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink);
+}
+
+.studio-note,
+.studio-set-count {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+
+.studio-trouble {
+  padding: var(--space-4) var(--space-5);
+  border: var(--kid-border) solid var(--kid-coral-300);
+  border-radius: var(--kid-radius);
+  background: var(--kid-coral-50);
+  color: var(--kid-coral-ink);
+  font-size: var(--kid-text-min);
+}
+
+.studio-finished {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--kid-radius);
+  background: var(--kid-leaf-50);
+  color: var(--kid-leaf-ink);
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  animation: studio-arrive var(--dur-base) var(--ease-spring) both;
+}
+
+.studio-guide {
+  display: block;
+  flex: none;
+  width: clamp(4.5rem, 11vw, 8.5rem);
+  --cast-size: 100%;
+}
+
+.studio-welcome {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+}
+.studio-welcome > div {
+  flex: 1 1 18rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.studio-room-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--kid-gap);
+}
+
+/* --------------------------------------------------------------------------
+   The shared control shape
+
+   Everything a child presses in here is the same object: a chunky card with a
+   lip under it that the press spends. One rule set rather than six, so a new
+   control cannot arrive feeling like a different product.
+   -------------------------------------------------------------------------- */
+
+.studio-door,
+.studio-page-card,
+.studio-theme,
+.studio-set,
+.studio-letter,
+.studio-part,
+.studio-tool,
+.studio-size,
+.studio-stamp,
+.studio-swatch {
+  font: inherit;
+  color: var(--kid-ink);
+  cursor: pointer;
+  background: var(--kid-surface);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius);
+  transition:
+    transform var(--kid-dur-tap) var(--ease-out),
+    border-color var(--kid-dur-tap) var(--ease-out),
+    background-color var(--kid-dur-tap) var(--ease-out);
+}
+.studio-door:active,
+.studio-page-card:active,
+.studio-theme:active,
+.studio-set:active,
+.studio-letter:active,
+.studio-part:active,
+.studio-tool:active,
+.studio-size:active,
+.studio-stamp:active,
+.studio-swatch:active {
+  transform: translateY(var(--kid-press));
+  border-block-end-width: var(--kid-border);
+}
+.studio-door:focus-visible,
+.studio-page-card:focus-visible,
+.studio-theme:focus-visible,
+.studio-set:focus-visible,
+.studio-letter:focus-visible,
+.studio-part:focus-visible,
+.studio-tool:focus-visible,
+.studio-size:focus-visible,
+.studio-stamp:focus-visible,
+.studio-swatch:focus-visible,
+.studio-name-field input:focus-visible,
+.studio-writing-field textarea:focus-visible {
+  outline: none;
+  box-shadow: var(--kid-focus-ring);
+}
+.studio-door[disabled],
+.studio-page-card[disabled],
+.studio-set[disabled],
+.studio-letter[disabled],
+.studio-part[disabled],
+.studio-tool[disabled],
+.studio-size[disabled],
+.studio-stamp[disabled],
+.studio-swatch[disabled] {
+  cursor: default;
+  opacity: 0.55;
+}
+
+/* Chosen: colour, a heavier edge, and a lift. Never colour on its own. */
+.studio-theme[data-chosen],
+.studio-tool[data-chosen],
+.studio-size[data-chosen],
+.studio-stamp[data-chosen],
+.studio-swatch[data-chosen] {
+  border-color: var(--kid-world-500);
+  background: var(--kid-world-50);
+  box-shadow: inset 0 0 0 var(--space-1) var(--kid-world-500);
+}
+
+/* --------------------------------------------------------------------------
+   The four doors
+   -------------------------------------------------------------------------- */
+
+.studio-doors,
+.studio-shelf,
+.studio-sets,
+.studio-letters,
+.studio-keeps,
+.studio-parts ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.studio-doors {
+  display: grid;
+  gap: var(--kid-gap);
+  grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+}
+.studio-door {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  width: 100%;
+  min-height: calc(var(--kid-touch) * 2.6);
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+}
+.studio-door-art {
+  width: clamp(3.5rem, 8vw, 5.5rem);
+  height: auto;
+}
+.studio-door-name {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-lg);
+  color: var(--kid-world-ink);
+}
+.studio-door-line {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+
+/* One hue per room, so a child knows which door they went through. */
+.studio-door[data-room="colour"] { --kid-world-200: var(--kid-berry-200); --kid-world-500: var(--kid-berry-500); }
+.studio-door[data-room="draw"] { --kid-world-200: var(--kid-sun-200); --kid-world-500: var(--kid-sun-500); }
+.studio-door[data-room="write"] { --kid-world-200: var(--kid-sky-200); --kid-world-500: var(--kid-sky-500); }
+.studio-door[data-room="gallery"] { --kid-world-200: var(--kid-leaf-200); --kid-world-500: var(--kid-leaf-500); }
+
+.studio-invitation {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  padding: var(--space-5);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-sun-50);
+}
+.studio-invitation > div { flex: 1 1 16rem; }
+.studio-invitation-art { width: clamp(3rem, 7vw, 4.5rem); height: auto; }
+
+/* --------------------------------------------------------------------------
+   The colouring book
+   -------------------------------------------------------------------------- */
+
+.studio-themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+.studio-theme {
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--kid-text-min);
+  text-transform: capitalize;
+}
+
+.studio-shelf {
+  display: grid;
+  gap: var(--kid-gap);
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+}
+.studio-page-card {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: center;
+  width: 100%;
+  padding: var(--space-3);
+}
+.studio-preview {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+}
+.studio-page-name {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-min);
+  text-align: center;
+  color: var(--kid-world-ink);
+}
+
+.studio-colouring {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+.studio-page-frame {
+  width: min(100%, 34rem);
+  margin-inline: auto;
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-surface);
+  overflow: hidden;
+}
+.studio-page {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: manipulation;
+}
+
+/*
+ * A region.
+ *
+ * Every part carries its own `--studio-fill`, so the whole page is one class and a
+ * fill is a custom property change rather than a re-render of anything but the path.
+ * The outline is deliberately dark and constant: an uncoloured region has to read as
+ * "not done yet" without the fill doing the work.
+ */
+/*
+ * A region.
+ *
+ * Deliberately **not** transitioned. `fill` reads its value through a custom property,
+ * and a transition on a property whose value arrives that way stalls in Chromium: the
+ * custom property updates, the computed fill does not, and a child taps a region that
+ * never changes colour. Found by reading the computed style off the rendered page, not
+ * by reading this file.
+ *
+ * Nothing is lost. A paint pot should be instant, and the arrival is drawn by the pop
+ * below — which is a transform, animates reliably, and is the feedback a child actually
+ * reads.
+ */
+.studio-region {
+  fill: var(--studio-fill);
+  stroke: var(--kid-ink);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+.studio-region[data-stroked] {
+  fill: none;
+  stroke: var(--studio-fill);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+.studio-region[data-detail] {
+  stroke-width: 1.2;
+  pointer-events: none;
+}
+/* The fill lands. A single pop, once, on the region that changed. */
+.studio-region[data-just-filled] {
+  animation: studio-pop var(--dur-slow) var(--ease-spring) 1;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes studio-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes studio-arrive {
+  from { opacity: 0; transform: translateY(var(--space-3)); }
+  to { opacity: 1; transform: none; }
+}
+
+/* --------------------------------------------------------------------------
+   The paint box
+   -------------------------------------------------------------------------- */
+
+/*
+ * The paint box lays its families out side by side rather than one per row.
+ *
+ * Stacked, a box of eight colours in five families took five rows and most of a tablet
+ * screen, which pushed the picture off the top — and the picture is the thing being
+ * coloured. Side by side, the whole box is one band under the page and the grouping still
+ * reads, because the gap between families is twice the gap inside one.
+ */
+.studio-paintbox {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2) var(--space-6);
+  padding: var(--space-4);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-surface-sunk);
+}
+.studio-using {
+  flex: 1 1 100%;
+}
+.studio-using {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+.studio-using strong {
+  font-family: var(--font-display);
+  color: var(--kid-ink);
+}
+.studio-family {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.studio-swatch {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: center;
+  min-width: var(--kid-touch);
+  min-height: var(--kid-touch);
+  padding: var(--space-2);
+}
+.studio-swatch-face {
+  display: block;
+  width: var(--space-8);
+  height: var(--space-8);
+  border: var(--kid-border) solid var(--kid-ink);
+  border-radius: var(--kid-radius-pill);
+  background: var(--studio-fill);
+}
+.studio-swatch-name {
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--kid-ink-soft);
+  text-align: center;
+}
+.studio-swatch[data-chosen] .studio-swatch-face {
+  box-shadow: 0 0 0 var(--space-1) var(--kid-surface), 0 0 0 calc(var(--space-1) * 2) var(--kid-ink);
+}
+
+/* --------------------------------------------------------------------------
+   The named parts — the keyboard and screen-reader path into a page
+   -------------------------------------------------------------------------- */
+
+.studio-parts ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.studio-part {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--touch-min);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--kid-text-min);
+}
+.studio-part-swatch {
+  display: block;
+  flex: none;
+  width: var(--space-5);
+  height: var(--space-5);
+  border: 2px solid var(--kid-ink);
+  border-radius: var(--kid-radius-pill);
+  background: var(--studio-fill);
+}
+.studio-part[data-done] {
+  background: var(--kid-world-50);
+  border-color: var(--kid-world-400);
+}
+
+/* --------------------------------------------------------------------------
+   The drawing board
+   -------------------------------------------------------------------------- */
+
+.studio-drawing {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.studio-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1000 / 700;
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-surface);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.studio-tools,
+.studio-sizes,
+.studio-stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.studio-tool,
+.studio-size {
+  display: grid;
+  gap: var(--space-1);
+  justify-items: center;
+  min-width: var(--kid-touch);
+  min-height: var(--kid-touch);
+  padding: var(--space-2);
+  font-size: var(--text-xs);
+}
+.studio-tool-art { width: var(--space-8); height: var(--space-8); }
+.studio-tool-body { fill: var(--kid-world-400); }
+.studio-tool-tip { fill: var(--kid-ink); }
+.studio-tool-band { fill: var(--kid-sun-300); }
+.studio-tool[data-tool="eraser"] .studio-tool-body { fill: var(--kid-coral-200); }
+.studio-tool[data-tool="fill"] .studio-tool-tip { fill: var(--kid-sky-400); }
+
+.studio-size-dot {
+  display: block;
+  border-radius: var(--kid-radius-pill);
+  background: var(--kid-ink);
+}
+.studio-size-dot[data-size="fat"] { width: var(--space-6); height: var(--space-6); }
+.studio-size-dot[data-size="big"] { width: var(--space-4); height: var(--space-4); }
+.studio-size-dot[data-size="thin"] { width: var(--space-2); height: var(--space-2); }
+
+.studio-stamp {
+  display: grid;
+  place-items: center;
+  min-width: var(--kid-touch);
+  min-height: var(--kid-touch);
+  padding: var(--space-2);
+}
+.studio-stamp-art { width: var(--space-8); height: var(--space-8); }
+.studio-stamp-art path { fill: var(--studio-fill); stroke: var(--kid-ink); stroke-width: 3; }
+
+.studio-name-field,
+.studio-writing-field {
+  display: grid;
+  gap: var(--space-2);
+  font-size: var(--kid-text-min);
+}
+.studio-name-field input,
+.studio-writing-field textarea {
+  padding: var(--space-3) var(--space-4);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  font: inherit;
+  font-size: var(--kid-text-body);
+}
+.studio-writing-field textarea {
+  min-height: calc(var(--kid-touch) * 2);
+  font-family: var(--font-reading);
+  letter-spacing: var(--kid-tracking-reading);
+  resize: vertical;
+}
+
+/* --------------------------------------------------------------------------
+   The writing desk
+   -------------------------------------------------------------------------- */
+
+.studio-sets {
+  display: grid;
+  gap: var(--kid-gap);
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+}
+.studio-set {
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  width: 100%;
+  min-height: var(--kid-touch-primary);
+  padding: var(--space-5);
+  text-align: start;
+}
+.studio-set-art { width: var(--space-10); height: var(--space-10); }
+.studio-set-name {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-body);
+  color: var(--kid-world-ink);
+}
+.studio-set-line {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+
+.studio-letters {
+  display: grid;
+  gap: var(--space-2);
+  grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+}
+.studio-letter {
+  display: grid;
+  gap: var(--space-1);
+  place-items: center;
+  width: 100%;
+  min-height: calc(var(--kid-touch) * 1.2);
+  padding: var(--space-2);
+  /* The literacy face: single-storey a and g, for a letter a child is decoding. */
+  font-family: var(--font-reading);
+  font-size: var(--kid-text-xl);
+  line-height: 1;
+}
+.studio-letter small {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  color: var(--kid-ink-soft);
+}
+
+.studio-desk {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.studio-desk-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.studio-letter-name {
+  font-family: var(--font-display);
+  font-size: var(--kid-text-xl);
+  color: var(--kid-world-ink);
+}
+.studio-cue {
+  font-size: var(--kid-text-lg);
+  line-height: var(--kid-leading-body);
+}
+.studio-stroke-count {
+  font-size: var(--kid-text-min);
+  color: var(--kid-ink-soft);
+}
+
+.studio-paper {
+  display: block;
+  width: min(100%, 30rem);
+  margin-inline: auto;
+  aspect-ratio: 1;
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-surface);
+  touch-action: none;
+  cursor: crosshair;
+}
+
+/* The four lines. The baseline is the solid one, because it is the one that matters. */
+.studio-rule {
+  stroke: var(--kid-sky-200);
+  stroke-width: 0.5;
+  stroke-dasharray: 2 2;
+}
+.studio-rule[data-base] { stroke: var(--kid-sky-400); stroke-width: 0.8; stroke-dasharray: none; }
+.studio-rule[data-middle] { stroke: var(--kid-sky-300); }
+
+.studio-trail {
+  fill: none;
+  stroke: var(--kid-placeholder);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1.5 5;
+}
+.studio-done-stroke {
+  fill: none;
+  stroke: var(--kid-world-300);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-pen-trail {
+  fill: none;
+  stroke: var(--kid-sun-400);
+  stroke-width: 5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.studio-pen { fill: var(--kid-sun-500); }
+.studio-start { fill: var(--kid-leaf-400); stroke: var(--kid-surface); stroke-width: 1.2; }
+/* The stroke number inside the green dot. Its size is a geometry value in the SVG's
+   own user units, not a type size, so it is set on the element rather than here. */
+.studio-start-number {
+  fill: var(--kid-surface);
+  font-family: var(--font-display);
+  text-anchor: middle;
+}
+.studio-ink {
+  fill: none;
+  stroke: var(--kid-ink);
+  stroke-width: 4.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* The page reacts, once, and quietly. Never a cross and never red. */
+.studio-paper[data-verdict="yes"] { animation: studio-glow var(--dur-slow) var(--ease-out) 1; }
+.studio-paper[data-verdict="not-yet"] { animation: studio-shake var(--dur-slow) var(--ease-out) 1; }
+@keyframes studio-glow {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 0 var(--space-2) var(--kid-leaf-200); }
+}
+@keyframes studio-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(calc(var(--space-2) * -1)); }
+  75% { transform: translateX(var(--space-2)); }
+}
+
+.studio-verdict {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface-sunk);
+  font-size: var(--kid-text-min);
+}
+.studio-verdict[data-ok] {
+  background: var(--kid-leaf-50);
+  color: var(--kid-leaf-ink);
+}
+
+.studio-task {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-radius: var(--kid-radius-lg);
+  background: var(--kid-world-50);
+}
+.studio-task-art { width: var(--space-12); height: var(--space-12); flex: none; }
+.studio-task-prompt { font-size: var(--kid-text-lg); }
+
+/* --------------------------------------------------------------------------
+   The gallery
+   -------------------------------------------------------------------------- */
+
+.studio-keeps {
+  display: grid;
+  gap: var(--kid-gap);
+  grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+}
+.studio-keep {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+}
+.studio-keep-art {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface-sunk);
+  overflow: hidden;
+}
+.studio-keep-canvas { width: 100%; height: auto; }
+.studio-keep-words {
+  padding: var(--space-3);
+  font-family: var(--font-reading);
+  font-size: var(--kid-text-lg);
+  line-height: var(--kid-leading-body);
+  text-align: center;
+}
+.studio-keep h3 {
+  font-size: var(--kid-text-min);
+  text-align: center;
+}
+
+/*
+ * The shared little drawing, wherever one appears on its own.
+ *
+ * `.studio-mark` carries a size of its own because it is `ShapeMark`'s default class:
+ * without one an inline SVG with a viewBox and no width fills its container, and a star
+ * beside a sentence became a star the height of the page.
+ */
+.studio-mark {
+  width: var(--space-8);
+  height: var(--space-8);
+  flex: none;
+  vertical-align: middle;
+}
+.studio-mark,
+.studio-door-art,
+.studio-invitation-art,
+.studio-set-art,
+.studio-task-art {
+  display: block;
+}
+.studio-mark path,
+.studio-door-art path,
+.studio-invitation-art path,
+.studio-set-art path,
+.studio-task-art path {
+  fill: var(--kid-world-300);
+  stroke: var(--kid-world-ink);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+.studio-mark[data-stroked] path,
+.studio-door-art[data-stroked] path,
+.studio-invitation-art[data-stroked] path,
+.studio-set-art[data-stroked] path,
+.studio-task-art[data-stroked] path {
+  fill: none;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+/* ==========================================================================
+   SMALLER SCREENS AND STILLER SCREENS
+   ========================================================================== */
+
+@media (max-width: 767px) {
+  .studio-doors { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .studio-shelf { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .studio-sets { grid-template-columns: 1fr; }
+  .studio-letters { grid-template-columns: repeat(auto-fill, minmax(4.5rem, 1fr)); }
+  .studio-keeps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .studio-guide { width: clamp(3.5rem, 18vw, 5rem); }
+  .studio-swatch-name { display: none; }
+}
+
+/*
+ * Reduced motion.
+ *
+ * The fill still changes colour — that is the result, not the animation — but it
+ * arrives rather than popping, and the page does not glow or shake. The pen that
+ * demonstrates a stroke is handled in the component: with the preference on it
+ * draws the finished stroke instead of travelling, because the information is the
+ * path and its direction, not the movement.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .studio-region[data-just-filled],
+  .studio-paper[data-verdict],
+  .studio-finished { animation: none; }
+}
+
+/* Creative studio toolbox: round swatches, quick brush sizes and a live brush preview. */
+.tool-row.palette button { border-radius: var(--radius-pill); box-shadow: inset 0 0 0 1px var(--line); }
+.brush-sizes .size-dot { display: inline-block; border-radius: var(--radius-pill); background: currentColor; }
+.brush-preview { display: inline-grid; place-items: center; inline-size: 48px; block-size: 48px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.brush-preview > span { display: block; border-radius: var(--radius-pill); box-shadow: 0 0 0 1px var(--line); }
+
+/* The saved-artwork gallery: one card per picture, with the parent's delete link under it
+   rather than dressed as a second, empty card. */
+.art-gallery > article { display: grid; align-content: start; gap: var(--space-1); min-width: 0; }
+.art-gallery > article > button:first-child { block-size: 100%; }
+.art-gallery strong { overflow-wrap: anywhere; }
+.art-gallery .text-button {
+  inline-size: auto;
+  justify-self: start;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  background: none;
+  box-shadow: none;
+  text-decoration: underline;
+}
+.art-gallery .text-button:hover { transform: none; }
+.studio-gallery > .secondary { margin-top: var(--space-4); }
+
+/* --------------------------------------------------------------------------
+   Reading together: the grown-up's script, the sound warm-up and heart words.
+   -------------------------------------------------------------------------- */
+.grownup-coach {
+  margin-block-end: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: var(--kid-border) dashed var(--kid-world-200);
+  border-radius: var(--kid-radius);
+  background: var(--kid-surface);
+  text-align: start;
+}
+.grownup-coach summary { cursor: pointer; font-weight: 700; min-block-size: var(--touch-min); display: flex; align-items: center; }
+.grownup-coach ol { display: grid; gap: var(--space-2); margin: var(--space-2) 0; padding: 0; list-style: none; }
+.grownup-coach li { display: grid; grid-template-columns: 5.5rem 1fr; gap: var(--space-2); }
+.grownup-coach p { margin: var(--space-2) 0 0; }
+.grownup-coach-note { opacity: .8; }
+@media (max-width: 480px) { .grownup-coach li { grid-template-columns: 1fr; gap: 0; } }
+
+.sound-warmup { display: grid; justify-items: center; gap: var(--space-3); text-align: center; }
+.sound-warmup-count { margin: 0; opacity: .75; }
+.sound-warmup-nav { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--space-3); }
+
+.decodable-page button[data-heart] { position: relative; border-color: var(--kid-world-300); }
+.decodable-page .heart-mark { position: absolute; inset-block-start: var(--space-1); inset-inline-end: var(--space-1); }
+.reading-grownup-cue svg, .reading-word-shelf summary svg { vertical-align: middle; margin-inline-end: var(--space-1); }
+.story-reveal { animation: story-reveal 420ms var(--ease-out) both; }
+@keyframes story-reveal { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .story-reveal { animation: none; } }
+
+/* Sound hunt: three pictures, one starts with the new sound. */
+.sound-hunt { display: grid; justify-items: center; gap: var(--space-3); text-align: center; }
+.sound-hunt-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--kid-gap); inline-size: min(100%, 36rem); }
+.sound-hunt-choices button {
+  display: grid; justify-items: center; gap: var(--space-1);
+  min-block-size: calc(var(--kid-touch) * 2.4); padding: var(--space-3);
+  border: var(--kid-border) solid var(--kid-world-200);
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius); background: var(--kid-surface); box-shadow: var(--kid-shadow);
+}
+.sound-hunt-choices button:active:not(:disabled) { translate: 0 var(--kid-press); }
+.sound-hunt-choices button[data-state="right"] { border-color: var(--kid-world-ink); outline: var(--kid-border) solid var(--kid-world-300); }
+.sound-hunt-choices button[data-state="wrong"] { opacity: .45; }
+.sound-hunt-picture { font-size: clamp(2.5rem, 9vw, 4rem); line-height: 1; }
+.sound-hunt-word { font-size: var(--kid-text-min); }
+.sound-hunt-feedback { min-block-size: 1.5em; margin: 0; }
+
+/* Letter writing: four ruled lines, a grey trail, a green start dot, the child's ink. */
+.letter-trace { display: grid; justify-items: center; gap: var(--space-3); text-align: center; }
+.letter-trace-cue, .letter-trace-advice { margin: 0; max-inline-size: 32rem; }
+.letter-trace-paper {
+  inline-size: min(100%, 22rem, 52vh); aspect-ratio: 1; touch-action: none; cursor: crosshair;
+  border: var(--kid-border) solid var(--kid-world-200); border-radius: var(--kid-radius); background: var(--kid-surface);
+}
+.letter-trace-paper .trace-rule { stroke: var(--line); stroke-width: .5; stroke-dasharray: 2 2; }
+.letter-trace-paper .trace-rule-mid { stroke-dasharray: 1 2; }
+.letter-trace-paper .trace-rule-base { stroke: var(--kid-world-ink); stroke-dasharray: none; opacity: .5; }
+.letter-trace-paper .trace-trail { fill: none; stroke: var(--line); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; opacity: .7; }
+.letter-trace-paper .trace-trail[data-faint] { opacity: .25; }
+.letter-trace-paper .trace-trail[data-done] { opacity: .15; }
+.letter-trace-paper .trace-ink { fill: none; stroke: var(--kid-world-ink); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.letter-trace-paper .trace-start { fill: var(--green); stroke: var(--kid-surface); stroke-width: 1; }
+@media (max-width: 480px) { .sound-hunt-choices { gap: var(--space-2); } }
+
+/* ==========================================================================
+   THE BUILD YARD
+   ==========================================================================
+
+   Four workshops on one grid: Robot Garage, Map Maker, Tower & Bridge Lab and
+   Shape Workshop. Everything here belongs to `components/kid/build/`. iPad
+   landscape first; the grid keeps its cells square and the tools stay under the
+   hand at phone width.
+   ========================================================================== */
+
+.build-yard {
+  display: flex; flex-direction: column; gap: var(--space-5);
+  width: 100%; max-width: 68rem; margin-inline: auto; padding-block-end: var(--space-12);
+  color: var(--kid-ink); font-family: var(--font-body); font-size: var(--kid-text-body); line-height: var(--kid-leading-body);
+}
+.build-yard h1 { margin: 0; font-size: var(--kid-text-2xl); line-height: var(--kid-leading-tight); }
+.build-yard h2 { margin: 0; font-size: var(--kid-text-lg); }
+.build-gate, .build-trouble { padding: var(--space-6); text-align: center; }
+.build-trouble { color: var(--kid-coral-ink); }
+
+.build-welcome, .build-ask, .build-workshop-head { display: flex; align-items: center; gap: var(--space-4); }
+.build-guide { display: block; flex: none; inline-size: clamp(3.5rem, 11vw, 6.5rem); --cast-size: 100%; }
+.build-ask { flex-wrap: wrap; }
+.build-ask .kid-bubble-slot { flex: 1 1 16rem; }
+
+/* ---- the yard: four signs ---- */
+.build-workshops { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--kid-gap); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+.build-sign, .build-job {
+  display: grid; gap: var(--space-2); inline-size: 100%; text-align: start; cursor: pointer;
+  padding: var(--space-4); border: var(--kid-border) solid var(--kid-world-200);
+  border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  border-radius: var(--kid-radius-lg); background: var(--kid-surface); color: inherit; font: inherit; box-shadow: var(--kid-shadow);
+  transition: translate var(--kid-dur-tap) var(--ease-out), box-shadow var(--kid-dur-tap) var(--ease-out);
+}
+.build-sign:hover, .build-job:hover { translate: 0 -2px; box-shadow: var(--kid-shadow-lift); }
+.build-sign:active, .build-job:active { translate: 0 var(--kid-press); }
+.build-sign[data-workshop="robot"] { border-color: var(--kid-sky-300); }
+.build-sign[data-workshop="map"] { border-color: var(--kid-leaf-300); }
+.build-sign[data-workshop="tower"] { border-color: var(--kid-sun-300); }
+.build-sign[data-workshop="shapes"] { border-color: var(--kid-berry-300); }
+.build-sign-art { display: block; inline-size: 5.5rem; aspect-ratio: 1; padding: var(--space-2); border-radius: var(--kid-radius); background: var(--kid-surface-sunk); }
+.build-workshop-head .build-sign-art { inline-size: clamp(5rem, 16vw, 7rem); flex: none; }
+.build-workshop-head p { margin: var(--space-1) 0 var(--space-2); }
+.build-sign-name { font-size: var(--kid-text-xl); font-weight: 800; line-height: var(--kid-leading-tight); }
+.build-sign-blurb, .build-job-goal { color: var(--kid-ink-soft); }
+.build-sign { align-content: start; }
+.build-sign-meter { display: block; block-size: .75rem; border-radius: var(--kid-radius-pill); background: var(--kid-surface-sunk); overflow: hidden; margin-block-start: auto; }
+.build-sign-meter > span { display: block; block-size: 100%; inline-size: calc(var(--done) * 100%); min-inline-size: .75rem; border-radius: inherit; background: var(--kid-world-400); }
+.build-sign-count { font-weight: 700; color: var(--kid-ink-soft); font-size: var(--kid-text-min); }
+.build-subject {
+  justify-self: start; display: inline-block; padding: var(--space-1) var(--space-3); border-radius: var(--kid-radius-pill);
+  background: var(--kid-world-100); color: var(--kid-world-ink); font-weight: 700; font-size: var(--kid-text-min);
+}
+[data-workshop="robot"] .build-subject { background: var(--kid-sky-100); color: var(--kid-sky-ink); }
+[data-workshop="map"] .build-subject { background: var(--kid-leaf-100); color: var(--kid-leaf-ink); }
+[data-workshop="tower"] .build-subject { background: var(--kid-sun-100); color: var(--kid-sun-ink); }
+[data-workshop="shapes"] .build-subject { background: var(--kid-berry-100); color: var(--kid-berry-ink); }
+
+/* ---- a workshop: its jobs in order ---- */
+.build-back {
+  align-self: flex-start; display: inline-flex; align-items: center; gap: var(--space-2);
+  min-block-size: var(--kid-touch); padding: var(--space-2) var(--space-4);
+  border: var(--kid-border) solid var(--kid-world-200); border-radius: var(--kid-radius-pill);
+  background: var(--kid-surface); color: inherit; font: inherit; font-weight: 700; cursor: pointer;
+}
+.build-jobs { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-3); grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr)); }
+.build-job { grid-template-columns: auto 1fr; align-items: center; column-gap: var(--space-3); position: relative; }
+.build-job-number {
+  grid-row: span 2; display: grid; place-items: center; inline-size: 3rem; aspect-ratio: 1;
+  border-radius: 50%; background: var(--kid-world-100); color: var(--kid-world-ink); font-weight: 800; font-size: var(--kid-text-lg);
+}
+.build-job[data-done] .build-job-number { background: var(--green); color: var(--kid-surface); }
+.build-job[data-next] { border-color: var(--kid-world-400); }
+.build-job-name { font-weight: 800; font-size: var(--kid-text-lg); }
+.build-job-tag { position: absolute; inset-block-start: var(--space-2); inset-inline-end: var(--space-3); padding: 0 var(--space-2); border-radius: var(--kid-radius-pill); background: var(--kid-world-500); color: var(--kid-surface); font-size: var(--kid-text-min); font-weight: 700; }
+
+/* ---- the player ---- */
+.build-player-top { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.build-player-count { color: var(--kid-ink-soft); font-weight: 700; }
+.build-title { text-align: center; }
+.build-idea {
+  display: grid; grid-template-columns: auto 1fr; gap: var(--space-3) var(--space-4); align-items: start;
+  padding: var(--space-5); border-radius: var(--kid-radius-lg); background: var(--kid-sun-50); border: var(--kid-border) solid var(--kid-sun-200);
+}
+.build-idea p { margin: var(--space-2) 0; font-size: var(--kid-text-lg); }
+.build-idea > .build-primary { grid-column: 1 / -1; justify-self: center; }
+.build-idea-mark { display: grid; place-items: center; inline-size: 3.25rem; aspect-ratio: 1; border-radius: 50%; background: var(--kid-sun-200); color: var(--kid-sun-ink); }
+.build-idea-mini { padding: var(--space-2) var(--space-4); border-radius: var(--kid-radius); background: var(--kid-sun-50); }
+.build-idea-mini summary { display: flex; align-items: center; gap: var(--space-2); min-block-size: var(--kid-touch); cursor: pointer; font-weight: 700; }
+.build-idea-mini p { margin: 0 0 var(--space-2); }
+
+.build-bench { display: grid; gap: var(--space-4); justify-items: center; }
+.build-primary, .build-secondary, .build-tool {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2);
+  min-block-size: var(--kid-touch); padding: var(--space-2) var(--space-4);
+  border-radius: var(--kid-radius); font: inherit; font-weight: 700; cursor: pointer; color: inherit;
+  border: var(--kid-border) solid var(--kid-world-200); border-block-end-width: calc(var(--kid-border) + var(--kid-press));
+  background: var(--kid-surface);
+  transition: translate var(--kid-dur-tap) var(--ease-out);
+}
+.build-primary { min-block-size: var(--kid-touch-primary); padding-inline: var(--space-6); background: var(--kid-world-500); border-color: var(--kid-world-600); color: var(--kid-surface); font-size: var(--kid-text-lg); }
+.build-primary:active:not(:disabled), .build-secondary:active:not(:disabled), .build-tool:active:not(:disabled) { translate: 0 var(--kid-press); }
+.build-primary:disabled, .build-secondary:disabled, .build-tool:disabled { opacity: .5; cursor: default; }
+.build-tool[aria-pressed="true"] { border-color: var(--kid-world-ink); background: var(--kid-world-100); outline: var(--kid-border) solid var(--kid-world-300); }
+.build-tools { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: var(--space-2); }
+.build-tool { flex-direction: column; gap: var(--space-1); min-inline-size: 4.75rem; font-size: var(--kid-text-min); }
+.build-tool-art { display: block; inline-size: 2.5rem; aspect-ratio: 1; border-radius: var(--space-1); }
+.build-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
+.build-count, .build-note { color: var(--kid-ink-soft); font-weight: 700; }
+.build-note { margin: 0; text-align: center; }
+
+.build-feedback, .build-hint {
+  margin: 0; padding: var(--space-3) var(--space-4); border-radius: var(--kid-radius);
+  background: var(--kid-sky-50); border: var(--kid-border) solid var(--kid-sky-200); text-align: center; font-size: var(--kid-text-lg);
+}
+.build-feedback[data-kind="miss"] { background: var(--kid-coral-50); border-color: var(--kid-coral-200); animation: build-nudge 360ms var(--ease-out); }
+.build-hint { background: var(--kid-sun-50); border-color: var(--kid-sun-200); display: flex; gap: var(--space-2); align-items: center; justify-content: center; }
+.build-hint-button { align-self: center; }
+@keyframes build-nudge { 0%, 100% { translate: 0; } 30% { translate: -6px; } 60% { translate: 6px; } }
+
+.build-done {
+  display: grid; grid-template-columns: auto 1fr; gap: var(--space-4); align-items: center;
+  padding: var(--space-5); border-radius: var(--kid-radius-lg);
+  background: var(--kid-sky-50); border: var(--kid-border) solid var(--kid-sky-200);
+  animation: build-rise 420ms var(--ease-out) both;
+}
+.build-done[data-correct] { background: var(--kid-leaf-50); border-color: var(--kid-leaf-300); }
+.build-done > .build-actions { grid-column: 1 / -1; }
+.build-done h2 { font-size: var(--kid-text-xl); }
+.build-done p { margin: var(--space-2) 0 0; }
+.build-why { font-size: var(--kid-text-lg); font-weight: 600; }
+.build-star { display: inline-flex; align-items: center; gap: var(--space-1); margin-block-start: var(--space-2); padding: var(--space-1) var(--space-3); border-radius: var(--kid-radius-pill); background: var(--kid-sun-200); color: var(--kid-sun-ink); font-weight: 800; }
+@keyframes build-rise { from { opacity: 0; translate: 0 10px; } to { opacity: 1; translate: 0; } }
+
+/* ---- the shared grid ---- */
+.build-grid {
+  display: grid; inline-size: min(100%, 40rem); gap: 3px; padding: 3px;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-template-rows: repeat(var(--rows), minmax(0, 1fr)); aspect-ratio: var(--cols) / var(--rows);
+  border-radius: var(--kid-radius); background: var(--kid-world-200); position: relative; touch-action: manipulation;
+}
+.build-grid > * { min-inline-size: 0; min-block-size: 0; }
+.build-grid > [style] { grid-column: var(--c) / span var(--span, 1); grid-row: var(--r); }
+.build-cell { border: 0; padding: 0; border-radius: calc(var(--kid-radius) / 2); background: var(--kid-surface); color: inherit; font: inherit; }
+button.build-cell { cursor: pointer; }
+button.build-cell:disabled { cursor: default; }
+button.build-cell:focus-visible, .tower-drop:focus-visible { outline: 3px solid var(--kid-world-ink); outline-offset: -3px; z-index: 2; }
+.build-piece { display: grid; place-items: center; padding: 8%; pointer-events: none; z-index: 1; }
+.build-art { display: block; inline-size: 100%; block-size: 100%; }
+.build-grid-labelled { display: grid; grid-template-columns: 1.6rem minmax(0, 1fr); gap: var(--space-1); inline-size: min(100%, 42rem); }
+.build-grid-labelled .build-grid { inline-size: 100%; }
+.build-grid-letters, .build-grid-numbers { display: grid; font-weight: 800; color: var(--kid-world-ink); text-align: center; }
+.build-grid-letters { padding-inline: 3px; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); }
+.build-grid-numbers { padding-block: 3px; align-items: center; grid-template-rows: repeat(var(--rows), minmax(0, 1fr)); }
+
+/* ---- robot garage ---- */
+.robot-floor .build-cell { background: var(--kid-sky-50); }
+.robot-token { animation: robot-hop 420ms var(--ease-out); z-index: 2; }
+@keyframes robot-hop { 40% { translate: 0 -8%; } }
+.robot-body { fill: var(--kid-sky-400); stroke: var(--kid-sky-ink); stroke-width: 3; }
+.robot-wheel { fill: var(--kid-ink); }
+.robot-face { fill: var(--kid-sky-100); }
+.robot-eye { fill: var(--kid-ink); }
+.robot-nose { fill: var(--kid-sun-400); stroke: var(--kid-sun-ink); stroke-width: 2; }
+.robot-light { fill: var(--kid-coral-400); }
+.flag-pole { fill: var(--kid-ink-soft); }
+.flag-cloth { fill: var(--kid-coral-400); stroke: var(--kid-coral-ink); stroke-width: 2; }
+.flag-base { fill: var(--kid-leaf-300); }
+.rock { fill: var(--kid-ink-soft); stroke: var(--kid-ink); stroke-width: 3; }
+.rock-shine { stroke: var(--kid-surface); stroke-width: 3; stroke-linecap: round; opacity: .5; }
+.gem { fill: var(--kid-grape-300); stroke: var(--kid-grape-ink); stroke-width: 3; stroke-linejoin: round; }
+.gem-facet { stroke: var(--kid-grape-ink); stroke-width: 2; opacity: .5; }
+.robot-program { inline-size: min(100%, 44rem); }
+.robot-program ol { list-style: none; margin: 0; padding: var(--space-3) var(--space-2); display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-2); justify-content: center; border-radius: var(--kid-radius); background: var(--kid-surface-sunk); }
+.robot-card {
+  position: relative; display: grid; justify-items: center; align-content: center; gap: 2px; inline-size: 5.25rem; min-block-size: 5.5rem; padding: var(--space-2) var(--space-1);
+  border-radius: var(--kid-radius); background: var(--kid-surface); border: var(--kid-border) solid var(--kid-sky-300); font-size: var(--kid-text-min); font-weight: 700;
+}
+.robot-card-empty { border-style: dashed; border-color: var(--kid-world-200); background: transparent; }
+.robot-card[data-active] { background: var(--kid-sun-100); border-color: var(--kid-sun-ink); translate: 0 -4px; }
+.robot-card[data-broken] { background: var(--kid-coral-100); border-color: var(--kid-coral-ink); animation: build-nudge 360ms var(--ease-out) 2; }
+.robot-card-number { position: absolute; inset-block-start: 2px; inset-inline-start: 6px; color: var(--kid-ink-soft); }
+.robot-card-times { min-block-size: 2rem; min-inline-size: 2.75rem; border-radius: var(--kid-radius-pill); border: 2px solid var(--kid-grape-300); background: var(--kid-grape-50); color: var(--kid-grape-ink); font: inherit; font-weight: 800; cursor: pointer; }
+.robot-card-remove { position: absolute; inset-block-start: -.6rem; inset-inline-end: -.6rem; display: grid; place-items: center; inline-size: 1.9rem; aspect-ratio: 1; border-radius: 50%; border: 2px solid var(--kid-coral-300); background: var(--kid-surface); color: var(--kid-coral-ink); cursor: pointer; }
+.robot-command { min-inline-size: 5.5rem; min-block-size: calc(var(--kid-touch) * 1.35); }
+.build-icon { flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.build-icon[data-filled] { fill: currentColor; }
+
+/* ---- map maker ---- */
+.map-stage { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: var(--space-3); inline-size: 100%; }
+.map-stage > .build-grid, .map-stage > .build-grid-labelled { flex: 1 1 20rem; max-inline-size: 42rem; }
+.map-compass { inline-size: clamp(4.5rem, 12vw, 6.5rem); flex: none; }
+.map-cell, .build-tool-art { background: var(--kid-leaf-100); }
+.map-cell[data-tile="water"], .map-cell[data-tile="bridge"], .build-tool-art[data-tile="water"], .build-tool-art[data-tile="bridge"] { background: var(--kid-sky-200); }
+.map-cell[data-fixed] { box-shadow: inset 0 0 0 2px var(--kid-world-300); }
+.map-cell .build-art { padding: 6%; }
+.water-wave { stroke: var(--kid-sky-500); stroke-width: 4; stroke-linecap: round; opacity: .7; }
+.grass-tuft { stroke: var(--kid-leaf-400); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.trunk { fill: var(--kid-coral-ink); }
+.leaves { fill: var(--kid-leaf-400); stroke: var(--kid-leaf-ink); stroke-width: 3; }
+.leaves-light { fill: var(--kid-leaf-200); }
+.wall { fill: var(--kid-sun-100); stroke: var(--kid-ink); stroke-width: 3; }
+.school-wall { fill: var(--kid-sky-100); }
+.roof { fill: var(--kid-coral-400); stroke: var(--kid-coral-ink); stroke-width: 3; stroke-linejoin: round; }
+.door { fill: var(--kid-coral-ink); }
+.window { fill: var(--kid-sky-200); stroke: var(--kid-ink); stroke-width: 2; }
+.mountain { fill: var(--kid-ink-soft); stroke: var(--kid-ink); stroke-width: 3; stroke-linejoin: round; }
+.snow { fill: var(--kid-surface); }
+.road { fill: var(--kid-ink-soft); }
+.road-line { stroke: var(--kid-sun-200); stroke-width: 5; stroke-linecap: round; }
+.bridge-arch { fill: var(--kid-coral-300); stroke: var(--kid-coral-ink); stroke-width: 3; }
+.bridge-rail { stroke: var(--kid-coral-ink); stroke-width: 5; }
+.chest { fill: var(--kid-coral-300); stroke: var(--kid-coral-ink); stroke-width: 3; }
+.chest-lid { fill: var(--kid-coral-400); stroke: var(--kid-coral-ink); stroke-width: 3; }
+.chest-lock { fill: var(--kid-sun-400); }
+.treasure-x { stroke: var(--kid-coral-500); stroke-width: 6; stroke-linecap: round; }
+.bench { fill: var(--kid-coral-ink); }
+.flower { fill: var(--kid-berry-300); }
+.awning { fill: var(--kid-berry-300); stroke: var(--kid-berry-ink); stroke-width: 3; }
+.awning-stripe { stroke: var(--kid-surface); stroke-width: 4; }
+.compass-face { fill: var(--kid-surface); stroke: var(--kid-world-ink); stroke-width: 3; }
+.compass-north { fill: var(--kid-coral-400); }
+.compass-south { fill: var(--kid-ink-soft); }
+.compass-letter { font-size: var(--kid-text-min); font-weight: 800; fill: var(--kid-ink); font-family: var(--font-body); }
+.map-paper { fill: var(--kid-sun-50); stroke: var(--kid-sun-ink); stroke-width: 3; stroke-linejoin: round; }
+.map-fold { stroke: var(--kid-sun-300); stroke-width: 2; }
+.map-island { fill: var(--kid-leaf-300); stroke: var(--kid-leaf-ink); stroke-width: 2; }
+.map-trail { stroke: var(--kid-ink-soft); stroke-width: 3; stroke-dasharray: 4 5; }
+
+/* ---- tower & bridge lab ---- */
+.tower-yard { display: grid; grid-template-rows: auto 1fr; inline-size: min(100%, 38rem); border-radius: var(--kid-radius); overflow: hidden; background: var(--kid-sky-50); }
+.tower-air { inline-size: 100%; background: transparent; gap: 0; padding: 0; border-radius: 0; }
+.tower-air > .tower-drop { grid-column: var(--c); grid-row: 1 / -1; }
+.tower-drop { border: 0; background: transparent; cursor: pointer; z-index: 0; }
+.tower-drop:hover:not(:disabled) { background: color-mix(in srgb, var(--kid-sun-200) 45%, transparent); }
+.tower-block, .tower-block-sample {
+  z-index: 1; margin: 1px; border-radius: 6px; pointer-events: none;
+  background: var(--kid-sun-300); border: 3px solid var(--kid-sun-ink); box-shadow: inset 0 -5px 0 var(--kid-sun-400);
+}
+.tower-block[data-w="2"], .tower-block-sample[data-w="2"] { background: var(--kid-coral-300); border-color: var(--kid-coral-ink); box-shadow: inset 0 -5px 0 var(--kid-coral-400); }
+.tower-block[data-w="3"], .tower-block-sample[data-w="3"] { background: var(--kid-sky-300); border-color: var(--kid-sky-ink); box-shadow: inset 0 -5px 0 var(--kid-sky-400); }
+.tower-block[data-falls] { animation: tower-fall 900ms var(--ease-out) forwards; }
+@keyframes tower-fall { 30% { rotate: 12deg; } 100% { rotate: 70deg; translate: 20% 140%; opacity: .25; } }
+.tower-block-sample { display: block; block-size: 1.4rem; inline-size: calc(var(--w) * 1.4rem); }
+.tower-ground { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); min-block-size: 1.5rem; }
+.tower-ground > span { background: var(--kid-leaf-400); border-block-start: 4px solid var(--kid-leaf-ink); }
+.tower-ground > span[data-water] { background: var(--kid-sky-300); border-block-start: 4px solid var(--kid-sky-500); }
+.tower-predict { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: var(--space-2); font-weight: 700; font-size: var(--kid-text-lg); }
+
+/* ---- shape workshop ---- */
+.shape-sheet .shape-cell { background: var(--kid-surface); box-shadow: inset 0 0 0 1px var(--line); }
+.shape-cell[data-outside] { background: var(--kid-surface-sunk); opacity: .55; }
+.shape-cell[data-fixed] { box-shadow: inset 0 0 0 3px var(--kid-ink-soft); }
+.shape-cell[data-fold] { box-shadow: inset -4px 0 0 var(--kid-grape-ink); }
+.shape-cell[data-fold][data-fixed] { box-shadow: inset -4px 0 0 var(--kid-grape-ink), inset 0 0 0 3px var(--kid-ink-soft); }
+.shape-sheet .shape-cell[data-colour="red"], .shape-swatch[data-colour="red"] { background: var(--kid-coral-400); }
+.shape-sheet .shape-cell[data-colour="blue"], .shape-swatch[data-colour="blue"] { background: var(--kid-sky-400); }
+.shape-sheet .shape-cell[data-colour="yellow"], .shape-swatch[data-colour="yellow"] { background: var(--kid-sun-300); }
+.shape-sheet .shape-cell[data-colour="green"], .shape-swatch[data-colour="green"] { background: var(--kid-leaf-400); }
+.swatch-red { fill: var(--kid-coral-400); } .swatch-blue { fill: var(--kid-sky-400); } .swatch-yellow { fill: var(--kid-sun-300); } .swatch-green { fill: var(--kid-leaf-400); }
+.shape-cell[data-colour] { animation: shape-pop 220ms var(--ease-out); }
+@keyframes shape-pop { 50% { scale: .9; } }
+.shape-swatch { display: block; inline-size: 2.25rem; aspect-ratio: 1; border-radius: 6px; border: 2px solid var(--kid-ink-soft); }
+.block { stroke: var(--kid-ink); stroke-width: 3; }
+.block-1 { fill: var(--kid-sun-300); } .block-2 { fill: var(--kid-coral-300); } .block-3 { fill: var(--kid-sky-300); }
+
+@media (max-width: 640px) {
+  .build-welcome, .build-workshop-head { flex-direction: column; text-align: center; }
+  .build-ask .kid-bubble-slot { flex: 1 1 12rem; }
+  .build-idea, .build-done { grid-template-columns: 1fr; text-align: center; }
+  .build-idea-mark, .build-done > .build-guide { justify-self: center; }
+  .robot-card { inline-size: 4.5rem; }
+  .build-tool { min-inline-size: 4rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .robot-token, .robot-card[data-broken], .build-feedback[data-kind="miss"], .build-done, .shape-cell[data-colour] { animation: none; }
+  .tower-block[data-falls] { animation: none; opacity: .35; rotate: 20deg; }
+  .build-sign, .build-job { transition: none; }
 }

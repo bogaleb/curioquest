@@ -660,6 +660,193 @@ two disagree.
   290 tests pass, build clean. `outputs/wp11-intro.png`,
   `outputs/wp11-intro-transition.png`.
 
+- **The Wonder Lab. Shipped.** Requested directly by the product owner, which is why it
+  is here rather than behind the §F freeze on enrichment subjects: science was the
+  thinnest thing in the product and the one a parent looks at first after reading.
+
+  What it replaced: nine `Experiment` records in `lib/science-lab.ts`, each a question
+  with a list of objects and one correct word per object. The outcomes shipped to the
+  browser in the bundle, so the prediction step was decorative and the whole lab could be
+  finished from the network tab. Nothing was recorded — a child could predict, test and
+  explain all nine and the product knew exactly as much about them afterwards as before.
+  The "model" was an emoji with a CSS transform on it. And a three-year-old and a
+  nine-year-old were handed the same sentence.
+
+  What is there now: **16 topics, 33 stations, five kinds of interaction**, covering every
+  strand Wave 07 names — life, earth and space, matter, forces, energy and the body.
+  Stations are authored in `lib/science/content/` against a content model
+  (`lib/science/types.ts`) and rendered by five engines in `components/kid/lab/`:
+
+  - **predict** — open every clue, commit to a prediction, then watch the apparatus run;
+  - **sort** — classify one thing at a time, and be told where it belonged either way;
+  - **sequence** — build an order, with *reversed* recorded as a different mistake from
+    scattered;
+  - **label** — find the part that does a job, on a diagram with no words on it;
+  - **fair-test** — choose the one variable to change, and say what is held still.
+
+  **Age is authored, not computed.** Every teaching string exists three times, for three
+  voices: `explorer` (3–5), `investigator` (5–7) and `scientist` (7–9). A tier is not a
+  difficulty multiplier on one sentence — it decides what a true answer is allowed to
+  contain. The same station tells a four-year-old that heavy-for-its-size things go down
+  and a nine-year-old about density, mass over volume, and why size predicted nothing.
+  A topic with no station for a child's tier is simply not on their shelf. A test fails
+  the build if a station offered to both ends of the range says the same thing to both.
+
+  **Answers never leave the server** (§A). `app/api/lab/route.ts` resolves content to the
+  child's tier with every outcome, observation and explanation stripped, judges the
+  response, and releases the observation only after the child has committed. A test
+  serialises the whole public payload for all three tiers and fails if any answer string
+  appears in it. The sequence and label stations are shuffled by a seeded function of the
+  station id, so the server can reproduce the arrangement without being told what the
+  browser was shown.
+
+  **Every attempt is evidence** (§A, §C1). A station presents itself to the rest of the
+  codebase as an ordinary `Question`, so lab attempts and quest attempts land in one
+  record rather than two. The verb is where it pays: the quest bank records `choose`
+  almost everywhere, and a lab session records `predict`, `sort`, `sequence` and
+  `explain` — which is the representation variety the evidence rule (§C2) asks for and
+  the one thing a multiple-choice bank cannot supply. Eleven new science skills were added
+  to `lib/skill-graph.ts`, including the inquiry skill the whole lab aims at, designing a
+  fair test.
+
+  **The apparatus is drawn and it moves honestly.** Nine models — a tank, a ramp, a
+  magnet bench, a beam of light, a pot, a warm plate, a sky, a drum, a bench — all inline
+  SVG painted from the scene ramp. The motions are physical (`rise`, `fall`, `travel`,
+  `wilt`) rather than semantic, and **the model runs whether the prediction was right or
+  wrong**: an apparatus that only performs for a correct answer teaches that being wrong
+  means seeing nothing. The 74 objects are twelve parameterised silhouettes rather than 74
+  drawings — honest at this size, and it keeps the set looking like one set. No emoji
+  anywhere; `check-child-surfaces.mjs` covers the whole of `components/kid/lab/`.
+
+  Reduced motion is a complete path rather than a frozen one: the travel animations are
+  switched off and the *finished* position is applied directly, so the cork is already at
+  the surface and the car already at the far end.
+
+  Legacy CSS went down rather than up: thirty `.lab-*`, `.experiment-*` and `.notebook-*`
+  rules left `app/stories.css` and `app/polish.css` — 3,157 bytes, 20 raw colours and 11
+  px font sizes — and the ratchets in `check-tokens.mjs` were lowered to match.
+
+  Four faults were found by looking at the rendered screen rather than the markup, and
+  none of them were visible in the code: the label stations named the part in the question
+  asking for it ("the stem holds the plant up"), so the whole diagram could be solved by
+  matching a word; the ramp slid a plank down the slope instead of the car, because the
+  setup art named the *condition* rather than the thing that moves; the thing on the sort
+  bench was rendered at `width: 100%` inside a flex row and pushed the bins off the side
+  of the screen; and the heart was painted underneath the lungs. There are now tests for
+  the first of those.
+
+  Verified at iPad landscape, iPad portrait, phone portrait (390×844) and desktop, with
+  narration off, keyboard-only, and with every one of the 33 stations rendered. Touch
+  targets measured at the band's floor (80px at Pre-K, 120px primary). 308 tests pass,
+  lint clean, build clean.
+
+  Still not true: the lab's own screens need a signed-in family, so they are exercised
+  through `/kid-preview?screen=lab`, which is development-only and 404s in production.
+  Nova's lines are authored strings read by `speechSynthesis` rather than recorded audio
+  (WP-07). The notebook is a text box, so the youngest tier's metacognition prompt is
+  answered to a grown-up rather than typed. And the lab does not yet feed the daily
+  adventure — a child reaches it from the map, not from the trail.
+
+- **The Making Place. Shipped.** Requested directly by the product owner, alongside the
+  Wonder Lab. Drawing, colouring and writing, rebuilt as three rooms rather than one
+  canvas with a `mode` string.
+
+  What it replaced: a single editor. Colouring was that editor with a canvas outline
+  drawn underneath, so "colouring in" meant dragging a brush and trying to stay inside a
+  line — a fine motor exercise, and the exact task a real colouring book removes by
+  printing the lines. Writing was that editor with a text box above it and a dotted
+  capital letter: no lowercase, no cues, no words, no sentences, and no way for the
+  product to know whether a child had traced the letter or scribbled over it. The stamps
+  and the three room doors were emoji, so a child's picture contained Apple's butterfly
+  on one device and Google's on another (§A). Everyone from three to nine got the same
+  nine unnamed swatches, the same seven tools, the same twenty-six pages and a system
+  colour picker.
+
+  **The colouring book.** 24 pages, and every page is a list of named, fillable parts
+  rather than an outline — 52 shapes in a catalogue, composed by data in
+  `lib/studio/pages.ts`. Touch the cat's ear and the ear fills, named out loud, with the
+  colour the child chose. Every part carries a word — ear, whisker, paw, chimney, sail,
+  fin, petal — so a page is also a vocabulary walk, and those same words are the second,
+  equal way in: a row of real buttons that fill the same regions, which is the keyboard
+  and screen-reader path and also how a grown-up sitting alongside says *colour the tail
+  next*. There is a "surprise me", because it is the most-asked-for button in any
+  colouring app and because a child who has never seen a purple sky then has to decide
+  whether they meant it.
+
+  **The paint box.** Named colours — sunflower, deep sea, moss — resolved from tokens,
+  never a raw hex and never a spectrum dialog. Eight for the youngest, eighteen in the
+  middle, twenty-eight for the oldest, grouped by family so finding another green is a
+  glance. The name is on screen and in the announcement, because `aria-pressed` on a
+  coloured square with no text says nothing at all.
+
+  **The writing desk.** This is the part that actually teaches. 68 characters — eight
+  pre-writing strokes, the full lowercase and capital alphabets, ten numerals — each
+  authored as ordered strokes against the four lines a writing book prints: ascender,
+  midline, baseline, descender. Every stroke carries the sentence a grown-up says while
+  the child writes it ("round like a ball, then straight down"), spoken and on screen.
+  Lowercase is ordered by *movement* rather than alphabetically: c, o, a, d, g and q are
+  one hand shape with different endings, and alphabetical order is what a chart is for.
+
+  And the trace is checked — **on the server**, which also records it. Three questions and
+  deliberately only three: did you start in the right place, did you go the right way, did
+  you stay near the line. Never neatness. A `c` traced backwards is caught even though the
+  finished shape is identical, which is the whole point. Tolerances widen for younger
+  hands. The dot on an `i` is treated as a tap rather than a drag, because asking a
+  three-year-old to drag across a two-unit target teaches the wrong movement.
+
+  **Handwriting is now evidence** (§A, §C1). Four new writing skills were added to
+  `lib/skill-graph.ts`, and every traced stroke writes a `learning_event` with the verb
+  `build` — production, not recognition — in the same transaction as the profile save. The
+  item id is per *stroke* rather than per letter, because a child who can draw `b`'s long
+  line and not its bowl has a specific, fixable problem that a per-letter id would average
+  away. Support is recorded as `model`: the trail and the cue are in front of the child the
+  whole time, and calling that unaided would be a lie to the evidence rule.
+
+  **The drawing board** keeps the canvas, which was the one part of the old studio worth
+  keeping — pointer-captured live strokes, flood fill, undo, redo. Around it: the stamps
+  are now the same shape catalogue the pages are built from, stamped through `Path2D`, so
+  a star in a drawing is the same star as a star on a page; tools and paint box narrow by
+  band; and the brush size is three named sizes rather than a range input, which is a
+  two-handed control needing a value read off it.
+
+  Marks now store a *colour id* rather than a hex, so a saved picture holds a name. Work
+  saved before this keeps loading untouched — a family's pictures are theirs, and quietly
+  repainting them to the nearest named colour is not a migration anyone asked for.
+
+  Parent Corner used to embed the entire child studio to show a portfolio, putting a child
+  surface inside an adult one (§D7) and handing a parent a drawing application when they
+  wanted a list. It is now `ArtworkPortfolio`: the list, each kind rendered as itself, and
+  the delete, which belongs behind the parent gate and nowhere near a four-year-old.
+
+  Legacy CSS went down again: 46 rules left `app/studio.css` and `app/(explorer)/craft.css`
+  — 3,549 bytes, 28 raw colours and 17 px font sizes — and the ratchets were lowered to
+  match. `lib/handwriting.ts`, `lib/art-templates.ts`, `lib/art-renderer.ts` and the old
+  studio components are deleted.
+
+  Three faults were found by looking at the rendered page rather than the file, and the
+  first of them would have shipped as a broken product: **a region tapped by a child never
+  changed colour**. `fill` reads through a custom property, and a CSS transition on a
+  property whose value arrives that way stalls in Chromium — the variable updates and the
+  computed fill does not. The transition is gone; the fill is instant, which is what a
+  paint pot should be, and the arrival is drawn by a transform that animates reliably.
+  The other two: `ShapeMark`'s default class had no size, so an inline SVG with a viewBox
+  filled its container and a star beside a sentence became a star the height of the page;
+  and the cat's tail was an open path, which filled into a solid wedge.
+
+  Verified at iPad landscape, iPad portrait, phone portrait (390×844) and desktop, at both
+  ends of the band range, with reduced motion on and off, with every one of the 24 pages
+  and all 68 letters rendered. Touch targets measured at the band's floor. Colouring and
+  tracing exercised end to end in a real browser, including a backwards `c`. 336 tests
+  pass, lint clean, build clean.
+
+  Still not true: the studio's own screens need a signed-in family, so they are exercised
+  through `/kid-preview?screen=studio`, which is development-only and 404s in production.
+  Nova's lines and the stroke cues are `speechSynthesis` rather than recorded audio
+  (WP-07). Word and sentence writing is typed rather than handwritten — the formation
+  checker works on single characters only. And there is no printing: a colouring page a
+  child finishes cannot yet come out of a printer, which is the first thing a parent will
+  ask for.
+
 ## Implemented in this expansion
 
 - Reading Adventure Section 94 vertical slice is now implemented: playful placement, m/s/a/t/p/i/n, Letter Catch, Blend Train, Sound Boxes, a decodable tiny story, saved evidence/review, and parent progress. See [the milestone scope and verification](READING_MILESTONE.md). The broader reading blueprint is not claimed complete.
@@ -667,11 +854,11 @@ two disagree.
 - Parent controls: age/school-grade details, subject priorities, adaptive/gentle/stretch challenge, quest length, allowed days, timezone-aware bedtime, optional faith, offline suggestions, music/narration/success preferences. Existing profile editing, avatars, interests, PIN/recovery, weekly evidence, and export remain.
 - Destructive changes require an unlocked parent session and confirmation. Delete a child with their workspace records, keep at least one explorer, reset selected game/Daily Quest/chapter/skill/star/learning progress, and retain creations on a learning-only reset.
 - Parent Activity Builder: curated curriculum drafts, addition/subtraction generators, custom questions/choices/hints/explanations, reusable sets, immutable assigned copies, due dates, completion badges, saved child answers, parent replay and removal. Answers are scored privately; custom quizzes do not fabricate curriculum mastery.
-- Creative Studio: drawing/coloring/writing, seven tools, palette/custom colors, brush sizes, stamps, bounded flood fill, undo/redo, clear confirmation, save/copy/reopen, parent-managed portfolio, and unsaved-art navigation warnings. Twenty-five coloring templates, eight creative prompts, capital A–Z/0–9/six warm-up tracing examples, numbered starts and replay. Names/lowercase/words/sentences have dotted text guides.
+- The Making Place (formerly the Creative Studio): three rooms — a colouring book of 24 pages whose every part is a named, tappable region; a drawing board with a pressure-free canvas, drawn stamps, flood fill and undo; and a writing desk teaching letter formation across 68 characters (pre-writing strokes, lowercase, capitals, numerals) with spoken stroke cues, an animated demonstration, and server-side checking of where a trace started, which way it went and whether it stayed near the line. Named colours banded by age, tools banded by age, words and sentence frames, one gallery for all three kinds of work, and a parent-side portfolio behind the gate. Every traced stroke writes a learning event. See the work-package note above.
 - Gallery previews are smaller than editor canvases, records are paged, and live strokes use a cached base image. Canvas supports mouse/touch pointer capture and a keyboard marking alternative.
 - Story Harbor: seven character/science stories, including honesty, kindness, cooperation, patience, responsibility, gratitude, boundaries, and observation. Original authored scenes, choices/consequences, narration, previous/next, replay, saved position, and themed visual environments.
 - Faith & Bible: default off, hidden from normal navigation and server-gated per child. Fourteen original Bible retellings (42 scenes), references, reflections, nine original prayer categories, repeat-after-me/read-together/narrated/silent modes, and a saved family-guided prayer journal. No copyrighted translation text or licensed music copied.
-- Discovery Lab: nine experiment sets / 31 object scenarios covering floating, magnets, light, plants, habitats, water changes, senses, motion, and weather. Predict → try a simplified model → observe → explain; save observations, and optional safe grown-up activities. Incorrect predictions are welcomed as evidence, not penalized.
+- The Wonder Lab (formerly the Discovery Lab): 16 topics / 33 stations across life, earth and space, matter, forces, energy and the body, in five interaction formats and three authored age voices. Observe → predict → test → observe → explain → write it down, with a drawn apparatus that runs whether the prediction was right or wrong, an off-screen invitation on every station, and one `learning_event` per attempt. Answers are decided on the server. See the work-package note above.
 - Shared optional sound and completion celebrations. Brief purposeful motion illustrates experiment outcomes, scene changes, and milestones; reduced-motion preferences suppress decorative animation. Original synthesized tones and device speech avoid unlicensed assets.
 - Indexed D1 workspace records, capacity/input bounds, parent authorization, profile ownership, conditional revisions, conflict recovery, family export, and profile deletion cleanup. Existing curriculum, mastery, games, garden, quests, rewards, and sibling progress are preserved.
 

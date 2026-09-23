@@ -2,7 +2,11 @@ import { notFound } from "next/navigation";
 import { isLearningBandId, DEFAULT_BAND, type LearningBandId } from "@/lib/learning-bands";
 import type { KidWorld } from "@/components/kid";
 import { KidPreview } from "./KidPreview";
+import { BuildPreview } from "./BuildPreview";
+import { LabPreview } from "./LabPreview";
+import { ReadingPreview } from "./ReadingPreview";
 import { ScenePreview } from "./ScenePreview";
+import { StudioPreview } from "./StudioPreview";
 import "./preview.css";
 
 /**
@@ -20,6 +24,10 @@ import "./preview.css";
  *   /kid-preview?screen=map&band=prek            the arrival map
  *   /kid-preview?screen=moves&band=prek          every teaching move (WP-04)
  *   /kid-preview?screen=scene&band=prek          the scene grammar, cast and celebration (WP-11)
+ *   /kid-preview?screen=lab&band=prek            every Wonder Lab station and apparatus
+ *   /kid-preview?screen=studio&band=prek         every Making Place room, page and letter
+ *   /kid-preview?screen=reading&band=prek        the co-play reading steps: warm-up, sound hunt, writing
+ *   /kid-preview?screen=build&band=prek          the Build Yard, judged in the browser
  */
 const WORLDS: KidWorld[] = ["grove", "city", "harbor", "workshop", "treehouse", "lab"];
 
@@ -33,6 +41,10 @@ export default async function KidPreviewPage({
   const band: LearningBandId = isLearningBandId(params.band) ? params.band : DEFAULT_BAND;
   const world = WORLDS.find((name) => name === params.world) ?? "grove";
   if (params.screen === "scene") return <ScenePreview band={band} world={world} />;
+  if (params.screen === "lab") return <LabPreview band={band} />;
+  if (params.screen === "studio") return <StudioPreview band={band} />;
+  if (params.screen === "reading") return <ReadingPreview band={band} />;
+  if (params.screen === "build") return <BuildPreview band={band} />;
   const screen = params.screen === "map" ? "map" : params.screen === "moves" ? "moves" : "parts";
   return <KidPreview band={band} world={world} screen={screen} />;
 }
