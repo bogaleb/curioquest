@@ -13,6 +13,7 @@ export default function GameZonePage() {
     <>
       <button
         className="space-invitation reading-invitation"
+        disabled={busy || profile.preferences.paused}
         onClick={() => { setExperienceMode("game"); router.push("/today"); }}
       >
         <span aria-hidden="true">✦</span>

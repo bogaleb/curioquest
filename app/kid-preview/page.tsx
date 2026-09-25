@@ -7,6 +7,7 @@ import { LabPreview } from "./LabPreview";
 import { ReadingPreview } from "./ReadingPreview";
 import { ScenePreview } from "./ScenePreview";
 import { StudioPreview } from "./StudioPreview";
+import { WorldPreview } from "./WorldPreview";
 import "./preview.css";
 import { DiscoveryPreview } from "./DiscoveryPreview";
 import { publicDiscoveries } from "@/lib/discover/engine";
@@ -30,6 +31,7 @@ import { publicDiscoveries } from "@/lib/discover/engine";
  *   /kid-preview?screen=studio&band=prek         every Making Place room, page and letter
  *   /kid-preview?screen=reading&band=prek        the co-play reading steps: warm-up, sound hunt, writing
  *   /kid-preview?screen=build&band=prek          the Build Yard, judged in the browser
+ *   /kid-preview?screen=world&band=prek          the My World hub and treehouse
  */
 const WORLDS: KidWorld[] = ["grove", "city", "harbor", "workshop", "treehouse", "lab"];
 
@@ -48,6 +50,7 @@ export default async function KidPreviewPage({
   if (params.screen === "studio") return <StudioPreview band={band} />;
   if (params.screen === "reading") return <ReadingPreview band={band} />;
   if (params.screen === "build") return <BuildPreview band={band} />;
+  if (params.screen === "world") return <WorldPreview band={band} />;
   const screen = params.screen === "map" ? "map" : params.screen === "moves" ? "moves" : "parts";
   return <KidPreview band={band} world={world} screen={screen} />;
 }

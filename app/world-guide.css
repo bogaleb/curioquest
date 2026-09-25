@@ -1,0 +1,92 @@
+.atlas,.grove-fieldbook { color: #244c40; }
+.atlas-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; margin:12px 0 22px; }
+.atlas-heading h2 { font-size:clamp(28px,3.5vw,42px); line-height:1.15; margin-top:8px; letter-spacing:-1px; }
+.atlas-count { display:flex; align-items:center; gap:8px; flex-shrink:0; padding:10px 15px; border:1px solid #d5dfcd; border-radius:100px; font-size:13px; background:#fffdf3; }
+.atlas-filters { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:24px; }
+.atlas-filters button,.atlas-back { display:flex; align-items:center; justify-content:center; gap:8px; min-height:52px; padding:12px 20px; border:1px solid #cad8c8; border-radius:100px; background:#fffdf6; color:#365b4c; font-weight:700; }
+.atlas-filters button[aria-pressed=true] { background:#245d48; border-color:#245d48; color:white; }
+.atlas-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.atlas-card { padding:0; overflow:hidden; border:1px solid #d1ddcb; border-radius:26px; background:#fffdf6; text-align:left; color:#244c40; box-shadow:0 5px 0 #234d3e0a; transition:transform .2s,box-shadow .2s; }
+.atlas-card:hover { transform:translateY(-5px); box-shadow:0 12px 24px #234d3e14; }
+.atlas-card-scene { position:relative; isolation:isolate; height:170px; display:grid; place-items:center; overflow:hidden; background:linear-gradient(160deg,#e7efc7,#c7dfce); }
+.atlas-card[data-kid-world=lab] .atlas-card-scene { background:linear-gradient(160deg,#e4ebfa,#c1dce6); }
+.atlas-card[data-kid-world=workshop] .atlas-card-scene { background:linear-gradient(160deg,#faeacc,#efc7ab); }
+.atlas-card[data-kid-world=city] .atlas-card-scene { background:linear-gradient(160deg,#f8e4d9,#e8c7d2); }
+.atlas-card[data-kid-world=harbor] .atlas-card-scene { background:linear-gradient(160deg,#e1f0eb,#bfdde9); }
+.atlas-card[data-kid-world=treehouse] .atlas-card-scene { background:linear-gradient(160deg,#f4e7bf,#dcd6b3); }
+.atlas-card-scene::after { content:""; position:absolute; bottom:-54px; width:140%; height:100px; border-radius:50%; background:#ffffff36; z-index:-1; }
+.atlas-orbit { position:absolute; width:130px; height:130px; border:1px solid #fff8; border-radius:50%; transform:translate(75px,-45px); z-index:-1; }
+.atlas-card-scene>svg { width:145px; height:145px; transition:transform .35s; }
+.atlas-card:hover .atlas-card-scene>svg { transform:rotate(-4deg) scale(1.07); }
+.atlas-card-copy { display:grid; gap:9px; padding:22px; }
+.atlas-card-copy small { font-size:11px; text-transform:uppercase; letter-spacing:1.7px; color:#657c66; font-weight:800; }
+.atlas-card-copy strong { font-size:24px; line-height:1.2; }
+.atlas-card-copy>span { color:#587064; font-size:15px; line-height:1.5; min-height:45px; }
+.atlas-card-copy b { display:flex; gap:8px; align-items:center; font-size:14px; margin-top:7px; }
+.atlas-detail { padding:clamp(20px,3vw,36px); border:1px solid #cfdbc9; border-radius:28px; background:#fffdf5; color:#244c40; }
+.atlas-detail-grid { display:grid; grid-template-columns:.85fr 1.15fr; gap:40px; align-items:center; margin-top:24px; }
+.atlas-detail-art { display:grid; place-items:center; padding:30px; border-radius:45% 45% 24px 24px; background:radial-gradient(circle at 50% 40%,#fff9df,#dce9cf); }
+.atlas-detail-art svg { width:100%; max-width:300px; }
+.atlas-detail-art>span { font-size:13px; text-align:center; padding:15px 0; }
+.atlas-detail-copy h2 { font-size:clamp(32px,4vw,48px); line-height:1.1; margin:10px 0 16px; }
+.atlas-question { font-size:20px; line-height:1.5; }
+.atlas-steps { list-style:none; display:grid; gap:16px; padding:0; margin:24px 0; }
+.atlas-steps li { display:flex; gap:14px; align-items:center; font-size:16px; line-height:1.5; }
+.atlas-steps li>span { flex:0 0 34px; height:34px; border-radius:50%; display:grid; place-items:center; background:#e7eedb; font-weight:800; }
+.atlas-pocket { display:flex; gap:14px; align-items:flex-start; padding:18px; background:#f8edcf; border-radius:16px; }
+.atlas-pocket svg { flex-shrink:0; }
+.atlas-pocket p { margin:0; font-size:15px; line-height:1.6; }
+.grove-fieldbook { padding:clamp(18px,3vw,32px); border:1px solid #cadac4; border-radius:28px; background:#f6f7ed; }
+.grove-field-grid { display:grid; grid-template-columns:1fr 1.15fr; gap:32px; }
+.grove-portrait { border-radius:140px 140px 24px 24px; padding:32px 24px; text-align:center; background:radial-gradient(circle at 50% 35%,#fbf9da,#dce9ca); }
+.grove-portrait svg { width:100%; max-height:340px; }
+.grove-portrait h3 { font-size:28px; margin:0 0 14px; }
+.grove-portrait p { line-height:1.65; max-width:32ch; margin:auto; }
+.grove-observation { padding:18px 0; }
+.grove-observation h3 { font-size:clamp(24px,3vw,32px); line-height:1.3; margin:12px 0 22px; }
+.grove-answers { display:flex; flex-wrap:wrap; gap:10px; }
+.grove-answers button { display:flex; gap:10px; align-items:center; min-height:56px; padding:14px 20px; background:#fffef7; border:2px solid #c8d7bd; border-radius:16px; color:#31543f; font-weight:700; }
+.grove-answers button[aria-pressed=true] { border-color:#397c59; background:#e0ecd5; }
+.grove-feedback { min-height:100px; padding:18px 0; line-height:1.7; }
+.grove-care { display:flex; align-items:flex-start; gap:14px; border-top:1px solid #cedbc5; padding-top:24px; }
+.grove-care>svg { flex-shrink:0; }
+.grove-care p { line-height:1.6; margin:10px 0; }
+.grove-notebook { display:flex; gap:24px; align-items:center; justify-content:space-between; padding:24px; margin-top:26px; background:#fffdf4; border:1px dashed #aebe9f; border-radius:20px; }
+.grove-notebook h3 { font-size:24px; margin:8px 0; }
+.grove-notebook p { max-width:70ch; line-height:1.65; }
+.grove-notebook>button { flex-shrink:0; }
+.atlas-enter { animation:atlas-arrive .35s both; }
+.grove-animal { transform-origin:50% 85%; animation:grove-breathe 5s ease-in-out infinite; }
+.grove-wings { transform-origin:50% 60%; }
+.cq-world-hub button:focus-visible { outline:3px solid #256956; outline-offset:5px; }
+.cq-world-hub button:disabled { opacity:.55; cursor:not-allowed; }
+@keyframes atlas-arrive { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes grove-breathe { 0%,100% { transform:translateY(0) rotate(-1deg); } 50% { transform:translateY(-5px) rotate(1deg); } }
+@media(max-width:1000px) { .atlas-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .atlas-detail-grid,.grove-field-grid { gap:24px; } .grove-notebook { flex-direction:column; align-items:flex-start; } }
+@media(max-width:640px) { .atlas-grid,.atlas-detail-grid,.grove-field-grid { grid-template-columns:1fr; } .atlas-heading { align-items:flex-start; flex-direction:column; gap:14px; } .atlas-grid { gap:16px; } .atlas-card { display:grid; grid-template-columns:110px 1fr; border-radius:20px; } .atlas-card-scene { height:100%; min-height:195px; } .atlas-card-scene>svg { width:110px; height:110px; } .atlas-card-copy { padding:18px 14px; } .atlas-card-copy strong { font-size:21px; } .atlas-card-copy>span { min-height:0; } .atlas-filters { gap:6px; } .atlas-filters button { padding:12px 15px; } .atlas-detail-art svg { max-width:180px; } .atlas-detail-art { padding:15px; } .grove-portrait svg { max-height:240px; } .grove-notebook { padding:18px; } }
+@media(prefers-reduced-motion:reduce) { .atlas-enter,.grove-animal { animation:none; } .atlas-card,.atlas-card-scene>svg { transition:none; } .atlas-card:hover,.atlas-card:hover .atlas-card-scene>svg { transform:none; } }
+.room-welcome { display:flex; align-items:center; justify-content:space-between; gap:24px; margin:8px 0 24px; color:#315340; }
+.room-welcome h2 { font-size:clamp(30px,4vw,44px); line-height:1.1; margin:10px 0 16px; }
+.room-welcome p { max-width:60ch; line-height:1.7; }
+.room-inventory-count { padding:14px 18px; border:1px solid #cfdbc6; background:#fff9e7; border-radius:100px; white-space:nowrap; }
+.room-placement-guide { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px; }
+.room-placement-guide span { padding:13px 18px; border:1px solid #d4dec9; border-radius:14px; background:#f4f5e9; color:#52674b; }
+.room-placement-guide span[data-active=true] { background:#245d48; color:white; }
+.room-selection { display:flex; align-items:center; gap:18px; padding:20px; background:#f5edcf; border-radius:20px; margin:16px 0; }
+.room-selection>.item-art { width:64px; height:64px; flex-shrink:0; }
+.room-selection>div { flex:1; }
+.room-selection p { margin-top:6px; line-height:1.6; }
+@media(max-width:640px) { .room-welcome { flex-direction:column; align-items:flex-start; } .room-selection { flex-wrap:wrap; } .room-selection>.secondary { width:100%; } }
+.learning-world-prompts { display:flex; flex-wrap:wrap; gap:7px; margin:18px 0; }
+.learning-world-prompts span { background:#ffffff80; border:1px solid #ffffffa0; padding:7px 10px; border-radius:100px; font-size:12px; line-height:1.3; }
+.world-card { transition:transform .2s,box-shadow .2s; }
+.world-card:hover:not(:disabled) { transform:translateY(-4px); box-shadow:0 12px 26px #244c4015; }
+@media(prefers-reduced-motion:reduce) { .world-card { transition:none; } .world-card:hover:not(:disabled) { transform:none; } }
+/* Keep the bag compact beside a long directory; keep interior rooms close to their tabs. */
+.cq-world-hub .world-bag-preview { align-self:start; position:sticky; top:20px; gap:24px; }
+.cq-world-hub:not([data-zone=plaza]) .world-hero { min-height:0; padding:24px 30px; grid-template-columns:1fr; }
+.cq-world-hub:not([data-zone=plaza]) .world-hero h1 { font-size:clamp(28px,4vw,42px); max-width:none; line-height:1.15; margin-top:10px; }
+.cq-world-hub:not([data-zone=plaza]) .world-hero-scene,
+.cq-world-hub:not([data-zone=plaza]) .world-hero p,
+.cq-world-hub:not([data-zone=plaza]) .world-hero > div > .world-hero-actions { display:none; }
+@media(max-width:1000px) { .cq-world-hub .world-bag-preview { position:static; } }

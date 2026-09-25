@@ -37,6 +37,8 @@ export function Treehouse({data,busy,onPlace}:{data:ExperienceView;busy:boolean;
 
   return (
     <section className="kid-room" data-kid-world="treehouse">
+      <header className="room-welcome"><div><span className="eyebrow">A place that feels like you</span><h2>Make yourself at home.</h2><p>Pick a treasure from your bag, then choose the wall, shelf, or desk. You can change your mind anytime.</p></div><span className="room-inventory-count">{earned.length} {earned.length === 1 ? 'treasure' : 'treasures'} in your bag</span></header>
+      <div className="room-placement-guide" aria-label="Decorating steps"><span data-active={!selected}>1 · Pick a treasure</span><span data-active={!!selected}>2 · Choose its spot</span><span>3 · Make it yours</span></div>
       <div className="kid-room-scene">
         <TreehouseRoom />
 
@@ -74,6 +76,7 @@ export function Treehouse({data,busy,onPlace}:{data:ExperienceView;busy:boolean;
       <p className="kid-room-said" role="status">
         {data.feedback||message||'Everything here is yours. Move it whenever you like.'}
       </p>
+      {chosen && <div className="room-selection"><ItemArt art={chosen.art}/><div><strong>{chosen.name}</strong><p>Ready to decorate? Choose a spot in the room above.</p></div><button className="secondary" disabled={busy} onClick={()=>{setSelected('');setMessage('Choose any treasure when you are ready.');}}>Cancel selection</button></div>}
 
       {/* The bag. Not a shop and not a checklist — the things a child already has. */}
       <div className="kid-room-bag">

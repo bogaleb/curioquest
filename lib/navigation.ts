@@ -41,6 +41,8 @@ export type Place = {
   world: KidWorld;
   /** What Nova says on the first touch. Child words, never a product name. */
   childName: string;
+  /** A richer first-touch cue. The short childName remains the visible landmark label. */
+  call?: string;
   /** How near it feels. Primary destinations are drawn large and close. */
   size: "large" | "small";
 };
@@ -69,32 +71,32 @@ export type Destination = {
 
 export const destinations: Destination[] = [
   { id: "adventure", href: "/", label: "My adventure", shortLabel: "Today", icon: Compass, title: "My adventure", group: "primary",
-    place: { x: 50, y: 62, world: "grove", childName: "The trail", size: "large" } },
+    place: { x: 50, y: 62, world: "grove", childName: "The trail", call: "The trail. Start with Nova and try a little of everything.", size: "large" } },
   { id: "reading", href: "/read", label: "Reading Adventure", shortLabel: "Read", icon: BookOpen, title: "Reading Adventure", group: "primary",
-    place: { x: 10, y: 62, world: "grove", childName: "Reading grove", size: "large" } },
+    place: { x: 10, y: 62, world: "grove", childName: "Reading grove", call: "Reading grove. Hear a sound, build a word, and read a tiny page.", size: "large" } },
   { id: "games", href: "/play", label: "Game Zone", shortLabel: "Play", icon: Gamepad2, title: "Game Zone", group: "primary",
-    place: { x: 90, y: 62, world: "city", childName: "Playing field", size: "large" } },
+    place: { x: 90, y: 62, world: "city", childName: "Playing field", call: "Playing field. Practice patterns, numbers, shapes, and memory.", size: "large" } },
   { id: "studio", href: "/create", label: "Creative Studio", shortLabel: "Create", icon: Palette, title: "Creative Studio", group: "primary",
-    place: { x: 30, y: 86, world: "workshop", childName: "Making place", size: "large" } },
+    place: { x: 30, y: 86, world: "workshop", childName: "Making place", call: "Making place. Draw, write, color, and make something yours.", size: "large" } },
   { id: "myworld", href: "/world", label: "My World", shortLabel: "World", icon: Globe, title: "My World", group: "primary",
-    place: { x: 70, y: 86, world: "treehouse", childName: "My treehouse", size: "large" } },
+    place: { x: 70, y: 86, world: "treehouse", childName: "My treehouse", call: "My treehouse. Keep the things you earned and visit Creature Grove.", size: "large" } },
 
   { id: "science", href: "/science", label: "Discovery Lab", shortLabel: "Science", icon: FlaskConical, title: "Discovery Lab", group: "secondary",
-    place: { x: 8, y: 34, world: "lab", childName: "Wonder lab", size: "small" } },
+    place: { x: 8, y: 34, world: "lab", childName: "Wonder lab", call: "Wonder lab. Predict, test, and explain what changed.", size: "small" } },
   { id: "stories", href: "/stories", label: "Story Harbor", shortLabel: "Stories", icon: BookOpen, title: "Story Harbor", group: "secondary",
-    place: { x: 92, y: 36, world: "harbor", childName: "Story harbour", size: "small" } },
+    place: { x: 92, y: 36, world: "harbor", childName: "Story harbour", call: "Story harbour. Open a story and choose what to notice.", size: "small" } },
   { id: "theater", href: "/theater", label: "Theater", shortLabel: "Theater", icon: Clapperboard, title: "CurioQuest Theater", group: "secondary",
-    place: { x: 72, y: 10, world: "harbor", childName: "The theatre", size: "small" } },
+    place: { x: 72, y: 10, world: "harbor", childName: "The theatre", call: "The theatre. Watch a little scene and answer along the way.", size: "small" } },
   { id: "worlds", href: "/worlds", label: "My worlds", shortLabel: "Worlds", icon: MapIcon, title: "My worlds", group: "secondary",
-    place: { x: 44, y: 10, world: "grove", childName: "The far hills", size: "small" } },
+    place: { x: 44, y: 10, world: "grove", childName: "The far hills", call: "The far hills. Choose a learning world and follow its trail.", size: "small" } },
   { id: "garden", href: "/build", label: "Build Yard", shortLabel: "Build", icon: Leaf, title: "Build Yard", group: "secondary",
-    place: { x: 16, y: 10, world: "workshop", childName: "Build yard", size: "small" } },
+    place: { x: 16, y: 10, world: "workshop", childName: "Build yard", call: "Build yard. Plan routes, stack blocks, and make shapes fit.", size: "small" } },
   { id: "team", href: "/team", label: "Team Quest", shortLabel: "Team", icon: Users, title: "Team Quest", group: "secondary",
-    place: { x: 70, y: 36, world: "city", childName: "Team camp", size: "small" } },
+    place: { x: 70, y: 36, world: "city", childName: "Team camp", call: "Team camp. Take turns and solve something together.", size: "small" } },
   { id: "rewards", href: "/rewards", label: "Treasure chest", shortLabel: "Rewards", icon: Star, title: "Treasure chest", group: "secondary",
-    place: { x: 34, y: 34, world: "treehouse", childName: "My chest", size: "small" } },
+    place: { x: 34, y: 34, world: "treehouse", childName: "My chest", call: "My chest. See the badges and treasures you have earned.", size: "small" } },
   { id: "faith", href: "/faith", label: "Faith & Bible", shortLabel: "Faith", icon: Heart, title: "Faith & Bible", group: "secondary", requiresFaith: true,
-    place: { x: 52, y: 34, world: "harbor", childName: "Quiet garden", size: "small" } },
+    place: { x: 52, y: 34, world: "harbor", childName: "Quiet garden", call: "Quiet garden. Read, pray, and wonder with your family.", size: "small" } },
 ];
 
 

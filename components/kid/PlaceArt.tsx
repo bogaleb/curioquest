@@ -267,9 +267,23 @@ function QuietArt({ className }: ArtProps) {
   );
 }
 
+function LibraryArt({ className }: ArtProps) {
+  return <svg {...base} className={className}>
+    <Ground rx={44} />
+    <path className="kid-place-bark" d="M20 43h80v64H20z" />
+    <path className="kid-place-stone-wall" d="M14 43L60 13l46 30z" />
+    <path className="kid-place-hollow" d="M28 52h64v47H28z" />
+    <path className="kid-place-accent" d="M32 57h10v33H32zM62 61h10v29H62z" />
+    <path className="kid-place-lamp" d="M46 54h11v36H46zM75 62l8-3 10 29-8 3z" />
+    <path className="kid-place-bark" d="M25 91h70v7H25z" />
+    <circle className="kid-place-accent" cx="60" cy="32" r="6" />
+  </svg>;
+}
+
 const art: Record<string, (props: ArtProps) => React.ReactElement> = {
   adventure: TrailArt,
   reading: GroveArt,
+  discoveries: LibraryArt,
   games: FieldArt,
   studio: MakingArt,
   myworld: TreehouseArt,

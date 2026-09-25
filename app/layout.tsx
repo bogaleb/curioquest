@@ -21,6 +21,7 @@ import "./auth.css";
 // The child component layer loads last: a migrated screen's rules must win over
 // whatever the legacy sheet it is replacing still says.
 import "./kid.css";
+import "./world-guide.css";
 
 /**
  * `viewport-fit=cover` is what makes env(safe-area-inset-*) resolve to real values on

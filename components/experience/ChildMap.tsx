@@ -174,7 +174,7 @@ export function ChildMap({
                 <PlaceMarker
                   key={destination.id}
                   id={destination.id}
-                  childName={destination.place.childName}
+                  childName={destination.place.call ?? destination.place.childName}
                   label={destination.place.childName}
                   world={destination.place.world}
                   x={destination.place.x}
@@ -220,7 +220,7 @@ export function ChildMap({
                 <PlaceMarker
                   key={destination.id}
                   id={destination.id}
-                  childName={destination.place.childName}
+                  childName={destination.place.call ?? destination.place.childName}
                   label={destination.place.childName}
                   world={destination.place.world}
                   x={destination.place.x}
