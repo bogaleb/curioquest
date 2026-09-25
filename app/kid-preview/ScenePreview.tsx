@@ -29,7 +29,7 @@ import type { CastState } from "@/lib/experience/types";
  * The WP-11 foundation, assembled, so it can be looked at rather than reasoned about.
  *
  * This is the §6 check for the foundation commit: all five depth planes composed into one
- * picture, every piece of scenery, all four characters in every state, and the celebration
+ * picture, every piece of scenery, all eight characters in every state, and the celebration
  * sequence on a button. Development only — `page.tsx` 404s this route in production.
  *
  * It is a workbench, not a design. The map (WP-11 §3.1) is the screen that has to be
@@ -38,7 +38,7 @@ import type { CastState } from "@/lib/experience/types";
  */
 
 const STATES: CastState[] = ["idle", "wave", "explain", "listen", "point", "encourage", "celebrate", "dance"];
-const CAST: CastName[] = ["curio", "pip", "wren", "bramble"];
+const CAST: CastName[] = ["curio", "nova", "luna", "milo", "bea", "tuno", "riff", "atlas"];
 
 export function ScenePreview({ band, world }: { band: LearningBandId; world: KidWorld }) {
   const [pan, setPan] = useState(0);

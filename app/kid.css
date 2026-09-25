@@ -1606,6 +1606,7 @@
 /* Atlas, the elephant. The brow reuses the soft line class with his own tone. */
 [data-who="atlas"] .cast-fur { fill: var(--cast-atlas-fur); }
 [data-who="atlas"] .cast-fur-deep { fill: var(--cast-atlas-fur-deep); }
+[data-who="atlas"] .cast-fur-lit { fill: var(--cast-atlas-fur-lit); }
 [data-who="atlas"] .cast-thorn-line { stroke: var(--cast-atlas-brow); stroke-width: 3; stroke-linecap: round; fill: none; opacity: 0.8; }
 
 /* ---- shared features ---- */
@@ -1649,9 +1650,13 @@
   50% { rotate: 5deg; }
 }
 
-/* Bea's wings: a fast, shallow flutter, quieter than the tail sway. */
+/* Bea's wings: a fast, shallow flutter, quieter than the tail sway.
+   transform-box: fill-box keeps the rotation origin on the wing itself —
+   without it, the origin resolves against the view-box and the wings orbit
+   off-screen. */
 .cast-wing {
-  transform-origin: 50% 85%;
+  transform-box: fill-box;
+  transform-origin: 50% 90%;
   animation: kid-wing 420ms var(--kid-ease-ambient) infinite;
 }
 @keyframes kid-wing {

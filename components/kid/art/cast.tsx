@@ -545,9 +545,13 @@ function Bea() {
       <ellipse className="kid-contact" cx="100" cy="209" rx="50" ry="9" />
 
       <g className="cast-breathe">
-        {/* Wings, tucked behind the body. */}
-        <ellipse className="cast-wing" cx="52" cy="92" rx="27" ry="14" transform="rotate(-28 52 92)" />
-        <ellipse className="cast-wing" cx="148" cy="92" rx="27" ry="14" transform="rotate(28 148 92)" />
+        {/* Wings: translucent ovals spread from the shoulders, mostly outside the
+            body silhouette so they read against any background. The inner edge
+            tucks behind the body; the outer edge does the fluttering.
+            The tilt lives on a wrapper <g>: putting a transform attribute on the
+            same element as the CSS flutter animation misplaces the wing. */}
+        <g transform="rotate(-28 44 98)"><ellipse className="cast-wing" cx="44" cy="98" rx="27" ry="19" /></g>
+        <g transform="rotate(28 156 98)"><ellipse className="cast-wing" cx="156" cy="98" rx="27" ry="19" /></g>
 
         {/* Little feet. */}
         <ellipse className="cast-fur-deep" cx="80" cy="198" rx="10" ry="7" />
@@ -769,9 +773,11 @@ function Atlas() {
           <ellipse className="cast-blush" cx="68" cy="78" rx="7" ry="4.5" />
           <ellipse className="cast-blush" cx="132" cy="78" rx="7" ry="4.5" />
 
-          {/* The trunk: short, hanging center, tip curling gently. It sways with the breathe group. */}
-          <path className="cast-fur" d="M91 74 C89 90 90 102 95 112 C97 118 103 121 108 118 C113 116 114 110 110 106 C105 100 104 90 105 82 C106 76 102 72 91 74 Z" />
-          <path className="cast-fur-deep" d="M94 78 c-2 13-1 27 3 38 c-5-11-6-25-5-38z" />
+          {/* The trunk: short, hanging center, tip curling gently. It sways with the breathe group.
+              Drawn in the deep tone so it reads against the face — a trunk you can't see
+              is not a trunk. */}
+          <path className="cast-fur-deep" d="M88 72 C85 90 87 106 94 118 C97 124 104 127 109 123 C114 120 114 113 110 109 C105 103 104 90 105 80 C106 73 100 69 88 72 Z" />
+          <path className="cast-fur-lit" d="M92 78 c-2 12-1 26 3 36 c-4-10-5-24-4-36z" />
 
           <path className="cast-mouth" d="M88 128 c4 5 8 7 12 7 s8-2 12-7" />
         </g>

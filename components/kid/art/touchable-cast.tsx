@@ -61,10 +61,12 @@ export function TouchableCast({
   who,
   state = "idle",
   label,
+  facing,
 }: {
   who: CastId;
   state?: CastState;
   label?: string;
+  facing?: "left" | "right";
 }) {
   const [greeting, setGreeting] = useState<CastState>(state);
   const [bubble, setBubble] = useState<string | null>(null);
@@ -102,7 +104,7 @@ export function TouchableCast({
         onClick={greet}
         aria-label={label ?? `Say hello to ${who}`}
       >
-        <CastFigure who={who} state={greeting} talking={bubble !== null} />
+        <CastFigure who={who} state={greeting} talking={bubble !== null} facing={facing} />
       </button>
       {bubble && (
         <span className="touchable-cast-bubble" role="status">

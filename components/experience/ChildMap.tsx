@@ -19,7 +19,7 @@ import {
   SkyWash,
   Tree,
 } from "@/components/kid/art/backdrops";
-import { CastFigure } from "@/components/kid/art/cast";
+import { TouchableCast } from "@/components/kid/art/touchable-cast";
 import type { PublicExplorer } from "@/lib/explorer-view";
 import { mapPlaces, destinationFor } from "@/lib/navigation";
 import { audioSettings } from "@/lib/audio";
@@ -43,11 +43,11 @@ import { readAloud, stopReading } from "@/lib/speech";
  *   mid     the ground, and the five near landmarks plus the trail
  *   near    planting the child's eye passes over on the way down to the trail
  *   fore    leaves at the very edge, which is what says the child is standing somewhere
- *   actors  Nova, above the scene and never inside it
+ *   actors  Curio, above the scene and never inside it
  *
  * Two consequences worth naming, because both were bugs waiting in the old layout.
  *
- * **Nova is on the actors plane, inside the picture.** She used to be exiled to a strip
+ * **Curio is on the actors plane, inside the picture.** She used to be exiled to a strip
  * below the map so her speech bubble could never land on top of a landmark. The actors
  * plane neither parallaxes nor crops, so she can stand in the scene and still never be
  * covered by a tree — and the greeting is now spoken by someone who is *there*.
@@ -254,10 +254,11 @@ export function ChildMap({
               <ForeLeaves />
             </ScenePlane>
 
-            {/* Nova, in the picture rather than exiled below it. */}
+            {/* Curio, in the picture rather than exiled below it. Tappable: the
+                first hello of the day. */}
             <ScenePlane plane="actors">
               <span className="kid-map-nova">
-                <CastFigure who="curio" state={open ? "point" : "idle"} facing="left" />
+                <TouchableCast who="curio" state={open ? "point" : "idle"} facing="left" label="Say hello to Curio" />
               </span>
             </ScenePlane>
           </Scene>
@@ -269,7 +270,7 @@ export function ChildMap({
           </p>
         )}
 
-        {/* The arrival strip: what Nova is saying, the way through to the grown-ups, and
+        {/* The arrival strip: what Curio is saying, the way through to the grown-ups, and
             who is playing. It stays out of the panned ground so a speech bubble can never
             end up under a landmark, and so both adult-facing controls sit in one place. */}
         <div className="kid-map-strip">
