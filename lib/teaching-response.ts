@@ -29,7 +29,7 @@ import { teachingMove, type ErrorKind, type TeachingMove } from "@/lib/error-kin
 export type TeachingResponse = {
   errorKind: ErrorKind | null;
   move: TeachingMove | null;
-  /** Nova's line. Always present, always within the band's budget. */
+  /** The guide's line. Always present, always within the band's budget. */
   message: string;
   /** One more line, only when the band has room for it. */
   hint: string | null;
@@ -45,7 +45,7 @@ export type TeachingResponse = {
   stepBackSkillId?: string;
 };
 
-/** Nova's line for each move, in two registers. Shorter is for the younger bands. */
+/** The guide's line for each move, in two registers. Shorter is for the younger bands. */
 const lines: Record<TeachingMove, { younger: string; older: string; hint: string }> = {
   compare: {
     younger: "Look at these two.",

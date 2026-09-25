@@ -155,11 +155,11 @@ function ShellFrame({ children }: { children: ReactNode }) {
 
   const utility = (
     <>
-      <div className="nova-note">
+      <div className="curio-note">
         <span className="fox">🦊</span>
         <strong>A little curious?</strong>
         <p>That’s where every great adventure begins.</p>
-        <span>— Nova, your quest guide</span>
+        <span>— Curio, your quest guide</span>
       </div>
       <button
         className={view === "parent" ? "nav-item active" : "nav-item"}
@@ -372,7 +372,7 @@ function AddExplorerDialog() {
         >
           <input type="hidden" name="grade" defaultValue="prek" />
           <div className="form-two">
-            <label>Explorer name<input name="name" autoFocus required maxLength={24} placeholder="What should Nova call them?" /></label>
+            <label>Explorer name<input name="name" autoFocus required maxLength={24} placeholder="What should Curio call them?" /></label>
             <label>
               Learning band
               <select name="band" defaultValue="prek">

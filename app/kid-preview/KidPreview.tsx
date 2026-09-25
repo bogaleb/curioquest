@@ -126,7 +126,7 @@ export function KidPreview({
 
         <ProgressTrail total={6} done={2} />
 
-        <SpeechBubble line={{ who: "nova", text: "Find the sound at the start." }} onReplay={() => {}} />
+        <SpeechBubble line={{ who: "curio", text: "Find the sound at the start." }} onReplay={() => {}} />
 
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", justifyContent: "center" }}>
           {["m", "s", "a"].map((letter) => (

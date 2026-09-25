@@ -603,14 +603,53 @@
 
      Four characters (§WP-11.1): Nova the guide, Pip the junior, Wren the peer,
      and Bramble, who is friction with a face and never a villain.
+
+     The full teaching cast (2026-09): Curio the fox guide, Nova the child
+     explorer, Luna the owl (reading), Milo the robot (math), Bea the bee
+     (science), Tuno the turtle (calm), Riff the rabbit (music), and Atlas the
+     elephant (world). Pip, Wren and Bramble remain as legacy friends.
      ====================================================================== */
-  --cast-nova-fur: #e8843a;
-  --cast-nova-fur-deep: #c25f21;
-  --cast-nova-fur-lit: #f5a463;
-  --cast-nova-belly: #fdf3e2;
-  --cast-nova-scarf: #1f7a6a;
-  --cast-nova-scarf-deep: #155a4e;
-  --cast-nova-paw: #6b4327;
+  --cast-curio-fur: #e8843a;
+  --cast-curio-fur-deep: #c25f21;
+  --cast-curio-fur-lit: #f5a463;
+  --cast-curio-belly: #fdf3e2;
+  --cast-curio-scarf: #1f7a6a;
+  --cast-curio-scarf-deep: #155a4e;
+  --cast-curio-paw: #6b4327;
+
+  --cast-nova-shirt: #4a9b7f;
+  --cast-nova-hair: #4a3226;
+  --cast-nova-pack: #7fb894;
+  --cast-nova-skin: #f6c193;
+
+  --cast-luna-feather: #9b7ed9;
+  --cast-luna-feather-deep: #6f54b3;
+  --cast-luna-belly: #f3ecff;
+  --cast-luna-beak: #e8a13c;
+
+  --cast-milo-shell: #f4f7fb;
+  --cast-milo-shell-deep: #9db4d0;
+  --cast-milo-glow: #3fa7ff;
+
+  --cast-bea-fur: #f7c948;
+  --cast-bea-fur-deep: #3a3226;
+  --cast-bea-wing: rgba(255, 255, 255, 0.55);
+
+  --cast-tuno-fur: #7fb069;
+  --cast-tuno-fur-deep: #4e7a45;
+  --cast-tuno-belly: #e8f0d8;
+  --cast-tuno-paw: #5d8a52;
+
+  --cast-riff-fur: #b3a48f;
+  --cast-riff-fur-deep: #7d6f5e;
+  --cast-riff-fur-lit: #d8cdbd;
+  --cast-riff-belly: #f7f1e6;
+  --cast-riff-ear-inner: #f2b8c6;
+  --cast-riff-paw: #8a7a66;
+
+  --cast-atlas-fur: #9fb3c8;
+  --cast-atlas-fur-deep: #6e86a0;
+  --cast-atlas-brow: #54687f;
 
   --cast-pip-shell: #e2eaf1;
   --cast-pip-shell-deep: #b0c1d0;

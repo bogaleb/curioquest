@@ -1,7 +1,7 @@
 import type { LearningBand } from "./learning-bands";
 
 /**
- * What Nova does when a child keeps getting the same activity wrong.
+ * What the guide does when a child keeps getting the same activity wrong.
  *
  * Before this, nothing. `session.misses` was incremented and never read. A child could
  * answer the same question wrong five times and receive the identical sentence each
@@ -77,7 +77,7 @@ export function nextScaffold(
 }
 
 /**
- * How Nova introduces help the child did not ask for.
+ * How the guide introduces help the child did not ask for.
  *
  * Phrased so that being stuck reads as an ordinary part of learning rather than as a
  * verdict, and so that the child is still the one who answers. None of these say "the

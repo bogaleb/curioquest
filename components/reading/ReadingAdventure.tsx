@@ -108,14 +108,14 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
               <ScenePlane plane="fore"><ForeLeaves /></ScenePlane>
 
               <ScenePlane plane="actors">
-                <span className="kid-grove-nova"><CastFigure who="nova" state="wave" /></span>
+                <span className="kid-grove-curio"><CastFigure who="curio" state="wave" /></span>
               </ScenePlane>
             </Scene>
 
             {/* Nova's line and the one thing to touch, below the picture and within reach. */}
             <div className="kid-grove-reach">
               <SpeechBubble
-                line={{who:'nova',text:!data.profile.placementDone?`Hello ${name}! Let's find your sounds.`:session&&!session.completedAt?'Your words are waiting.':'Ready for some sounds?'}}
+                line={{who:'curio',text:!data.profile.placementDone?`Hello ${name}! Let's find your sounds.`:session&&!session.completedAt?'Your words are waiting.':'Ready for some sounds?'}}
                 tail="start"
               />
               <button className="kid-grove-go" disabled={busy||paused} onClick={()=>act('start')}>
@@ -179,7 +179,7 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
                 </div>
               ):session?.completedAt?(
                 <div className="kid-activity-done">
-                  <span className="kid-activity-cast"><CastFigure who="nova" state="celebrate" /></span>
+                  <span className="kid-activity-cast"><CastFigure who="curio" state="celebrate" /></span>
                   <h2>{session.kind==='placement'?'Your next adventure begins here.':'Look what you read!'}</h2>
                   <p className="kid-activity-done-line">{session.kind==='placement'?'Nova found a gentle starting place. Let’s meet a sound together.':'You listened, joined sounds together, and tried ideas.'}</p>
                   {session.kind==='quest'&&(
@@ -196,9 +196,9 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
                     {/* The instruction, asked by Nova rather than printed above a button. */}
                     <div className="kid-activity-ask">
                       <span className="kid-activity-nova">
-                        <CastFigure who="nova" state={data.feedback?'explain':'idle'} />
+                        <CastFigure who="curio" state={data.feedback?'explain':'idle'} />
                       </span>
-                      <SpeechBubble line={{who:'nova',text:data.feedback||prompt}} tail="start" />
+                      <SpeechBubble line={{who:'curio',text:data.feedback||prompt}} tail="start" />
                     </div>
                     <AudioButton text={prompt} label="Hear my mission"/>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import type { NovaState } from "@/lib/experience/types";
+import type { CastState } from "@/lib/experience/types";
 
 /**
  * Pip, the small helper robot who already appears throughout CurioQuest's writing but
@@ -16,7 +16,7 @@ export function PipCharacter({
   size = "normal",
   talking = false,
 }: {
-  state?: NovaState;
+  state?: CastState;
   size?: "small" | "normal" | "large";
   talking?: boolean;
 }) {

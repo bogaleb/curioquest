@@ -41,7 +41,7 @@ export function Treehouse({data,busy,onPlace}:{data:ExperienceView;busy:boolean;
         <TreehouseRoom />
 
         <span className="kid-room-nova">
-          <CastFigure who="nova" state={selected?'point':'idle'} />
+          <CastFigure who="curio" state={selected?'point':'idle'} />
         </span>
 
         {/* The three places something can go. Each is a real button with the slot's name,

@@ -2,11 +2,36 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { speak, type SpeechHandle } from "@/lib/speech";
-import type { NovaState } from "@/lib/experience/types";
-import { NovaCharacter } from "./NovaCharacter";
+import type { CastState } from "@/lib/experience/types";
+import type { CastId } from "@/lib/character/director";
+import { CastFigure } from "@/components/kid/art/cast";
 import { PipCharacter } from "./PipCharacter";
 
-export type CastMember = "nova" | "pip";
+export type CastMember = CastId | "pip";
+
+/**
+ * One voice per character. Pitch and rate are the only levers — the words and
+ * the warmth stay the same, so a child always knows who is talking without
+ * the personality changing between lines.
+ */
+const VOICE: Record<CastMember, { pitch: number; rate: number }> = {
+  curio: { pitch: 1.0, rate: 0.85 }, // the warm guide
+  nova: { pitch: 1.15, rate: 0.95 }, // the young peer
+  luna: { pitch: 0.95, rate: 0.8 }, // gentle, unhurried
+  milo: { pitch: 1.25, rate: 0.9 }, // bright young robot
+  bea: { pitch: 1.3, rate: 1.0 }, // buzzy and cheerful
+  tuno: { pitch: 0.85, rate: 0.7 }, // slow and calm, on purpose
+  riff: { pitch: 1.2, rate: 1.0 }, // musical bounce
+  atlas: { pitch: 0.8, rate: 0.8 }, // deep and kind
+  pip: { pitch: 1.35, rate: 0.95 }, // the small legacy robot
+};
+
+/**
+ * The voice profile for a cast member, so any component can speak as them.
+ */
+export function voiceFor(who: CastMember): { pitch: number; rate: number } {
+  return VOICE[who];
+}
 
 /**
  * Drives a character's talking state and speech bubble together.
@@ -22,7 +47,7 @@ export type CastMember = "nova" | "pip";
 export function useSpeakingCast() {
   const [line, setLine] = useState<{ who: CastMember; text: string } | null>(null);
   const [talking, setTalking] = useState(false);
-  const [state, setState] = useState<NovaState>("idle");
+  const [state, setState] = useState<CastState>("idle");
   const handle = useRef<SpeechHandle | null>(null);
   const resetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -40,15 +65,15 @@ export function useSpeakingCast() {
   );
 
   const say = useCallback(
-    (who: CastMember, text: string, mood: NovaState = "explain") => {
+    (who: CastMember, text: string, mood: CastState = "explain") => {
       handle.current?.cancel();
       clearTimers();
       setLine({ who, text });
       setState(mood);
+      const voice = VOICE[who];
       handle.current = speak(text, {
-        // Pip is a small robot, so a brighter, slightly quicker voice.
-        pitch: who === "pip" ? 1.35 : 1,
-        rate: who === "pip" ? 0.95 : 0.85,
+        pitch: voice.pitch,
+        rate: voice.rate,
         onStart: () => setTalking(true),
         onEnd: () => {
           setTalking(false);
@@ -73,7 +98,7 @@ export function useSpeakingCast() {
 
   /** A reaction with no words — used for a quick celebrate or nod. */
   const react = useCallback(
-    (mood: NovaState) => {
+    (mood: CastState) => {
       clearTimers();
       setState(mood);
       resetTimer.current = setTimeout(() => setState("idle"), mood === "dance" ? 3200 : 1800);
@@ -91,7 +116,7 @@ export function Cast({
   size = "normal",
 }: {
   who: CastMember;
-  state: NovaState;
+  state: CastState;
   talking: boolean;
   size?: "small" | "normal" | "large";
 }) {
@@ -100,7 +125,7 @@ export function Cast({
       {who === "pip" ? (
         <PipCharacter state={state} size={size} talking={talking} />
       ) : (
-        <NovaCharacter state={state} size={size} talking={talking} />
+        <CastFigure who={who} state={state} talking={talking} scale={size} />
       )}
     </span>
   );

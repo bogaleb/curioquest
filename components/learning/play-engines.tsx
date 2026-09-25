@@ -24,7 +24,7 @@ function Guide({
   line,
   autoSpeak,
 }: {
-  who: "nova" | "pip";
+  who: "curio" | "pip";
   line: string;
   autoSpeak: boolean;
 }) {
@@ -178,7 +178,7 @@ export function BalanceScale({
 
   return (
     <div className="cq-play cq-balance">
-      <Guide who="nova" line="Count one side, then the other. Then choose." autoSpeak />
+      <Guide who="curio" line="Count one side, then the other. Then choose." autoSpeak />
       <div
         className="cq-scale"
         data-settled={settled || undefined}
@@ -227,7 +227,7 @@ export function Constellation({
 
   return (
     <div className="cq-play cq-constellation">
-      <Guide who="nova" line="Start with the smallest, then find the next one each time." autoSpeak />
+      <Guide who="curio" line="Start with the smallest, then find the next one each time." autoSpeak />
       <div className="cq-sky" data-complete={correct || undefined}>
         <svg viewBox="0 0 100 62" className="cq-sky-lines" aria-hidden="true">
           {points.length > 1 && (

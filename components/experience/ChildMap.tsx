@@ -257,7 +257,7 @@ export function ChildMap({
             {/* Nova, in the picture rather than exiled below it. */}
             <ScenePlane plane="actors">
               <span className="kid-map-nova">
-                <CastFigure who="nova" state={open ? "point" : "idle"} facing="left" />
+                <CastFigure who="curio" state={open ? "point" : "idle"} facing="left" />
               </span>
             </ScenePlane>
           </Scene>
@@ -274,7 +274,7 @@ export function ChildMap({
             end up under a landmark, and so both adult-facing controls sit in one place. */}
         <div className="kid-map-strip">
           <div className="kid-map-greeting">
-            <SpeechBubble line={{ who: "nova", text: said || greeting }} tail="start" />
+            <SpeechBubble line={{ who: "curio", text: said || greeting }} tail="start" />
           </div>
 
           <div className="kid-map-adults">

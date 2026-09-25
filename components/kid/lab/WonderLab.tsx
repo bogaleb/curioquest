@@ -181,13 +181,13 @@ function Shelves({
     <section className="lab-room" data-view="shelves">
       <header className="lab-welcome">
         <span className="lab-guide">
-          <CastFigure who="nova" state="explain" />
+          <CastFigure who="curio" state="explain" />
         </span>
         <div>
           <h1>The Wonder Lab</h1>
           <SpeechBubble
             line={{
-              who: "nova",
+              who: "curio",
               text: finished
                 ? `Welcome back. You have finished ${finished} ${finished === 1 ? "investigation" : "investigations"}.`
                 : "Pick something to wonder about. We will look first, then find out.",
@@ -478,10 +478,10 @@ function StationPlayer({
             prediction feeling like evidence rather than like a mark.
           */}
           <span className="lab-guide">
-            <CastFigure who="nova" state={result.correct ? "celebrate" : "explain"} talking />
+            <CastFigure who="curio" state={result.correct ? "celebrate" : "explain"} talking />
           </span>
           <div>
-            <SpeechBubble line={{ who: "nova", text: result.response }} onReplay={() => speak(result.response)} />
+            <SpeechBubble line={{ who: "curio", text: result.response }} onReplay={() => speak(result.response)} />
             <p className="lab-observation">{result.observation}</p>
             {result.because && <p className="lab-observation">{result.because}</p>}
           </div>

@@ -12,12 +12,15 @@ import { useImmersive } from "@/hooks/use-immersive";
 import { useEffect, useState } from "react";
 import { celebrate } from "@/lib/audio";
 import { Celebration } from "@/components/kid/art/Celebration";
-import { CastFigure } from "@/components/kid/art/cast";
+import { TouchableCast } from "@/components/kid/art/touchable-cast";
+import { direct, directLessonIntro, teachingClipFor, CAST, CLIPS } from "@/lib/character/director";
+import { HeroClipPlayer } from "@/components/learning/hero-clip-player";
 import { Scene, ScenePlane } from "@/components/kid/art/Scene";
 import { FarHills, GroundBand, SkyWash } from "@/components/kid/art/backdrops";
 import { DoorMark, Placeholder } from "@/components/kid/Placeholder";
 import { ProgressTrail } from "@/components/kid/ProgressTrail";
 import { SpeechBubble } from "@/components/kid/SpeechBubble";
+import type { KidSpeaker } from "@/components/kid/SpeechBubble";
 import { KidSurfaceProvider } from "@/components/kid/surface";
 import { worldForSubject } from "@/lib/kid-worlds";
 import type { PublicExplorer, QuestFeedback } from "@/lib/explorer-view";
@@ -110,6 +113,31 @@ export function QuestPlayer({
   }, [questionId, answered, delivery.hintAfterSeconds]);
   const stalled = !answered && !!questionId && stalledOn === questionId;
 
+  // Hero moments, driven by the director. The lesson intro plays once per
+  // session (skippable, puppet-covered); Tuno's breathing video appears with
+  // the settle teaching move; the cast finale plays on the done screen.
+  // Session changes reset them during render (the "previous render" pattern),
+  // never in an effect.
+  const [lastSession, setLastSession] = useState<string | null>(null);
+  const [introClip, setIntroClip] = useState<string | null>(null);
+  const [settleDone, setSettleDone] = useState(false);
+  const [finaleDone, setFinaleDone] = useState(false);
+  if (session?.id !== lastSession) {
+    setLastSession(session?.id ?? null);
+    setIntroClip(session ? directLessonIntro(session.subject).clip : null);
+    setSettleDone(false);
+    setFinaleDone(false);
+  }
+
+  // "Show me": the specialist's teaching video, invited by the child —
+  // never automatic. Resets each question so it stays a fresh offer.
+  const [showTeaching, setShowTeaching] = useState(false);
+  const [lastQuestion, setLastQuestion] = useState<string | null>(null);
+  if (questionId !== lastQuestion) {
+    setLastQuestion(questionId ?? null);
+    setShowTeaching(false);
+  }
+
   if (!session) return null;
 
   const game = gameById(session.gameId);
@@ -122,9 +150,16 @@ export function QuestPlayer({
     game?.title ??
     (session.discovery ? "Meet Nova" : session.teamId ? "Garden Rescue Team" : chapter?.title ?? "Your trail");
   const world = worldForSubject(current?.subject ?? session.subject);
-  // Nova reacts to what just happened. She never performs disappointment: a wrong answer
-  // makes her lean in and explain, which is the move that actually follows.
-  const novaState = feedback?.correct ? "celebrate" : feedback?.message ? "explain" : stalled ? "encourage" : "idle";
+  // The CharacterDirector decides who faces the child and how — driven by the
+  // learning event, not by this screen improvising. A wrong answer leans in and
+  // explains; nobody performs disappointment at a child.
+  const direction = direct({
+    subject: current?.subject ?? session.subject,
+    feedback,
+    stalled,
+    isFinale: !!feedback?.correct && session.index === session.total,
+  });
+  const directorWho: KidSpeaker = direction.who;
 
   return (
     <KidSurfaceProvider value={{ band: profile.band, narration: profile.controls.audio.narration, world }}>
@@ -172,6 +207,17 @@ export function QuestPlayer({
             </button>
           </header>
 
+          {/* Lesson intro: the specialist's hero video, once per session. */}
+          {introClip && current && (
+            <div className="kid-activity-intro" role="dialog" aria-label="Meet your teacher">
+              <HeroClipPlayer
+                clip={introClip}
+                who={direction.who}
+                onDone={() => setIntroClip(null)}
+              />
+            </div>
+          )}
+
           {error && (
             <div className="error" role="alert">
               {error}
@@ -195,13 +241,13 @@ export function QuestPlayer({
                 )}
                 {current.passage && <StoryPage passage={current.passage} />}
 
-                {/* The question, asked by someone. */}
+                {/* The question, asked by someone. Tap them to say hello. */}
                 <div className="kid-activity-ask">
-                  <span className="kid-activity-nova">
-                    <CastFigure who="nova" state={novaState} />
+                  <span className="kid-activity-curio">
+                    <TouchableCast who={directorWho} state={direction.state} />
                   </span>
                   <SpeechBubble
-                    line={{ who: "nova", text: current.prompt }}
+                    line={{ who: directorWho, text: current.prompt }}
                     tail="start"
                     onReplay={() => readAloud(activityNarration(current))}
                   />
@@ -230,6 +276,20 @@ export function QuestPlayer({
                   {feedback?.hint && feedback.message && <p className="kid-activity-said-line">{feedback.hint}</p>}
                   <TeachingMoveView feedback={feedback} />
                 </div>
+
+                {/* Tuno's breathing moment: a calm video when the settle move fires. */}
+                {direction.clip === CLIPS.tunoBreathing && !settleDone && (
+                  <div className="kid-activity-settle" role="dialog" aria-label="Breathe with Tuno">
+                    <HeroClipPlayer
+                      clip={CLIPS.tunoBreathing}
+                      who="tuno"
+                      onDone={() => setSettleDone(true)}
+                    />
+                    <button type="button" className="primary" onClick={() => setSettleDone(true)}>
+                      I feel calm now
+                    </button>
+                  </div>
+                )}
 
                 {feedback?.correct && place?.roundEnd && (
                   <div className="round-break-note">
@@ -264,26 +324,56 @@ export function QuestPlayer({
                       <ArrowRight size={20} />
                     </button>
                   ) : (
-                    <button
-                      className={stalled ? "secondary nova-offer" : "text-button"}
-                      disabled={busy}
-                      onClick={onHint}
-                    >
-                      <Lightbulb size={19} />
-                      {stalled ? "Nova can help with this one" : "Give me a hint"}
-                    </button>
+                    <>
+                      <button
+                        className={stalled ? "secondary curio-offer" : "text-button"}
+                        disabled={busy}
+                        onClick={onHint}
+                      >
+                        <Lightbulb size={19} />
+                        {stalled ? "Curio can help with this one" : "Give me a hint"}
+                      </button>
+                      <button
+                        type="button"
+                        className="text-button"
+                        disabled={busy}
+                        onClick={() => setShowTeaching(true)}
+                      >
+                        Watch {CAST[direction.who]?.name ?? "me"} show me
+                      </button>
+                    </>
                   )}
                 </div>
+
+                {/* The specialist's teaching video, played only when invited. */}
+                {showTeaching && !feedback?.correct && (
+                  <div className="kid-activity-teaching" role="dialog" aria-label="Watch and learn">
+                    <HeroClipPlayer
+                      clip={teachingClipFor(current.subject)}
+                      who={direction.who}
+                      onDone={() => setShowTeaching(false)}
+                    />
+                  </div>
+                )}
               </div>
             </>
           ) : (
             /* Finished. One choreographed sequence, four beats, then silence — and the
                reward is a drawn object rather than a trophy glyph and a star count. */
             <div className="kid-activity-done">
+              {!finaleDone && (
+                <div className="kid-activity-finale">
+                  <HeroClipPlayer
+                    clip={CLIPS.castFinale}
+                    who="curio"
+                    onDone={() => setFinaleDone(true)}
+                  />
+                </div>
+              )}
               <Celebration
                 object={<Placeholder label={game ? "Your mission badge" : "Something you found"} />}
                 name={`Well done, ${profile.name}!`}
-                who="nova"
+                who="curio"
               />
               <p className="kid-activity-done-line">
                 {game

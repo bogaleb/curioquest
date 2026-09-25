@@ -23,7 +23,7 @@ import {
   type KidWorld,
 } from "@/components/kid";
 import type { LearningBandId } from "@/lib/learning-bands";
-import type { NovaState } from "@/lib/experience/types";
+import type { CastState } from "@/lib/experience/types";
 
 /**
  * The WP-11 foundation, assembled, so it can be looked at rather than reasoned about.
@@ -37,12 +37,12 @@ import type { NovaState } from "@/lib/experience/types";
  * viewports with the motion preference on and off.
  */
 
-const STATES: NovaState[] = ["idle", "wave", "explain", "listen", "point", "encourage", "celebrate", "dance"];
-const CAST: CastName[] = ["nova", "pip", "wren", "bramble"];
+const STATES: CastState[] = ["idle", "wave", "explain", "listen", "point", "encourage", "celebrate", "dance"];
+const CAST: CastName[] = ["curio", "pip", "wren", "bramble"];
 
 export function ScenePreview({ band, world }: { band: LearningBandId; world: KidWorld }) {
   const [pan, setPan] = useState(0);
-  const [state, setState] = useState<NovaState>("idle");
+  const [state, setState] = useState<CastState>("idle");
   const [talking, setTalking] = useState(false);
   const [party, setParty] = useState(0);
 
@@ -62,7 +62,7 @@ export function ScenePreview({ band, world }: { band: LearningBandId; world: Kid
         </label>
         <label>
           State
-          <select value={state} onChange={(event) => setState(event.target.value as NovaState)}>
+          <select value={state} onChange={(event) => setState(event.target.value as CastState)}>
             {STATES.map((name) => (
               <option key={name} value={name}>{name}</option>
             ))}
@@ -112,10 +112,10 @@ export function ScenePreview({ band, world }: { band: LearningBandId; world: Kid
 
         <ScenePlane plane="actors" presentational={false}>
           <span className="preview-actor">
-            <CastFigure who="nova" state={state} talking={talking} />
+            <CastFigure who="curio" state={state} talking={talking} />
           </span>
           <span className="preview-speech">
-            <SpeechBubble line={{ who: "nova", text: "Here we are." }} />
+            <SpeechBubble line={{ who: "curio", text: "Here we are." }} />
           </span>
         </ScenePlane>
       </Scene>
@@ -136,7 +136,7 @@ export function ScenePreview({ band, world }: { band: LearningBandId; world: Kid
           key={party}
           object={<Placeholder label="A reward object" />}
           name="A smooth stone"
-          who="nova"
+          who="curio"
         />
       </section>
     </main>

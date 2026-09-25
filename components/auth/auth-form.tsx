@@ -261,7 +261,7 @@ export function AuthForm({ mode, initialError = '' }: { mode: Mode; initialError
                     <span className="auth-scene-bush"><Bush /></span>
                   </ScenePlane>
                   <ScenePlane plane="actors">
-                    <span className="auth-scene-cast" data-who="nova"><CastFigure who="nova" state="wave" /></span>
+                    <span className="auth-scene-cast" data-who="curio"><CastFigure who="curio" state="wave" /></span>
                     <span className="auth-scene-cast" data-who="pip"><CastFigure who="pip" facing="left" /></span>
                   </ScenePlane>
                 </Scene>

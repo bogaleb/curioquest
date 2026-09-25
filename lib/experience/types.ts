@@ -1,8 +1,10 @@
 import type {ReadingActivity,ReadingWord,ReadingStory} from '@/lib/reading/types';
-export type NovaState='idle'|'wave'|'explain'|'listen'|'point'|'encourage'|'celebrate'|'dance';
+export type CastState='idle'|'wave'|'explain'|'listen'|'point'|'encourage'|'celebrate'|'dance';
+/** @deprecated Use CastState. Kept so older imports keep compiling. */
+export type NovaState=CastState;
 export type ExperienceStep='episode'|'blend'|'collector'|'story'|'reward'|'treehouse'|'offline';
 export type RunMode='daily'|'episode'|'game';
-export type MediaScene={id:string;caption:string;setting:'forest'|'letters'|'garden';duration:number;nova:NovaState;letters?:string};
+export type MediaScene={id:string;caption:string;setting:'forest'|'letters'|'garden';duration:number;nova:CastState;letters?:string};
 export type MediaAsset={id:string;title:string;category:string;domain:string;skills:string[];ageMin:number;ageMax:number;duration:number;active:boolean;videoUrl:string|null;captionUrl:string|null;thumbnail:string;scenes:MediaScene[]};
 export type MediaCue={id:string;mediaId:string;scene:number;at:number;kind:'choice'|'sequence'|'blend';prompt:string;choices:string[];answer:string;skillId:string;help:string};
 export type WorldItem={id:string;name:string;art:string;category:string;zone:'treehouse';unlock:string;description:string};

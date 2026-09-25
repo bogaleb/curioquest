@@ -2,8 +2,9 @@
 
 import { SpeakerMark } from "./Placeholder";
 import { useCopyWarning, useKidSurface } from "./surface";
+import type { CastId } from "@/lib/character/director";
 
-export type KidSpeaker = "nova" | "pip";
+export type KidSpeaker = CastId | "pip";
 
 /**
  * What a character is saying — written down, always.

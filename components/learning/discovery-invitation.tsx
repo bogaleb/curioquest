@@ -14,7 +14,7 @@ export function DiscoveryInvitation({ profile, busy, onStart, onListen }: {
   if (active && !profile.session?.discovery) return null;
   const message = `Hello ${profile.name}! I’m Nova. Let’s find three paths together. We’ll listen, count, and solve little puzzles. You can ask for help any time.`;
   return <section className="discovery-invitation" aria-labelledby="discovery-title">
-    <span className="discovery-buddy"><CastFigure who="nova" state="wave" /></span>
+    <span className="discovery-buddy"><CastFigure who="curio" state="wave" /></span>
     <div className="discovery-copy">
       <h2 id="discovery-title">A little hello. A world to discover.</h2>
       <p>Six little discoveries help Nova find a comfortable path for you. No rush, and help is always welcome.</p>

@@ -54,7 +54,7 @@ export function Celebration({
   object,
   /** What it is called, in the child's words. Said aloud by the caller, shown here. */
   name,
-  who = "nova",
+  who = "curio",
   onDone,
 }: {
   object: ReactNode;

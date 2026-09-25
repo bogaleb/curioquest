@@ -356,11 +356,11 @@
 .kid-bubble[data-tail="end"]::after { right: var(--space-8); }
 .kid-bubble[data-tail="none"]::after { content: none; }
 
-.kid-bubble[data-who="nova"] {
+.kid-bubble[data-who="curio"] {
   border-color: var(--kid-sun-300);
   background: var(--kid-sun-50);
 }
-.kid-bubble[data-who="nova"]::after {
+.kid-bubble[data-who="curio"]::after {
   border-right-color: var(--kid-sun-300);
   border-bottom-color: var(--kid-sun-300);
 }
@@ -1525,15 +1525,15 @@
 .kid-cast[data-facing="left"] > svg { scale: -1 1; }
 
 /* ---- materials, per character ---- */
-[data-who="nova"] .cast-fur { fill: var(--cast-nova-fur); }
-[data-who="nova"] .cast-fur-deep { fill: var(--cast-nova-fur-deep); }
-[data-who="nova"] .cast-fur-lit { fill: var(--cast-nova-fur-lit); }
-[data-who="nova"] .cast-belly { fill: var(--cast-nova-belly); }
-[data-who="nova"] .cast-ear-inner { fill: var(--cast-nova-fur-deep); }
-[data-who="nova"] .cast-paw { fill: var(--cast-nova-paw); }
-[data-who="nova"] .cast-scarf { fill: var(--cast-nova-scarf); }
-[data-who="nova"] .cast-scarf-deep { fill: var(--cast-nova-scarf-deep); }
-[data-who="nova"] .cast-nose { fill: var(--cast-eye); }
+[data-who="curio"] .cast-fur { fill: var(--cast-curio-fur); }
+[data-who="curio"] .cast-fur-deep { fill: var(--cast-curio-fur-deep); }
+[data-who="curio"] .cast-fur-lit { fill: var(--cast-curio-fur-lit); }
+[data-who="curio"] .cast-belly { fill: var(--cast-curio-belly); }
+[data-who="curio"] .cast-ear-inner { fill: var(--cast-curio-fur-deep); }
+[data-who="curio"] .cast-paw { fill: var(--cast-curio-paw); }
+[data-who="curio"] .cast-scarf { fill: var(--cast-curio-scarf); }
+[data-who="curio"] .cast-scarf-deep { fill: var(--cast-curio-scarf-deep); }
+[data-who="curio"] .cast-nose { fill: var(--cast-eye); }
 
 [data-who="pip"] .cast-shell { fill: var(--cast-pip-shell); }
 [data-who="pip"] .cast-shell-deep { fill: var(--cast-pip-shell-deep); }
@@ -1559,6 +1559,54 @@
 [data-who="bramble"] .cast-bramble-deep { fill: var(--cast-bramble-body-deep); }
 [data-who="bramble"] .cast-thorn { fill: var(--cast-bramble-thorn); }
 [data-who="bramble"] .cast-thorn-line { stroke: var(--cast-bramble-thorn); stroke-width: 3; stroke-linecap: round; fill: none; opacity: 0.8; }
+
+/* Nova, the child explorer. */
+[data-who="nova"] .cast-fur { fill: var(--cast-nova-shirt); }
+[data-who="nova"] .cast-fur-deep { fill: var(--cast-nova-hair); }
+[data-who="nova"] .cast-fur-lit { fill: var(--cast-nova-pack); }
+[data-who="nova"] .cast-belly { fill: var(--cast-nova-skin); }
+
+/* Luna, the owl. */
+[data-who="luna"] .cast-feather { fill: var(--cast-luna-feather); }
+[data-who="luna"] .cast-feather-deep { fill: var(--cast-luna-feather-deep); }
+[data-who="luna"] .cast-belly { fill: var(--cast-luna-belly); }
+[data-who="luna"] .cast-beak { fill: var(--cast-luna-beak); stroke: none; }
+
+/* Milo, the round robot. */
+[data-who="milo"] .cast-shell { fill: var(--cast-milo-shell); }
+[data-who="milo"] .cast-shell-deep { fill: var(--cast-milo-shell-deep); }
+[data-who="milo"] .cast-glow { fill: var(--cast-milo-glow); }
+[data-who="milo"] .cast-antenna { stroke: var(--cast-milo-shell-deep); stroke-width: 6; stroke-linecap: round; fill: none; }
+[data-who="milo"] .cast-antenna-bulb {
+  fill: var(--cast-milo-glow);
+  animation: kid-bulb var(--kid-dur-ambient) var(--kid-ease-ambient) infinite;
+}
+
+/* Bea, the bee. */
+[data-who="bea"] .cast-fur { fill: var(--cast-bea-fur); }
+[data-who="bea"] .cast-fur-deep { fill: var(--cast-bea-fur-deep); }
+[data-who="bea"] .cast-wing { fill: var(--cast-bea-wing); }
+[data-who="bea"] .cast-antenna { stroke: var(--cast-bea-fur-deep); stroke-width: 5; stroke-linecap: round; fill: none; }
+[data-who="bea"] .cast-antenna-bulb { fill: var(--cast-bea-fur); }
+
+/* Tuno, the turtle. */
+[data-who="tuno"] .cast-fur { fill: var(--cast-tuno-fur); }
+[data-who="tuno"] .cast-fur-deep { fill: var(--cast-tuno-fur-deep); }
+[data-who="tuno"] .cast-belly { fill: var(--cast-tuno-belly); }
+[data-who="tuno"] .cast-paw { fill: var(--cast-tuno-paw); }
+
+/* Riff, the rabbit. */
+[data-who="riff"] .cast-fur { fill: var(--cast-riff-fur); }
+[data-who="riff"] .cast-fur-deep { fill: var(--cast-riff-fur-deep); }
+[data-who="riff"] .cast-fur-lit { fill: var(--cast-riff-fur-lit); }
+[data-who="riff"] .cast-belly { fill: var(--cast-riff-belly); }
+[data-who="riff"] .cast-ear-inner { fill: var(--cast-riff-ear-inner); }
+[data-who="riff"] .cast-paw { fill: var(--cast-riff-paw); }
+
+/* Atlas, the elephant. The brow reuses the soft line class with his own tone. */
+[data-who="atlas"] .cast-fur { fill: var(--cast-atlas-fur); }
+[data-who="atlas"] .cast-fur-deep { fill: var(--cast-atlas-fur-deep); }
+[data-who="atlas"] .cast-thorn-line { stroke: var(--cast-atlas-brow); stroke-width: 3; stroke-linecap: round; fill: none; opacity: 0.8; }
 
 /* ---- shared features ---- */
 .cast-eye { fill: var(--cast-eye); }
@@ -1599,6 +1647,16 @@
 @keyframes kid-tail {
   0%, 100% { rotate: -4deg; }
   50% { rotate: 5deg; }
+}
+
+/* Bea's wings: a fast, shallow flutter, quieter than the tail sway. */
+.cast-wing {
+  transform-origin: 50% 85%;
+  animation: kid-wing 420ms var(--kid-ease-ambient) infinite;
+}
+@keyframes kid-wing {
+  0%, 100% { rotate: -7deg; }
+  50% { rotate: 9deg; }
 }
 
 /* The mouth only moves while the voice is actually speaking. `useSpeakingCast`
@@ -1737,8 +1795,11 @@
   .cast-breathe,
   .cast-blink,
   .cast-tail,
+  .cast-wing,
   .cast-spark,
   [data-who="pip"] .cast-antenna-bulb,
+  [data-who="milo"] .cast-antenna-bulb,
+  [data-who="bea"] .cast-antenna-bulb,
   .kid-cast[data-talking] .cast-mouth,
   .kid-cast[data-state="wave"] .cast-limb[data-side="right"],
   .kid-cast[data-state="encourage"] .cast-limb[data-side="right"],
@@ -1899,7 +1960,7 @@
   width: 100%;
   max-width: 44rem;
 }
-.kid-activity-nova {
+.kid-activity-curio {
   flex: none;
   display: block;
   width: clamp(64px, 11vw, 116px);
@@ -2094,7 +2155,7 @@
 @media (max-width: 767px) {
   .kid-activity-frame { gap: var(--space-4); }
   .kid-activity-ask { flex-direction: column; align-items: stretch; }
-  .kid-activity-nova { width: clamp(56px, 18vw, 88px); }
+  .kid-activity-curio { width: clamp(56px, 18vw, 88px); }
   .kid-activity .answers button { flex-basis: 100%; }
 }
 
@@ -2325,7 +2386,7 @@
 .kid-grove-bloom[data-at="1"] { left: 47%; bottom: 4%; }
 .kid-grove-bloom[data-at="2"] { left: 70%; bottom: 2%; }
 
-.kid-grove-nova {
+.kid-grove-curio {
   position: absolute;
   display: block;
   inset-block-end: 2%;
@@ -2364,7 +2425,7 @@
   .kid-grove-bloom[data-at="1"] { display: none; }
 
   .kid-grove-tree[data-at="2"] { left: 84%; bottom: 4%; width: 18%; }
-  .kid-grove-nova { inset-inline-end: 4%; inset-block-end: 1%; width: 20%; }
+  .kid-grove-curio { inset-inline-end: 4%; inset-block-end: 1%; width: 20%; }
 }
 
 /* --------------------------------------------------------------------------
@@ -2954,7 +3015,7 @@
 .auth-scene-bush { position: absolute; display: block; left: 26%; bottom: 3%; width: 12%; }
 
 .auth-scene-cast { position: absolute; display: block; --cast-size: 100%; }
-.auth-scene-cast[data-who="nova"] { left: 44%; bottom: 4%; width: 16%; }
+.auth-scene-cast[data-who="curio"] { left: 44%; bottom: 4%; width: 16%; }
 .auth-scene-cast[data-who="pip"] { left: 62%; bottom: 4%; width: 13%; }
 
 /* The nine-second film on the sign-in page. Same box as the drawn scene it
@@ -3863,4 +3924,195 @@
   .lab-model-object[data-phase="run"][data-motion="stop"] { transform: translate(30%, 60%); }
   .lab-model-object[data-phase="run"][data-motion="grow"] { transform: translate(-50%, -50%) scale(1.4); }
   .lab-model-object[data-phase="run"][data-motion="wilt"] { transform: translate(-50%, -20%) rotate(24deg); }
+}
+
+/* ==========================================================================
+   Hero clip moments — character videos for the big beats.
+   The video is always skippable and the puppet always covers a missing file,
+   so a hero moment can never block a lesson.
+   ========================================================================== */
+
+.hero-clip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.hero-clip-video {
+  width: 100%;
+  max-width: 34rem;
+  aspect-ratio: 16 / 9;
+  border-radius: 1.25rem;
+  background: var(--kid-ink);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+}
+
+.hero-clip-fallback {
+  padding: 1.5rem 1rem;
+}
+
+.hero-clip-fallback .kid-cast {
+  width: clamp(6rem, 30vw, 9rem);
+}
+
+.hero-clip-caption {
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-align: center;
+  margin: 0;
+  max-width: 28rem;
+}
+
+.hero-clip-cue {
+  font-size: 1rem;
+  text-align: center;
+  margin: 0;
+  opacity: 0.85;
+  max-width: 28rem;
+}
+
+.hero-clip-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* Lesson intro: the specialist's video, once per session, over the stage. */
+.kid-activity-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(20 12 8 / 0.72);
+  backdrop-filter: blur(6px);
+  border-radius: inherit;
+}
+
+.kid-activity-intro .hero-clip-video {
+  max-width: 40rem;
+}
+
+.kid-activity-intro .hero-clip-cue {
+  color: var(--kid-surface);
+}
+
+/* Tuno's breathing moment: calm card inside the reach zone. */
+.kid-activity-settle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: var(--kid-sky-100);
+  border: 2px solid var(--kid-sky-300);
+}
+
+.kid-activity-settle .hero-clip-video {
+  max-width: 26rem;
+}
+
+/* Finale: the whole crew celebrates above the reward. */
+.kid-activity-finale {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.kid-activity-finale .hero-clip-video {
+  max-width: 30rem;
+}
+
+/* ==========================================================================
+   Touchable cast — the character is alive under the finger.
+   ========================================================================== */
+
+.touchable-cast {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.touchable-cast-hit {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 160ms ease;
+}
+
+.touchable-cast-hit:hover {
+  transform: scale(1.06);
+}
+
+.touchable-cast-hit:active {
+  transform: scale(0.96);
+}
+
+.touchable-cast-hit:focus-visible {
+  outline: 3px solid var(--kid-sun-400);
+  outline-offset: 2px;
+}
+
+.touchable-cast-bubble {
+  position: absolute;
+  bottom: calc(100% + 0.25rem);
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background: var(--kid-surface);
+  color: var(--kid-ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+  animation: touchable-pop 200ms ease;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@keyframes touchable-pop {
+  from { opacity: 0; transform: translateX(-50%) translateY(6px) scale(0.94); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .touchable-cast-hit,
+  .touchable-cast-bubble { animation: none; transition: none; }
+}
+
+/* "Show me" teaching video: the specialist's clip, invited by the child. */
+.kid-activity-teaching {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 1.25rem;
+  background: var(--kid-sun-50);
+  border: 2px solid var(--kid-sun-300);
+}
+
+.kid-activity-teaching .hero-clip-video {
+  max-width: 26rem;
+}
+
+/* Daily adventure welcome: Curio's video greets before the trail begins. */
+.adventure-welcome .hero-clip {
+  margin-bottom: 1rem;
+}
+
+.adventure-welcome .hero-clip-video {
+  max-width: 28rem;
 }
