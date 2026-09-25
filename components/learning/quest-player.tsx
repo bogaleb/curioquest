@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { celebrate } from "@/lib/audio";
 import { Celebration } from "@/components/kid/art/Celebration";
 import { TouchableCast } from "@/components/kid/art/touchable-cast";
-import { direct, directLessonIntro, teachingClipFor, CAST, CLIPS } from "@/lib/character/director";
+import { direct, directCheer, directLessonIntro, teachingClipFor, CAST, CLIPS } from "@/lib/character/director";
 import { HeroClipPlayer } from "@/components/learning/hero-clip-player";
 import { Scene, ScenePlane } from "@/components/kid/art/Scene";
 import { FarHills, GroundBand, SkyWash } from "@/components/kid/art/backdrops";
@@ -133,9 +133,14 @@ export function QuestPlayer({
   // never automatic. Resets each question so it stays a fresh offer.
   const [showTeaching, setShowTeaching] = useState(false);
   const [lastQuestion, setLastQuestion] = useState<string | null>(null);
+  // Nova's try-again and the round-end cheer play once per question too.
+  const [tryAgainDone, setTryAgainDone] = useState(false);
+  const [cheerDone, setCheerDone] = useState(false);
   if (questionId !== lastQuestion) {
     setLastQuestion(questionId ?? null);
     setShowTeaching(false);
+    setTryAgainDone(false);
+    setCheerDone(false);
   }
 
   if (!session) return null;
@@ -160,6 +165,8 @@ export function QuestPlayer({
     isFinale: !!feedback?.correct && session.index === session.total,
   });
   const directorWho: KidSpeaker = direction.who;
+  // The round-end celebration: the specialist's cheer video, once per question.
+  const cheer = directCheer(direction.who);
 
   return (
     <KidSurfaceProvider value={{ band: profile.band, narration: profile.controls.audio.narration, world }}>
@@ -291,10 +298,37 @@ export function QuestPlayer({
                   </div>
                 )}
 
-                {feedback?.correct && place?.roundEnd && (
-                  <div className="round-break-note">
-                    {place.rounds - place.round === 1 ? "One more round to go." : `${place.rounds - place.round} rounds to go.`}
+                {/* Nova's try-again: mistakes are survivable, modeled on video. */}
+                {direction.clip === "nova-try-again" && !tryAgainDone && (
+                  <div className="kid-activity-settle" role="dialog" aria-label="Nova tries again">
+                    <HeroClipPlayer
+                      clip="nova-try-again"
+                      who="nova"
+                      onDone={() => setTryAgainDone(true)}
+                    />
+                    <button type="button" className="primary" onClick={() => setTryAgainDone(true)}>
+                      I&apos;ll try again too
+                    </button>
                   </div>
+                )}
+
+                {feedback?.correct && place?.roundEnd && (
+                  cheerDone || !cheer.clip ? (
+                    <div className="round-break-note">
+                      {place.rounds - place.round === 1 ? "One more round to go." : `${place.rounds - place.round} rounds to go.`}
+                    </div>
+                  ) : (
+                    <div className="kid-activity-cheer" role="dialog" aria-label="Round celebration">
+                      <HeroClipPlayer
+                        clip={cheer.clip}
+                        who={cheer.who}
+                        onDone={() => setCheerDone(true)}
+                      />
+                      <button type="button" className="primary" onClick={() => setCheerDone(true)}>
+                        Keep going
+                      </button>
+                    </div>
+                  )
                 )}
 
                 {feedback?.correct && (
