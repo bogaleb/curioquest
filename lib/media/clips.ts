@@ -12,7 +12,7 @@ import type { CastId } from "@/lib/character/director";
  * load — the live SVG puppet always covers.
  */
 
-export type ClipKind = "welcome" | "intro" | "teaching" | "transition" | "celebration" | "calm";
+export type ClipKind = "welcome" | "intro" | "teaching" | "transition" | "celebration" | "calm" | "encourage" | "goodbye";
 
 export type ClipMeta = {
   id: string;
@@ -146,6 +146,30 @@ export const CLIP_CATALOG: Record<string, ClipMeta> = {
     caption: "Slow and steady wins. I'm proud of you.",
     cue: "Take a calm breath with Tuno.",
   },
+  "bea-celebrate": {
+    id: "bea-celebrate",
+    title: "Bea's honey dance",
+    kind: "celebration",
+    who: "bea",
+    caption: "Buzz buzz — you grew that idea all by yourself!",
+    cue: "Buzz and wiggle with Bea!",
+  },
+  "riff-celebrate": {
+    id: "riff-celebrate",
+    title: "Riff's victory riff",
+    kind: "celebration",
+    who: "riff",
+    caption: "That's music to my ears! You nailed it!",
+    cue: "Clap the rhythm with Riff!",
+  },
+  "atlas-celebrate": {
+    id: "atlas-celebrate",
+    title: "Atlas's big cheer",
+    kind: "celebration",
+    who: "atlas",
+    caption: "You remembered! What a wonderful explorer you are.",
+    cue: "Stomp gently with Atlas!",
+  },
   // --- Teaching moments: replayable, one per skill -------------------------
   "luna-letter-trace": {
     id: "luna-letter-trace",
@@ -227,6 +251,24 @@ export const CLIP_CATALOG: Record<string, ClipMeta> = {
     who: "curio",
     caption: "Welcome home to the meadow. Where shall we explore today?",
     cue: "Choose a portal!",
+  },
+  // --- Encouragement: being wrong is survivable --------------------------------
+  "nova-try-again": {
+    id: "nova-try-again",
+    title: "Nova tries again",
+    kind: "encourage",
+    who: "nova",
+    caption: "Oops — that one tricked me too! Let's try again together.",
+    cue: "Try again with Nova!",
+  },
+  // --- Farewell: the session ends warm -----------------------------------------
+  "curio-goodbye": {
+    id: "curio-goodbye",
+    title: "Curio says goodbye",
+    kind: "goodbye",
+    who: "curio",
+    caption: "What an adventure! I'll be right here when you come back.",
+    cue: "Wave goodbye to Curio!",
   },
 };
 

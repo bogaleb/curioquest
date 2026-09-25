@@ -117,7 +117,12 @@ export function direct(input: DirectorInput): Direction {
     return {
       who,
       state: "encourage",
-      clip: feedback.move === "settle" ? CLIPS.tunoBreathing : null,
+      clip:
+        feedback.move === "settle"
+          ? CLIPS.tunoBreathing
+          : feedback.move === "compare"
+            ? "nova-try-again"
+            : null,
     };
   }
   if (feedback?.message) {
@@ -134,6 +139,15 @@ export function directWelcome(): Direction {
   return { who: "curio", state: "wave", clip: CLIPS.curioWelcome };
 }
 
+/**
+ * Session farewell: Curio says goodbye when the adventure ends. Warm, never
+ * blocking — the child can always come back. The live puppet covers if the
+ * clip cannot load.
+ */
+export function directGoodbye(): Direction {
+  return { who: "curio", state: "wave", clip: "curio-goodbye" };
+}
+
 /** Lesson intro: the specialist teaches before the interaction starts. */
 export function directLessonIntro(subject: SkillSubject | "daily"): Direction {
   const who = specialistFor(subject);
@@ -146,7 +160,10 @@ const CHEER_CLIPS: Partial<Record<CastId, string>> = {
   nova: "nova-highfive",
   luna: "luna-praise",
   milo: "milo-dance",
+  bea: "bea-celebrate",
   tuno: "tuno-proud",
+  riff: "riff-celebrate",
+  atlas: "atlas-celebrate",
 };
 
 export function directCheer(who: CastId = "curio"): Direction {

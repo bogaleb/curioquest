@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {loadTs} from './load-typescript.mjs';
-const {direct, directWelcome, directLessonIntro, SPECIALIST, MOVE_CAST, CLIPS, TEACHING_CLIPS, teachingClipFor} =
+const {direct, directWelcome, directGoodbye, directCheer, directLessonIntro, SPECIALIST, MOVE_CAST, CLIPS, TEACHING_CLIPS, teachingClipFor} =
   loadTs('lib/character/director');
 
 test('every subject has a specialist, and the daily adventure is Curio\u2019s', () => {
@@ -52,8 +52,15 @@ test('a settle move plays Tuno\u2019s breathing video', () => {
   assert.equal(d.clip, CLIPS.tunoBreathing);
 });
 
+test('a compare move plays Nova\u2019s try-again video', () => {
+  const d = direct({subject: 'math', feedback: {correct: false, message: 'Try again.', move: 'compare'}, stalled: false});
+  assert.equal(d.who, 'nova');
+  assert.equal(d.state, 'encourage');
+  assert.equal(d.clip, 'nova-try-again');
+});
+
 test('other moves use the live puppet, never a video mid-lesson', () => {
-  for (const move of ['compare', 'relisten', 'sound-not-name', 'recount', 'restate-rule', 'reorder', 'step-back']) {
+  for (const move of ['relisten', 'sound-not-name', 'recount', 'restate-rule', 'reorder', 'step-back']) {
     const d = direct({subject: 'math', feedback: {correct: false, message: 'Try again.', move}, stalled: false});
     assert.equal(d.who, MOVE_CAST[move]);
     assert.equal(d.state, 'encourage');
@@ -101,4 +108,30 @@ test('every subject has a teaching clip for "show me" moments', () => {
   assert.equal(teachingClipFor('science'), 'bea-growth');
   assert.equal(teachingClipFor('world'), 'atlas-continents');
   assert.equal(teachingClipFor('wellbeing'), 'tuno-breathing');
+});
+
+test('every cast member has a cheer clip for celebrations', () => {
+  const expected = {
+    curio: 'curio-celebrate',
+    nova: 'nova-highfive',
+    luna: 'luna-praise',
+    milo: 'milo-dance',
+    bea: 'bea-celebrate',
+    tuno: 'tuno-proud',
+    riff: 'riff-celebrate',
+    atlas: 'atlas-celebrate',
+  };
+  for (const [who, clip] of Object.entries(expected)) {
+    const d = directCheer(who);
+    assert.equal(d.who, who);
+    assert.equal(d.state, 'celebrate');
+    assert.equal(d.clip, clip, `${who} cheer clip`);
+  }
+});
+
+test('goodbye brings Curio back with the farewell video', () => {
+  const d = directGoodbye();
+  assert.equal(d.who, 'curio');
+  assert.equal(d.state, 'wave');
+  assert.equal(d.clip, 'curio-goodbye');
 });

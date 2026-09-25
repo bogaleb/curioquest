@@ -24,6 +24,13 @@ for (const m of directorSrc.matchAll(/"(curio-welcome|cast-finale|tuno-breathing
 // `${who}-intro` for every specialist (Curio's intro is the welcome).
 const castIds = ["nova", "luna", "milo", "bea", "tuno", "riff", "atlas"];
 for (const id of castIds) clipIds.add(`${id}-intro`);
+// Celebration clips named by the director's cheer map.
+for (const id of ["curio-celebrate", "nova-highfive", "luna-praise", "milo-dance", "bea-celebrate", "tuno-proud", "riff-celebrate", "atlas-celebrate"]) {
+  clipIds.add(id);
+}
+// Encouragement and farewell moments.
+clipIds.add("nova-try-again");
+clipIds.add("curio-goodbye");
 
 test("every director clip id has a catalog entry", () => {
   for (const id of clipIds) {
