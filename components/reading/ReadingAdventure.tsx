@@ -12,6 +12,7 @@ import {SoundWarmup} from './SoundWarmup';
 import {SoundHunt} from './SoundHunt';
 import {LetterTrace} from './LetterTrace';
 import {celebrate} from '@/lib/audio';
+import {stopReading} from '@/lib/speech';
 import {Scene,ScenePlane} from '@/components/kid/art/Scene';
 import {Bloom,Bush,FarHills,ForeLeaves,GrassTuft,GroundBand,SkyWash,Tree} from '@/components/kid/art/backdrops';
 import {CastFigure} from '@/components/kid/art/cast';
@@ -48,6 +49,7 @@ async function fetchReading(profileId:string,signal?:AbortSignal):Promise<Readin
 export function ReadingAdventure({profileId,name,paused,offline,onStars,band='prek',narration=true}:{profileId:string;name:string;paused:boolean;offline:boolean;onStars:(stars:number)=>void;band?:LearningBandId;narration?:boolean}){
   const [data,setData]=useState<ReadingView|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[playing,setPlaying]=useState(false),[success,setSuccess]=useState<{activity:ReadingActivity;text:string}|null>(null),[warmedFor,setWarmedFor]=useState<string|null>(null),[practice,setPractice]=useState<'hunt'|'write'|null>(null);
   const lock=useRef(false),stage=useRef<HTMLDivElement>(null);
+  useEffect(()=>{if(paused)stopReading();},[paused]);
   const refresh=useCallback(async()=>{try{setData(await fetchReading(profileId));setError('');}catch(e){setError(e instanceof Error?e.message:'Try again.');}},[profileId]);
   useEffect(()=>{const controller=new AbortController();fetchReading(profileId,controller.signal).then(d=>{if(!controller.signal.aborted){setData(d);setError('');}}).catch(e=>{if(!controller.signal.aborted)setError(e.message);});return()=>{controller.abort();window.speechSynthesis?.cancel();};},[profileId]);
   async function act(action:string,response?:string){if(!data||lock.current)return;lock.current=true;setBusy(true);setError('');const previous=data.session?.activity;
@@ -175,7 +177,7 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
 
               {success&&practice&&success.activity.kind==='letter-catch'?(
                 /* A new letter caught: hear it in words, then write it (Reading.com's lesson order). */
-                <div className="kid-activity-stage">
+                <div className="kid-activity-stage" inert={paused}>
                   {(()=>{const caught=data.catalog.skills.find(k=>k.id===success.activity.skillId);
                     if(!caught)return null;
                     return practice==='hunt'
@@ -192,7 +194,7 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
                     </div>
                   )}
                   <p className="kid-activity-done-line">{success.text}</p>
-                  <button className="primary" onClick={()=>{setSuccess(null);requestAnimationFrame(()=>stage.current?.scrollIntoView({block:'start',behavior:'instant'}));}}>Keep going<ArrowRight size={20}/></button>
+                  <button className="primary" disabled={paused} onClick={()=>{setSuccess(null);requestAnimationFrame(()=>stage.current?.scrollIntoView({block:'start',behavior:'instant'}));}}>Keep going<ArrowRight size={20}/></button>
                 </div>
               ):session?.completedAt?(
                 <div className="kid-activity-done">
@@ -209,7 +211,7 @@ export function ReadingAdventure({profileId,name,paused,offline,onStars,band='pr
                 </div>
               ):warmingUp?(
                 <div className="kid-activity-stage">
-                  <SoundWarmup skills={warmSkills} onDone={()=>setWarmedFor(session!.id)}/>
+                  <div inert={paused}><SoundWarmup skills={warmSkills} onDone={()=>setWarmedFor(session!.id)}/></div>
                 </div>
               ):activity&&(
                 <>

@@ -40,7 +40,7 @@ export type YardSource = {
 export function apiSource(profileId: string): YardSource {
   return {
     async load(signal) {
-      const response = await fetch(`/api/build?profile=${encodeURIComponent(profileId)}`, { signal });
+      const response = await fetch(`/api/build?profile=${encodeURIComponent(profileId)}`, { signal: AbortSignal.any([signal, AbortSignal.timeout(20000)]) });
       const body = await response.json();
       if (!response.ok) throw new Error(body.error || "Please try again.");
       return body as YardData;
@@ -48,6 +48,7 @@ export function apiSource(profileId: string): YardSource {
     async attempt(input) {
       const response = await fetch("/api/build", {
         method: "POST",
+        signal: AbortSignal.timeout(20000),
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action: "attempt", profile: profileId, ...input }),
       });
@@ -63,17 +64,18 @@ const newSession = () => (typeof crypto !== "undefined" && "randomUUID" in crypt
 export function BuildYard({ source, paused, onStars }: { source: YardSource; paused: boolean; onStars?: (stars: number) => void }) {
   const [data, setData] = useState<YardData | null>(null);
   const [error, setError] = useState("");
+  const [retry, setRetry] = useState(0);
   const [workshopId, setWorkshopId] = useState<BuildWorkshopId | null>(null);
   const [levelId, setLevelId] = useState<string | null>(null);
   const top = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    source.load(controller.signal).then(setData).catch((cause) => {
+    source.load(controller.signal).then((next) => { if (!controller.signal.aborted) { setData(next); setError(""); } }).catch((cause) => {
       if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : "Please try again.");
     });
     return () => { controller.abort(); stopReading(); };
-  }, [source]);
+  }, [source, retry]);
 
   const go = useCallback((workshop: BuildWorkshopId | null, level: string | null) => {
     stopReading();
@@ -89,7 +91,7 @@ export function BuildYard({ source, paused, onStars }: { source: YardSource; pau
     });
   }, []);
 
-  if (error) return <section data-kid-world="workshop" className="build-yard" ref={top}><p className="build-trouble" role="alert">{error}</p></section>;
+  if (error) return <section data-kid-world="workshop" className="build-yard" ref={top}><p className="build-trouble" role="alert">{error}</p><button type="button" className="build-primary" onClick={() => { setError(""); setRetry((n) => n + 1); }}>Try opening again</button></section>;
   if (!data) return <section data-kid-world="workshop" className="build-yard" ref={top} aria-busy="true"><p className="build-gate">Opening the Build Yard…</p></section>;
 
   const workshop = data.workshops.find((w) => w.id === workshopId) ?? null;

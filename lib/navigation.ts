@@ -102,6 +102,7 @@ const byId = new Map(destinations.map((destination) => [destination.id, destinat
 
 /** Destinations that are modes or gated areas rather than navigation entries. */
 const extra: Record<string, { title: string; href: string }> = {
+  discoveries: { title: "Discovery Library", href: "/discover" },
   "daily-adventure": { title: "Today’s Adventure", href: "/today" },
   parent: { title: "Parent corner", href: "/parent" },
 };

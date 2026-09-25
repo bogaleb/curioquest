@@ -17,7 +17,7 @@
  * It is a manual number on purpose: hashing the bank at boot would change the version on
  * every whitespace edit and shred the analysis into thousands of one-row cohorts.
  */
-export const CODE_CATALOGUE_VERSION = "code-1";
+export const CODE_CATALOGUE_VERSION = "code-2";
 
 export function catalogueVersion(published?: { version?: number | null } | null) {
   const version = published?.version;

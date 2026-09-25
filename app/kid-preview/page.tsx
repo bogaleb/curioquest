@@ -8,6 +8,8 @@ import { ReadingPreview } from "./ReadingPreview";
 import { ScenePreview } from "./ScenePreview";
 import { StudioPreview } from "./StudioPreview";
 import "./preview.css";
+import { DiscoveryPreview } from "./DiscoveryPreview";
+import { publicDiscoveries } from "@/lib/discover/engine";
 
 /**
  * The child component layer, on one page, in development only.
@@ -40,6 +42,7 @@ export default async function KidPreviewPage({
   const params = await searchParams;
   const band: LearningBandId = isLearningBandId(params.band) ? params.band : DEFAULT_BAND;
   const world = WORLDS.find((name) => name === params.world) ?? "grove";
+  if (params.screen === "discover" || params.screen === "home") return <DiscoveryPreview home={params.screen === "home"} data={{ band, lessons: publicDiscoveries(band) }}/>;
   if (params.screen === "scene") return <ScenePreview band={band} world={world} />;
   if (params.screen === "lab") return <LabPreview band={band} />;
   if (params.screen === "studio") return <StudioPreview band={band} />;

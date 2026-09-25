@@ -101,3 +101,5 @@
   background: var(--kid-surface);
   border-radius: var(--radius-xl);
 }
+.discovery-preview-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 12px 24px; background: var(--surface); color: var(--ink); }
+.discovery-preview-controls button { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }

@@ -6,18 +6,18 @@ import { DiscoveryInvitation } from "@/components/learning/discovery-invitation"
 import { useExplorer } from "@/components/app/explorer-context";
 import { destinationHref } from "@/lib/navigation";
 import { readAloud } from "@/lib/speech";
+import { useState } from "react";
+import { DiscoveryHome } from "@/components/kid/discover/DiscoveryHome";
 
 /**
  * Arrival.
  *
- * The map fills the first screen: one big trail to carry on with, and every other place
- * drawn around it at a fixed position (WP-03). The two sections below it are the parts of
- * the old home screen that still carry something a child would miss — a quest a grown-up
- * wrote, and an invitation into a new discovery strand — and both render nothing at all when
- * they are empty. They are below the fold on purpose: reaching learning must not require
- * scrolling past anything, and WP-08 folds both into the episode.
+ * The discovery journal introduces six learning areas and resumes the existing daily
+ * trail. The original spatial map remains available, including family profile switching.
+ * Parent assignments and adaptive discovery invitations retain their existing behaviour.
  */
 export default function ArrivalPage() {
+  const [showMap, setShowMap] = useState(false);
   const router = useRouter();
   const {
     profile, profiles, busy, selectProfile, action, openQuest, setExperienceMode,
@@ -27,10 +27,18 @@ export default function ArrivalPage() {
 
   const session = profile.session;
   const active = session && session.index < session.total ? session : null;
+  const startTrail = async () => {
+    if (active) {
+      openQuest(await action({ action: "session-resume", session: active.id }));
+      return;
+    }
+    setExperienceMode("daily");
+    router.push("/today");
+  };
 
   return (
     <>
-      <ChildMap
+      {showMap ? <><button type="button" className="discovery-back" onClick={() => setShowMap(false)}>← Back to discoveries</button><ChildMap
         key={profile.id}
         profile={profile}
         profiles={profiles}
@@ -39,15 +47,8 @@ export default function ArrivalPage() {
         onSelectProfile={selectProfile}
         onGrownUps={() => setGateOpen(true)}
         onGo={(id) => router.push(destinationHref(id))}
-        onTrail={async () => {
-          if (active) {
-            openQuest(await action({ action: "session-resume", session: active.id }));
-            return;
-          }
-          setExperienceMode("daily");
-          router.push("/today");
-        }}
-      />
+        onTrail={startTrail}
+      /></> : <DiscoveryHome name={profile.name} band={profile.band} paused={profile.preferences.paused} busy={busy} hasActiveTrail={Boolean(active)} faith={profile.controls.faith} onTrail={() => void startTrail()} onMap={() => setShowMap(true)} onGrownUps={() => setGateOpen(true)}/>}
       <ParentQuests
         key={`${profile.id}:${assignmentVersion}`}
         profileId={profile.id}
