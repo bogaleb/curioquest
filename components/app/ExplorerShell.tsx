@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, type ReactNode } from "react";
+import { useCallback, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -50,7 +50,18 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
   );
 }
 
+/** Real network status. `controls.offline` is the parent's real-world-missions toggle, not this. */
+function subscribeOnline(onChange: () => void) {
+  window.addEventListener("online", onChange);
+  window.addEventListener("offline", onChange);
+  return () => {
+    window.removeEventListener("online", onChange);
+    window.removeEventListener("offline", onChange);
+  };
+}
+
 function ShellFrame({ children }: { children: ReactNode }) {
+  const online = useSyncExternalStore(subscribeOnline, () => navigator.onLine, () => true);
   const router = useRouter();
   const pathname = usePathname();
   const explorer = useExplorer();
@@ -210,7 +221,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
   const grownUp = view === "parent" || !profile;
 
   return (
-    <ClipComfortContext.Provider value={{ paused: blocking || (profile?.preferences.paused ?? false), offline: profile?.controls.offline ?? false, narration }}>
+    <ClipComfortContext.Provider value={{ paused: blocking || (profile?.preferences.paused ?? false), offline: !online, narration }}>
       <CelebrationLayer />
       {grownUp ? (
         <GrownUpShell
