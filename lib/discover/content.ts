@@ -1,4 +1,5 @@
 import "server-only";
+import { expandedDiscoveries } from "./expanded-content";
 import type { DiscoveryLesson, DiscoveryTask, DiscoveryVersion } from "./types";
 
 const choose = (prompt: string, choices: string[], answer: number, hint: string, explanation: string): DiscoveryTask => ({ kind: "choose", prompt, choices, answer: [answer], hint, explanation });
@@ -8,6 +9,7 @@ const version = (skillId: string, idea: string, example: string, notice: string,
 
 /** Original, bounded mini-lessons. Answers remain in the server bundle. */
 export const discoveryLessons: DiscoveryLesson[] = [
+  ...expandedDiscoveries,
   {
     id: "story-trail", domain: "reading", title: "A story in order", subtitle: "Every little adventure has a beginning.", minutes: 4,
     vocabulary: { word: "sequence", meaning: "The order in which things happen." }, sourceIds: ["wwc-reading", "wwc-learning"], next: { label: "Visit the Reading Grove", href: "/read" },

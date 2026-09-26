@@ -5,6 +5,8 @@ import { ArrowLeft, ArrowRight, Compass, Volume2 } from "lucide-react";
 import { PlaceArt } from "@/components/kid/PlaceArt";
 import { readAloud, stopReading } from "@/lib/speech";
 import { worldGuide, type WorldGuide } from "@/lib/world-guide";
+import { destinationClip } from "@/lib/character-clips";
+import { CharacterClip } from "./CharacterClip";
 
 export function WorldDestinations({ onNavigate, disabled = false }: { onNavigate: (id: string) => void; disabled?: boolean }) {
   const returnTo = useRef<string | null>(null);
@@ -16,7 +18,7 @@ export function WorldDestinations({ onNavigate, disabled = false }: { onNavigate
     <section className="atlas-detail atlas-enter" data-kid-world={selected.world} aria-label={selected.title}>
       <button className="atlas-back" onClick={() => { stopReading(); returnTo.current = selected.id; setSelected(null); }}><ArrowLeft size={18} /> All places</button>
       <div className="atlas-detail-grid">
-        <div className="atlas-detail-art" aria-hidden="true"><PlaceArt id={selected.id} /><span>A little curiosity goes a long way</span></div>
+        <CharacterClip key={selected.id} id={destinationClip[selected.id]} disabled={disabled} />
         <div className="atlas-detail-copy">
           <span className="eyebrow">Your next little adventure</span>
           <h2 tabIndex={-1} ref={(node) => { node?.focus({ preventScroll: true }); }}>{selected.title}</h2>

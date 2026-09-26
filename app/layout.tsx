@@ -22,6 +22,7 @@ import "./auth.css";
 // whatever the legacy sheet it is replacing still says.
 import "./kid.css";
 import "./world-guide.css";
+import "./character-scenes.css";
 
 /**
  * `viewport-fit=cover` is what makes env(safe-area-inset-*) resolve to real values on

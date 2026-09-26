@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { CastFigure } from "@/components/kid/art/cast";
-import { PlaceArt } from "@/components/kid/PlaceArt";
+import { CharacterClip } from "./CharacterClip";
+import { CharacterCorner } from "./CharacterCorner";
 import { stopReading } from "@/lib/speech";
 import { useExperience, ExperienceError } from "./use-experience";
 import { ItemArt } from "./ItemArt";
@@ -103,16 +103,7 @@ export function WorldHub({
             </button>
           </div>
         </div>
-        <div className="world-hero-scene" aria-hidden="true">
-          <span className="world-sun" />
-          <span className="world-cloud" data-at="1" />
-          <span className="world-cloud" data-at="2" />
-          <span className="world-place" data-place="reading"><PlaceArt id="reading" /></span>
-          <span className="world-place" data-place="science"><PlaceArt id="science" /></span>
-          <span className="world-place" data-place="studio"><PlaceArt id="studio" /></span>
-          <span className="world-place" data-place="myworld"><PlaceArt id="myworld" /></span>
-          <span className="world-nova"><CastFigure who="nova" state="point" facing="left" /></span>
-        </div>
+        {zone === 'plaza' && <CharacterClip id="meadow-hub" disabled={busy || paused} />}
       </header>
 
       <nav className="world-tabs" aria-label="World areas">
@@ -172,6 +163,7 @@ export function WorldHub({
           </aside>
         </section>
       )}
+      {zone === 'grove' && !paused && <CharacterCorner clips={['bea-growth', 'tuno-breathing']} />}
     </section>
   );
 }

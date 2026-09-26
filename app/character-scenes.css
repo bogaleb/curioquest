@@ -1,0 +1,56 @@
+.character-corner { --ink:#244c40; margin:32px 0; padding:clamp(18px,3vw,34px); border:1px solid #d3ddce; border-radius:28px; background:linear-gradient(135deg,#fffaf0,#f1f5ed); color:var(--ink); min-width:0; }
+.character-heading { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:24px; }
+.character-heading h2 { font-size:clamp(26px,3vw,40px); line-height:1.15; margin-top:10px; }
+.character-pill { border:1px solid #d3ddce; padding:12px 18px; border-radius:100px; font-size:13px; white-space:nowrap; }
+.character-shelf { display:flex; gap:12px; overflow-x:auto; padding:5px 5px 16px; margin:0 -5px 18px; scrollbar-width:thin; }
+.character-shelf>button { flex:0 0 250px; display:flex; align-items:center; gap:12px; padding:8px; border:2px solid transparent; border-radius:16px; background:#fffdf7; text-align:left; color:#315744; transition:border-color .2s,background .2s; }
+.character-shelf>button[aria-pressed=true] { border-color:#3f785c; background:#e8f0df; }
+.character-shelf img { width:85px; height:65px; object-fit:cover; border-radius:10px; }
+.character-shelf span { display:grid; gap:6px; }
+.character-shelf strong { font-size:15px; }
+.character-shelf small { font-size:12px; line-height:1.45; color:#536b5c; }
+.character-stage { display:grid; grid-template-columns:minmax(0,1.25fr) minmax(0,1fr); gap:28px; align-items:start; }
+.character-scene-title { font-size:24px; line-height:1.3; margin:0 0 16px; }
+.character-clip { min-width:0; width:100%; color:#315744; align-self:center; }
+.character-frame { position:relative; aspect-ratio:16/9; border-radius:20px; overflow:hidden; background:#e1e9dc; isolation:isolate; }
+.character-frame video,.character-poster { width:100%; height:100%; object-fit:contain; display:block; }
+.character-frame video[hidden] { display:none; }
+.character-watch { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); display:flex; gap:10px; align-items:center; justify-content:center; min-height:56px; padding:15px 22px; border:1px solid #ffffffa0; border-radius:100px; background:#173c30e8; color:#fffdf1; box-shadow:0 4px 24px #0003; white-space:nowrap; font-weight:800; }
+.character-friend { position:absolute; left:12px; bottom:12px; padding:7px 12px; border-radius:100px; background:#fffbeded; color:#294d3e; font-size:12px; font-weight:800; pointer-events:none; }
+.character-controls { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.character-controls button,.character-activity button,.character-reset { display:inline-flex; justify-content:center; align-items:center; gap:8px; min-height:56px; padding:12px 16px; border-radius:14px; border:1px solid #bbceb3; background:#fffdf4; color:#315744; font:inherit; font-weight:700; }
+.character-controls button { font-size:14px; }
+.character-description { margin:12px 0 0; font-size:14px; line-height:1.7; color:#526655; }
+.character-status { padding:14px; border-radius:12px; background:#fff0c9; font-size:14px; line-height:1.6; }
+.character-activity { background:#fffdf6; padding:clamp(18px,2.5vw,28px); border-radius:22px; border:1px solid #dedfcd; }
+.character-activity h3 { font-size:clamp(22px,2.5vw,29px); line-height:1.35; margin:10px 0 20px; }
+.character-apples { display:flex; gap:10px; }
+.character-apples button { flex:1; flex-direction:column; padding:8px; min-width:0; border:none; background:#faf1e1; }
+.character-apples button:disabled { opacity:1; }
+.character-apples svg { width:100%; max-width:100px; }
+.character-choices { display:flex; gap:10px; flex-wrap:wrap; margin:20px 0; }
+.character-choices button { flex:1; min-width:56px; }
+.character-feedback { min-height:56px; font-size:15px; line-height:1.7; margin-top:20px; }
+.character-hint { font-size:13px; line-height:1.65; color:#536b5b; margin:14px 0; }
+.character-letter { display:block; width:100%; max-width:280px; aspect-ratio:1; margin:auto; touch-action:none; background:#f4eff8; border-radius:22px; }
+.character-strokes { display:grid; gap:8px; }
+.character-strokes button { justify-content:flex-start; text-align:left; font-size:14px; }
+.growth-slots,.rhythm-pattern { display:flex; gap:8px; }
+.growth-slots>span,.rhythm-pattern>span { flex:1; text-align:center; padding:12px 8px; background:#edf2df; border:1px dashed #a6bc94; border-radius:12px; font-size:14px; }
+.rhythm-pattern>span[data-done=true] { background:#d2e3bd; border-style:solid; }
+.growth-choices button,.rhythm-pads button { flex-direction:column; padding:10px; min-width:0; }
+.growth-choices svg,.rhythm-pads svg { width:100%; max-width:95px; height:95px; }
+.breathing-space { height:230px; display:grid; place-items:center; overflow:hidden; }
+.breathing-orb { width:140px; height:140px; display:grid; place-items:center; border-radius:50%; background:radial-gradient(circle at 35% 30%,#f0f9d1,#a6c9a2); border:6px solid #dceccf; color:#315744; font-weight:800; transition:transform 3s ease-in-out; box-shadow:0 0 0 12px #dbe8d066; }
+.breathing-orb[data-expanded=true] { transform:scale(1.3); }
+.character-notice svg { display:block; width:100px; height:85px; margin:0 auto 18px; }
+.character-notice p { font-size:16px; line-height:1.7; margin-bottom:18px; }
+.character-clip button:focus-visible,.character-corner button:focus-visible { outline:3px solid #436e9c; outline-offset:4px; }
+.character-corner button:disabled,.character-clip button:disabled { opacity:.55; cursor:not-allowed; }
+.world-hero>.character-clip { align-self:center; }
+.atlas-detail-grid>.character-clip { align-self:start; }
+.daily-adventure>.character-clip { max-width:760px; margin:28px auto; }
+@media(max-width:900px) { .character-heading { align-items:flex-start; flex-direction:column; gap:12px; } .character-stage { grid-template-columns:1fr; } .character-stage>.character-activity { max-width:none; } }
+@media(max-width:480px) { .character-corner { padding:16px; border-radius:22px; } .character-shelf>button { flex-basis:235px; } .character-controls button { flex:1; font-size:13px; } .character-friend { font-size:10px; bottom:7px; left:7px; padding:5px 9px; } .character-watch { font-size:13px; padding:12px 17px; } .character-activity { padding:16px; } .growth-slots>span,.rhythm-pattern>span { font-size:12px; padding:10px 6px; } }
+@media(prefers-reduced-motion:reduce) { .breathing-orb,.character-shelf>button { transition:none; } }
+[data-reduced-motion=true] .breathing-orb { transition:none; }

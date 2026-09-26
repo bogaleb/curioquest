@@ -18,6 +18,8 @@ import { GrownUpShell } from "@/components/shell/GrownUpShell";
 import { KidShell } from "@/components/shell/KidShell";
 import { AccountActions } from "@/components/auth/account-actions";
 import { CelebrationLayer } from "@/components/learning/celebration-layer";
+import { CharacterCorner } from "@/components/experience/CharacterCorner";
+import { ClipComfortContext } from "@/components/experience/CharacterClip";
 import { ParentGate } from "@/components/learning/parent-gate";
 import { QuestPlayer } from "@/components/learning/quest-player";
 import { useDialogFocus } from "@/hooks/use-dialog-focus";
@@ -208,7 +210,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
   const grownUp = view === "parent" || !profile;
 
   return (
-    <>
+    <ClipComfortContext.Provider value={{ paused: blocking || (profile?.preferences.paused ?? false), offline: profile?.controls.offline ?? false, narration }}>
       <CelebrationLayer />
       {grownUp ? (
         <GrownUpShell
@@ -275,6 +277,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
             </section>
           )}
           {children}
+          <CharacterCorner key={`${profile.id}:${pathname}`} route={pathname} />
         </KidShell>
       )}
 
@@ -291,7 +294,7 @@ function ShellFrame({ children }: { children: ReactNode }) {
         />
       )}
       {playing && profile && !profile.preferences.paused && <PlayerOverlay />}
-    </>
+    </ClipComfortContext.Provider>
   );
 }
 

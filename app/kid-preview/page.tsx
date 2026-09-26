@@ -8,6 +8,7 @@ import { ReadingPreview } from "./ReadingPreview";
 import { ScenePreview } from "./ScenePreview";
 import { StudioPreview } from "./StudioPreview";
 import { WorldPreview } from "./WorldPreview";
+import { CharacterPreview } from "./CharacterPreview";
 import "./preview.css";
 import { DiscoveryPreview } from "./DiscoveryPreview";
 import { publicDiscoveries } from "@/lib/discover/engine";
@@ -51,6 +52,7 @@ export default async function KidPreviewPage({
   if (params.screen === "reading") return <ReadingPreview band={band} />;
   if (params.screen === "build") return <BuildPreview band={band} />;
   if (params.screen === "world") return <WorldPreview band={band} />;
+  if (params.screen === "characters") return <CharacterPreview />;
   const screen = params.screen === "map" ? "map" : params.screen === "moves" ? "moves" : "parts";
   return <KidPreview band={band} world={world} screen={screen} />;
 }

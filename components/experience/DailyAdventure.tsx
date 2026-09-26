@@ -9,6 +9,7 @@ import {InteractiveMediaPlayer} from './InteractiveMediaPlayer';
 import {SpaceCollector} from './SpaceCollector';
 import {Treehouse} from './Treehouse';
 import {ItemArt} from './ItemArt';
+import {CharacterClip} from './CharacterClip';
 import {LetterCatch} from '@/components/reading/LetterCatch';
 import {BlendTrain} from '@/components/reading/BlendTrain';
 import {DecodableReader} from '@/components/reading/DecodableReader';
@@ -34,5 +35,7 @@ export function DailyAdventure({profileId,mode='daily',onExit,onReading,onWorld,
  {data.feedback&&<div className="nova-feedback" role="status"><NovaCharacter state={nova.state} size="small"/><p>{data.feedback}</p></div>}
  {['episode','blend','collector','story'].includes(step??'')&&<div className="experience-help"><button className="secondary" disabled={busy||run.help>=4} onClick={()=>action('help')}>Nova, a little help</button><span>No rush. Your progress saves as you explore.</span></div>}
  </>}
+ {run?.completedAt && <CharacterClip id="cast-finale" disabled={busy}/>}
+ {step==='offline' && !run?.completedAt && <CharacterClip id="curio-goodbye" disabled={busy}/>}
  </section>;
 }
